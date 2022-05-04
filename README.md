@@ -10,7 +10,7 @@
 
 Confirm that the following requests work for you
 
-1. `cd CommunityFridgeMapApi`
+1. `cd CommunityFridgeMapApi/`
 2. `sam local invoke HelloWorldFunction --event events/event.json`
     * response: ```{"statusCode": 200, "body": "{\"message\": \"hello world\"}"}```
 3. `sam local start-api`
