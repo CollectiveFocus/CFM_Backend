@@ -3,13 +3,30 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   CommunityFridgeMapApi
 
-  Sample SAM Template for CommunityFridgeMapApi
+  SAM Template for CommunityFridgeMapApi
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
+    Environment:
+      Variables:
+        TABLE_NAME: my-table
+        FRIDGE_TABLE_NAME: fridge
+        FRIDGE_CHECKIN_TABLE_NAME: fridge_check_in
+        FRIDGE_HISTORY_TABLE_NAME: fridge_history
 
+Parameters:
+  Environment:
+    Type: String
+    Description: Choose between local or AWS
+    AllowedValues:
+      - local
+      - aws
+
+##########################
+##    Resources    ##
+##########################
 Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -25,6 +42,235 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+
+  GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: functions/dev/get_all/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: GetAllFunction
+      Events:
+        GetDocument:
+          Type: Api
+          Properties:
+            Path: /get_all
+            Method: get
+            RestApiId: !Ref MyApi
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          FridgeTableName: "fridge"
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:getItem
+            Resource: !GetAtt FridgeTable.Arn
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: v1
+          
+  LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: ./functions/dev/load_fridge_data
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: LoadFridgeDataFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:BatchWriteItem
+            Resource: !GetAtt FridgeTable.Arn
+ 
+  ##########################
+  ##    DynamoDB Tables    ##
+  ##########################
+
+  FridgeTable:
+    TableName: !Ref FRIDGE_TABLE_NAME
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - 
+          AttributeName: 'name'
+          AttributeType: 'S'
+        - 
+          AttributeName: "address"
+          AttributeType: "S"
+        - 
+          AttributeName: "instagram"
+          AttributeType: "S"
+        - 
+          AttributeName: "last_editted"
+          AttributeType: "N"
+        - 
+          AttributeName: "info"
+          AttributeType: "S"
+        - 
+          AttributeName: "url"
+          AttributeType: "S"
+        - 
+          AttributeName: "neighborhood"
+          AttributeType: "S"
+        - 
+          AttributeName: "organizer_email"
+          AttributeType: "S"
+        - 
+          AttributeName: "tags"
+          AttributeType: "L"
+        - 
+          AttributeName: "food_accepts"
+          AttributeType: "L"
+        - 
+          AttributeName: "food_restrictions"
+          AttributeType: "L"
+        - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
+          AttributeName: "long"
+          AttributeType: "S"
+        - 
+          AttributeName: "profile_image"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_time"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_notes"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_status"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_image"
+          AttributeType: "S"
+      KeySchema: 
+        -
+          AttributeName: "state"
+          KeyType: "HASH"
+        -
+          AttributeName: "fridge_name"
+          KeyType: "RANGE"                           
+      BillingMode: 'PAY_PER_REQUEST'
+  
+  FridgeCheckInTable:
+    TableName: !Ref FRIDGE_CHECKIN_TABLE_NAME
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - 
+          AttributeName: 'notes'
+          AttributeType: 'S'
+        - 
+          AttributeName: "status"
+          AttributeType: "N"
+        - 
+          AttributeName: "image"
+          AttributeType: "S"
+      KeySchema: 
+        - #State#FridgeName
+          AttributeName: "PK"
+          KeyType: "HASH"
+        -
+          AttributeName: "Timestamp"
+          KeyType: "RANGE"                           
+      BillingMode: 'PAY_PER_REQUEST'
+
+  FridgeHistoryTable:
+    TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - 
+          AttributeName: 'Name'
+          AttributeType: 'S'
+        - 
+          AttributeName: "Address"
+          AttributeType: "S"
+        - 
+          AttributeName: "Instagram"
+          AttributeType: "S"
+        - 
+          AttributeName: "Last_editted"
+          AttributeType: "N"
+        - 
+          AttributeName: "info"
+          AttributeType: "S"
+        - 
+          AttributeName: "url"
+          AttributeType: "S"
+        - 
+          AttributeName: "neighborhood"
+          AttributeType: "S"
+        - 
+          AttributeName: "organizer_email"
+          AttributeType: "S"
+        - 
+          AttributeName: "tags"
+          AttributeType: "L"
+        - 
+          AttributeName: "food_accepts"
+          AttributeType: "L"
+        - 
+          AttributeName: "food_restrictions"
+          AttributeType: "L"
+        - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
+          AttributeName: "long"
+          AttributeType: "S"
+        - 
+          AttributeName: "profile_image"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_time"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_notes"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_status"
+          AttributeType: "S"
+        - 
+          AttributeName: "check_in_image"
+          AttributeType: "S"
+      KeySchema: 
+        - #State#FridgeName
+          AttributeName: "PK"
+          KeyType: "HASH"
+        -
+          AttributeName: "Timestamp"
+          KeyType: "RANGE"                           
+      BillingMode: 'PAY_PER_REQUEST'
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
