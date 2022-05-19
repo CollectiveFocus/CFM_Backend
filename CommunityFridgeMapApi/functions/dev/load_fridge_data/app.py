@@ -1,27 +1,12 @@
 import os
 import json
-import boto3
 import logging
 from botocore.exceptions import ClientError
-
+from db import get_ddb_connection
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def get_ddb_connection():
-    ENV = os.environ['Environment']
-    ddbclient=''
-    if ENV == 'local':
-        ddbclient = boto3.client('dynamodb', endpoint_url='http://dynamodb:8000/')
-    else:
-        ddbclient = boto3.client('dynamodb')
-    return ddbclient
-
-def lambda_handler(event, context):
-    ddbclient = get_ddb_connection()
-    try:
-        response = ddbclient.batch_write_item(
-        RequestItems={
-            os.environ['FRIDGE_TABLE_NAME']: [
+FRIDGE_DATA = [
                 {
                     'PutRequest': {
                         'Item': {
@@ -42,7 +27,18 @@ def lambda_handler(event, context):
                         }
                     }
                 },
-            ]}
+            ]
+
+
+FRIDGE_CHECK_IN_DATA = []
+FRIDGE_HISTORY_DATA = []
+
+def lambda_handler(event: dict, context: 'awslambdaric.lambda_context.LambdaContext') -> dict:
+    ddbclient = get_ddb_connection(env=os.environ['Environment'])
+    try:
+        response = ddbclient.batch_write_item(
+        RequestItems={
+            os.environ['FRIDGE_TABLE_NAME']: FRIDGE_DATA}
         )
 
         return {
@@ -53,8 +49,9 @@ def lambda_handler(event, context):
         }
 
     except ddbclient.exceptions.ResourceNotFoundException as e:
-        logging.error('Cannot do operations on a non-existent table')
+        logging.error('Table does not exist')
         raise e
     except ClientError as e:
         logging.error('Unexpected error')
         raise e
+

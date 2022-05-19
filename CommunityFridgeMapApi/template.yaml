@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 10
+    Timeout: 60
     Environment:
       Variables:
         TABLE_NAME: my-table
@@ -31,11 +31,9 @@ Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: hello_world/
+      CodeUri: functions/dev/hello_world/
       Handler: app.lambda_handler
       Runtime: python3.9
-      Architectures:
-        - x86_64
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -61,6 +59,8 @@ Resources:
         Variables:
           Environment: !Ref Environment
           FridgeTableName: "fridge"
+      Layers:
+        - !Ref CommonLayer
       Policies:
         - Version: '2012-10-17'
           Statement:
@@ -89,6 +89,8 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
+      Layers:
+        - !Ref CommonLayer
       Policies:
         - Version: '2012-10-17'
           Statement:
@@ -102,7 +104,20 @@ Resources:
             Action:
             - dynamodb:BatchWriteItem
             Resource: !GetAtt FridgeTable.Arn
- 
+    ##########################
+    ##    Layers    ##
+    ##########################
+  CommonLayer:
+        Type: AWS::Serverless::LayerVersion
+        Properties:
+            LayerName: CommunityFridgeMapApiLayer
+            Description: Dependencies for CommunityFridgeMapApi project
+            ContentUri: dependencies/
+            CompatibleRuntimes:
+              - python3.7
+              - python3.8
+              - python3.9
+            RetentionPolicy: Delete
   ##########################
   ##    DynamoDB Tables    ##
   ##########################
@@ -207,16 +222,16 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'Name'
+          AttributeName: 'name'
           AttributeType: 'S'
         - 
-          AttributeName: "Address"
+          AttributeName: "address"
           AttributeType: "S"
         - 
-          AttributeName: "Instagram"
+          AttributeName: "instagram"
           AttributeType: "S"
         - 
-          AttributeName: "Last_editted"
+          AttributeName: "last_editted"
           AttributeType: "N"
         - 
           AttributeName: "info"
@@ -271,6 +286,7 @@ Resources:
           AttributeName: "timestamp"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
