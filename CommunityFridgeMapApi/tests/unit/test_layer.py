@@ -6,7 +6,7 @@ from dependencies.python.db import get_ddb_connection
 def test_layer_test():
 
     ret = layer_test()
-    assert ret == "layer test"
+    assert ret == "hello world"
 
 def test_get_ddb_connection():
     connection = get_ddb_connection()
