@@ -92,6 +92,7 @@ class Fridge:
         pass
     
     def set_username(self):
+        #Fridge username is the display_name with no spaces and all lower cased
         username = self.display_name.lower().replace(" ", "")
         if not username.isalnum():
             raise InvalidDisplayNameException(username)
@@ -99,6 +100,8 @@ class Fridge:
 
 
     def build_fridge_item(self):
+        #generates a dictionary in the format dynamodb expects
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
         fridge_item = {}
         for key in self.FRIDGE_TYPES:
             val = getattr(self, key)
