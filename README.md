@@ -30,10 +30,10 @@ Follow these steps to get Dynamodb running locally
     1. `docker network create cfm-network`
     2. `docker run --network cfm-network --name dynamodb -d -p 8000:8000 amazon/dynamodb-local`
 3. **Create Dynamodb tables locally** 
-    1. **fridge:** `aws dynamodb create-table --table-name fridge --attribute-definitions AttributeName=state,AttributeType=S AttributeName=name,AttributeType=S --key-schema AttributeName=state,KeyType=HASH AttributeName=name,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
-    2. **fridge_check_in:** `aws dynamodb create-table --table-name fridge_check_in --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=pk,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
-    3. **fridge_history:** `aws dynamodb create-table --table-name fridge_history --attribute-definitions AttributeName=pk,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=pk,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
-    4. **tag**: `aws dynamodb create-table --table-name tag --attribute-definitions AttributeName=name,AttributeType=S --key-schema AttributeName=name,KeyType=HASH  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    1. **fridge:** `aws dynamodb create-table --table-name fridge --attribute-definitions AttributeName=fridge_state,AttributeType=S AttributeName=username,AttributeType=S --key-schema AttributeName=fridge_state,KeyType=HASH AttributeName=username,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    2. **fridge_check_in:** `aws dynamodb create-table --table-name fridge_check_in --attribute-definitions AttributeName=#fridge_state#fridge_username,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=#fridge_state#fridge_username,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    3. **fridge_history:** `aws dynamodb create-table --table-name fridge_history --attribute-definitions AttributeName=#fridge_state#fridge_username,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=#fridge_state#fridge_username,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    4. **tag**: `aws dynamodb create-table --table-name tag --attribute-definitions AttributeName=tag_name,AttributeType=S --key-schema AttributeName=tag_name,KeyType=HASH  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
 4. **Build the functions inside a Docker container**
     1. `sam build --use-container`
 5. **Load data into your local Dynamodb tables**
@@ -56,3 +56,15 @@ CommunityFridgeMapApi$ python -m pytest tests/unit -v
 
 ## Useful AWS SAM commands
 1. `sam validate -t template.yml`
+
+## Userful Dynamodb Commands
+1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
+
+## Resources
+
+Project Documentation
+
+  - [Architecture Brainstorming](https://docs.google.com/document/d/1FYClUD16KUY42_p93rZFHN-iyp94RU0Rtw517vj2jXs/edit)
+  - [Architecture](https://docs.google.com/document/d/1yZVGAxVn4CEZyyce_Zuha3oYOOU8ey7ArBvLbm7l4bw/edit)
+  - [Database Tables] (https://docs.google.com/document/d/16hjNHxm_ebZv8u_VolT1bdlJEDccqb7V67-Y6ljjUdY/edit?usp=sharing)
+  - [Development Workflow](https://docs.google.com/document/d/1m9Xqo4QUVEBjMD7sMjxSHa3CxxjvrHppwc0nrdWCAAc/edit)
