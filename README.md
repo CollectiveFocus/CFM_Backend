@@ -19,7 +19,7 @@ Confirm that the following requests work for you
 5. `curl http://localhost:3000/hello`
     * response: ```{"message": "hello world"}```
 
-## Local Database Connection
+## Setup Local Database Connection
 
 **Guide that was used:** https://betterprogramming.pub/how-to-deploy-a-local-serverless-application-with-aws-sam-b7b314c3048c
 
