@@ -94,7 +94,7 @@ class Fridge(DB_Item):
         'food_restrictions': 'L',
         'lat': 'S',
         'long': 'S',
-        'last_editted': 'N',
+        'last_edited': 'N',
         'profile_image': 'S',
         'check_in_time': 'S',
         'check_in_notes': 'S',
@@ -121,7 +121,7 @@ class Fridge(DB_Item):
             self.lat:str = fridge.get('lat', None)
             self.long:str = fridge.get('long', None)
             self.profile_image:str = fridge.get('profile_image', None)
-            self.last_editted:int = fridge.get('last_editted', None)
+            self.last_edited:str = fridge.get('last_edited', None)
             self.check_in_time:int = fridge.get('check_in_time', None)
             self.check_in_notes:str = fridge.get('check_in_notes', None)
             self.check_in_status:str = fridge.get('check_in_status', None)
@@ -150,6 +150,9 @@ class Fridge(DB_Item):
         #A valid display_name is alphanumric and can contain spaces
         username = self.display_name.lower().replace(" ", "")
         return username.isalnum()
+    
+    def set_last_edited(self):
+        self.last_edited = str(int(time.time()))
 
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
@@ -160,6 +163,7 @@ class Fridge(DB_Item):
         if not self.is_valid_display_name():
             return DB_Response(message="Display Name Can Only Contain Letters, Numbers, and Spaces", status_code=400, success=False)
         self.set_username()
+        self.set_last_edited()
         item = self.format_dynamodb_item()
         conditional_expression = 'attribute_not_exists(fridge_state) AND attribute_not_exists(username)'
         try:
