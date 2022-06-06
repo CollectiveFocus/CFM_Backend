@@ -48,6 +48,12 @@ class FrdgeTest(unittest.TestCase):
         fridge.set_username()
         self.assertEqual(fridge.username, 'thefriendlyfridge')
     
+    def test_set_last_edditted(self):
+        fridge = Fridge(fridge={'display_name': 'The Friendly Fridge'}, db_client=None)
+        self.assertIsNone(fridge.last_edited)
+        fridge.set_last_edited()
+        self.assertIsNotNone(fridge.last_edited)
+
     def test_is_valid_display_name(self):
         fridge = Fridge(fridge={'display_name': 'The Friendly Fridge'}, db_client=None)
         self.assertTrue(fridge.is_valid_display_name())
@@ -61,6 +67,7 @@ class FrdgeTest(unittest.TestCase):
         self.assertFalse(response.success)
         self.assertEqual(response.message, "Missing Required Field: fridge_state")
         self.assertEqual(response.status_code, 400)
+        self.assertIsNone(fridge.last_edited)
         fridge = Fridge(fridge={'display_name': 'test fridge', 'fridge_state': 'nyc', 'address': '63 Whipple St, Brooklyn, NY 11206', 'lat': 23.4523, 'long': 14.452}, db_client=db_client)
         response = fridge.add_item()
         self.assertFalse(response.success)
@@ -71,6 +78,7 @@ class FrdgeTest(unittest.TestCase):
         self.assertTrue(response.success)
         self.assertEqual(response.message, "Fridge was succesfully added")
         self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(fridge.last_edited)
 
     def test_format_dynamodb_item(self):
         fridge = {
@@ -88,7 +96,7 @@ class FrdgeTest(unittest.TestCase):
             'food_restrictions': [],
             'lat': 'test',
             'long': 'test',
-            'last_editted': 2342353,
+            'last_edited': 2342353,
             'profile_image': 'test',
             'check_in_time': 'test',
             'check_in_notes': 'test',
@@ -111,7 +119,7 @@ class FrdgeTest(unittest.TestCase):
             'food_restrictions':{'L': []},
             'lat':{'S': 'test'},
             'long': {'S': 'test'},
-            'last_editted': {'N': 2342353},
+            'last_edited': {'N': 2342353},
             'profile_image':{'S': 'test'},
             'check_in_time':{'S': 'test'},
             'check_in_notes':{'S': 'test'},
