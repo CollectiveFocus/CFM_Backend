@@ -190,25 +190,3 @@ class Tag(DB_Item):
 
     def __init__(self, db_client: 'botocore.client.DynamoDB'):
         super().__init__(db_client=db_client)
-
-class RequiredFieldMissingException(Exception):
-    def __init__(self, object_name, field):
-        self.field = field
-        self.object_name = object_name
-
-    def __str__(self):
-        return "<Missing Required Field: %s. For Object: %s>" % (self.field, self.object_name)
-
-class InvalidStateException(Exception):
-    def __init__(self, fridge_state):
-        self.state = fridge_state
-    
-    def __str__(self):
-        return "<Invalid State Given: %s>" % (self.fridge_state)
-
-class InvalidDisplayNameException(Exception):
-    def __init__(self, username):
-        self.username = username
-    
-    def __str__(self):
-        return "<Display Name Must Be Alphanumeric: %s>" % (self.username)
