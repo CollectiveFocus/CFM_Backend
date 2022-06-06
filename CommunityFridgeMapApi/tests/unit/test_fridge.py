@@ -31,13 +31,15 @@ class FrdgeTest(unittest.TestCase):
 
     def test_required_fields(self):
         fridge = Fridge(fridge={}, db_client=None)
-        self.assertRaises(RequiredFieldMissingException, fridge.has_required_fields)
+        has_required_field, field = fridge.has_required_fields()
+        self.assertEqual(field, 'display_name')
+        self.assertFalse(has_required_field)
         fridge = Fridge(fridge={'display_name': 'test fridge', 'fridge_state': 'NY', 'address': '63 Whipple St, Brooklyn, NY 11206', 'lat': 23.4523, 'long': 14.452}, db_client=None)
         self.assertTrue(fridge.has_required_fields())
 
     def test_is_valid_fridge_state(self):
         fridge = Fridge(fridge={'fridge_state': 'fake'}, db_client=None)
-        self.assertRaises(InvalidStateException, fridge.is_valid_fridge_state)
+        self.assertFalse(fridge.is_valid_fridge_state())
         fridge = Fridge(fridge={'fridge_state': 'ny'}, db_client=None)
         self.assertTrue(fridge.is_valid_fridge_state())
         fridge = Fridge(fridge={'fridge_state': 'NY'}, db_client=None)
@@ -47,18 +49,32 @@ class FrdgeTest(unittest.TestCase):
         fridge = Fridge(fridge={'display_name': 'The Friendly Fridge'}, db_client=None)
         fridge.set_username()
         self.assertEqual(fridge.username, 'thefriendlyfridge')
+    
+    def test_is_valid_display_name(self):
+        fridge = Fridge(fridge={'display_name': 'The Friendly Fridge'}, db_client=None)
+        self.assertTrue(fridge.is_valid_display_name())
+        fridge = Fridge(fridge={'display_name': 'The Friendly Fridge #%@/'}, db_client=None)
+        self.assertFalse(fridge.is_valid_display_name())
 
-    def test_add_fridge(self):
+    def test_add_item(self):
         db_client = DynamoDbMockPutItem()
         fridge = Fridge(fridge={'display_name': 'The Friendly Fridge'}, db_client=db_client)
-        self.assertRaises(RequiredFieldMissingException, fridge.add_fridge)
+        response = fridge.add_item()
+        self.assertFalse(response.success)
+        self.assertEqual(response.message, "Missing Required Field: fridge_state")
+        self.assertEqual(response.status_code, 400)
         fridge = Fridge(fridge={'display_name': 'test fridge', 'fridge_state': 'nyc', 'address': '63 Whipple St, Brooklyn, NY 11206', 'lat': 23.4523, 'long': 14.452}, db_client=db_client)
-        self.assertRaises(InvalidStateException, fridge.is_valid_fridge_state)
+        response = fridge.add_item()
+        self.assertFalse(response.success)
+        self.assertEqual(response.message, "Invalid State Given: NYC")
+        self.assertEqual(response.status_code, 400)
         fridge = Fridge(fridge={'display_name': 'Test Fridge', 'fridge_state': 'ny', 'address': '63 Whipple St, Brooklyn, NY 11206', 'lat': 23.4523, 'long': 14.452}, db_client=db_client)
-        fridge.add_fridge()
-        self.assertEqual(fridge.username, 'testfridge')
+        response = fridge.add_item()
+        self.assertTrue(response.success)
+        self.assertEqual(response.message, "Fridge was succesfully added")
+        self.assertEqual(response.status_code, 200)
 
-    def test_build_fridge_item(self):
+    def test_format_dynamodb_item(self):
         fridge = {
             'display_name': 'test',
             'username': 'test',
@@ -81,7 +97,7 @@ class FrdgeTest(unittest.TestCase):
             'check_in_status': 'test',
             'check_in_image': 'test'
         }
-        fridge_item = Fridge(fridge=fridge, db_client=None).build_fridge_item()
+        fridge_item = Fridge(fridge=fridge, db_client=None).format_dynamodb_item()
         expected_response = {
             'display_name': {'S': 'test'},
             'username': {'S': 'test'},
