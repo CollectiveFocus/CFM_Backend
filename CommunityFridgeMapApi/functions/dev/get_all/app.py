@@ -23,16 +23,8 @@ class GetAllFridgesHandler:
 
     
     def lambda_handler(self, event: dict, context: 'awslambdaric.lambda_context.LambdaContext') -> dict:
-        try:
-            db_response = Fridge(db_client=self.ddbclient).get_all_items()
-            return self.format_api_response(db_response=db_response, response_type='Items')
-
-        except self.ddbclient.exceptions.ResourceNotFoundException as e:
-            logging.error('Cannot do operations on a non-existent table')
-            raise e
-        except ClientError as e:
-            logging.error('Unexpected error')
-            raise e
+        db_response = Fridge(db_client=self.ddbclient).get_all_items()
+        return self.format_api_response(db_response=db_response, response_type='Items')
 
     def format_api_response(self, db_response: dict, response_type: str) -> dict:
         if response_type in db_response:
