@@ -17,7 +17,7 @@ tags:
   description: Operations for the fridges
 
 paths:
-  /v1/fridges/{state}/{fridge_name}:
+  /v1/fridges/{fridge_state}/{fridge_name}:
     get:
       tags:
       - fridge
@@ -29,8 +29,8 @@ paths:
       - application/json
       parameters:
       - in: path
-        name: state
-        description: the state where the fridge is located
+        name: fridge_state
+        description: the fridge_state where the fridge is located
         required: true
         type: string
       - in: path
@@ -47,6 +47,8 @@ paths:
               $ref: '#/definitions/FridgeItemResponse'
         404:
           description: fridge was not found
+        500:
+          description: Unexpected Error
   /v1/fridges:
     get:
       tags:
@@ -62,7 +64,7 @@ paths:
         required: false
         type: string
       - in: query
-        name: state
+        name: fridge_state
         description: fridge state
         required: false
         type: string
@@ -75,6 +77,8 @@ paths:
               $ref: '#/definitions/FridgeLocationItem'
         404:
           description: fridges were not found
+        500:
+          description: Unexpected Error
     post:
       tags:
         - fridge
@@ -96,6 +100,10 @@ paths:
           description: Fridge was added successfully
         400:
           description: Bad Request
+        409:
+          description: Fridge already exists
+        500:
+          description: Unexpected Error
     put:
       tags:
         - fridge
@@ -115,10 +123,13 @@ paths:
       responses:
         200:
           description: Fridge was updated successfully
-        404:
-          description: Fridge not found, unable to do an edit on a fridge that does not exist
         400:
           description: Bad Request
+        404:
+          description: Fridge not found, unable to do an edit on a fridge that does not exist
+        500:
+          description: Unexpected Error
+
           
   /v1/fridges/checkin:
     post:
@@ -144,6 +155,8 @@ paths:
           description: Fridge not found, unable to do a status update on a fridge that does not exist
         400:
           description: Bad Request
+        500:
+          description: Unexpected Error
 
   /v1/fridges/upload_image:
     post:
@@ -167,6 +180,8 @@ paths:
           description: Image was successfully uploaded
         400:
           description: Bad Request
+        500:
+          description: Unexpected Error
       
   /v1/fridges/tag:
     post:
@@ -189,7 +204,11 @@ paths:
         200:
           description: Tag was successfully added
         400:
+          description: Bad Request
+        409:
           description: Tag already exists
+        500:
+          description: Unexpected Error
     get:
       tags:
         - fridge
@@ -202,6 +221,9 @@ paths:
       responses:
         200:
           description: success
+        500:
+          description: Unexpected Error
+        
 
 
 definitions:
@@ -219,7 +241,7 @@ definitions:
     required:
       - lat
       - long
-      - state
+      - fridge_state
       - name
     properties:
       lat:
@@ -228,7 +250,7 @@ definitions:
       long:
         type: number
         example: -35.25463
-      state:
+      fridge_state:
         type: string
         example: NY
       name:
@@ -238,7 +260,7 @@ definitions:
   FridgeItemResponse:
     type: object
     required:
-      - state
+      - fridge_state
       - name
       - display_name
       - address
@@ -259,7 +281,7 @@ definitions:
       - check_in_status
       - check_in_image
     properties:
-      state:
+      fridge_state:
         type: string
         example: NY
       name:
@@ -329,13 +351,13 @@ definitions:
   FridgeCheckInRequest:
     type: object
     required:
-      - state
+      - fridge_state
       - fridge_name
       - notes
       - status
       - image
     properties:
-      state:
+      fridge_state:
         type: string
         example: ny
       fridge_name:
@@ -354,12 +376,12 @@ definitions:
   ImageUpload:
     type: object
     required:
-      - state
+      - fridge_state
       - fridge_name
       - image_binary
       - type
     properties:
-      state:
+      fridge_state:
         type: string
         example: ny
       fridge_name:
@@ -373,7 +395,7 @@ definitions:
   FridgeItemRequest:
     type: object
     required:
-      - state
+      - fridge_state
       - name
       - display_name
       - address
@@ -389,7 +411,7 @@ definitions:
       - long
       - profile_image
     properties:
-      state:
+      fridge_state:
         type: string
         example: NY
       name:

@@ -131,7 +131,7 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'name'
+          AttributeName: 'username'
           AttributeType: 'S'
         - 
           AttributeName: 'display_name'
@@ -143,7 +143,7 @@ Resources:
           AttributeName: "instagram"
           AttributeType: "S"
         - 
-          AttributeName: "last_editted"
+          AttributeName: "last_edited"
           AttributeType: "N"
         - 
           AttributeName: "info"
@@ -170,9 +170,6 @@ Resources:
           AttributeName: "lat"
           AttributeType: "S"
         - 
-          AttributeName: "lat"
-          AttributeType: "S"
-        - 
           AttributeName: "long"
           AttributeType: "S"
         - 
@@ -190,14 +187,15 @@ Resources:
         - 
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - AttributeName: "state"
+        - 
+          AttributeName: "fridge_state"
           KeyType: "S"
       KeySchema: 
         -
-          AttributeName: "state"
+          AttributeName: "fridge_state"
           KeyType: "HASH"
         -
-          AttributeName: "name"
+          AttributeName: "username"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
   
@@ -216,14 +214,14 @@ Resources:
           AttributeName: "image"
           AttributeType: "S"
         - 
-          AttributeName: "pk"
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "S"
         - 
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema: 
         - #State#FridgeName
-          AttributeName: "pk"
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
@@ -236,11 +234,11 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'name'
+          AttributeName: 'tag_name'
           AttributeType: 'S'
       KeySchema: 
         -
-          AttributeName: "name"
+          AttributeName: "tag_name"
           KeyType: "HASH"                       
       BillingMode: 'PAY_PER_REQUEST'
 
@@ -250,7 +248,7 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'name'
+          AttributeName: '#fridge_state#fridge_username'
           AttributeType: 'S'
         - 
           AttributeName: "address"
@@ -259,7 +257,7 @@ Resources:
           AttributeName: "instagram"
           AttributeType: "S"
         - 
-          AttributeName: "last_editted"
+          AttributeName: "last_edited"
           AttributeType: "N"
         - 
           AttributeName: "info"
@@ -282,9 +280,6 @@ Resources:
         - 
           AttributeName: "food_restrictions"
           AttributeType: "L"
-        - 
-          AttributeName: "lat"
-          AttributeType: "S"
         - 
           AttributeName: "lat"
           AttributeType: "S"
@@ -313,8 +308,8 @@ Resources:
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema: 
-        - #State#FridgeName
-          AttributeName: "pk"
+        -
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"

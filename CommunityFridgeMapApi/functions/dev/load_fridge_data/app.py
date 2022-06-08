@@ -3,32 +3,27 @@ import json
 import logging
 from botocore.exceptions import ClientError
 from db import get_ddb_connection
+from db import Fridge
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 FRIDGE_DATA = [
                 {
-                    'PutRequest': {
-                        'Item': {
-                            'state': {'S': 'NY'},
-                            'name': {'S': 'thefriendlyfridge'},
-                            'display_name': {'S': 'The Friendly Fridge'},
-                            'address': {'S': '1046 Broadway Brooklyn, NY 11221'},
-                            'instagram': {'S': 'https://www.instagram.com/thefriendlyfridge/'}
-                        }
-                    }
+                    'fridge_state': 'NY',
+                    'display_name': 'The Friendly Fridge',
+                    'address': '1046 Broadway Brooklyn, NY 11221',
+                    'instagram': 'https://www.instagram.com/thefriendlyfridge/',
+                    'lat': '40.695190',
+                    'long': '-73.932180'
                 },
                 {
-                    'PutRequest': {
-                        'Item': {
-                            'state': {'S': 'NY'},
-                            'name': {'S': '2fish5loavesfridge'},
-                            'display_name': {'S': '2 Fish 5 Loaves Fridge'},
-                            'address': {'S': '63 Whipple St, Brooklyn, NY 11206'},
-                            'instagram': {'S': 'https://www.instagram.com/2fish5loavesfridge/'}
-                        }
-                    }
-                },
+                    'fridge_state': 'NY',
+                    'display_name': '2 Fish 5 Loaves Fridge',
+                    'address': '63 Whipple St, Brooklyn, NY 11206',
+                    'instagram': 'https://www.instagram.com/2fish5loavesfridge/',
+                    'lat': '40.701730',
+                    'long': '-73.944530'
+                }
             ]
 
 
@@ -36,21 +31,26 @@ FRIDGE_CHECK_IN_DATA = []
 FRIDGE_HISTORY_DATA = []
 
 def lambda_handler(event: dict, context: 'awslambdaric.lambda_context.LambdaContext') -> dict:
-    ddbclient = get_ddb_connection(env=os.environ['Environment'])
+    db_client = get_ddb_connection(env=os.environ['Environment'])
     try:
-        response = ddbclient.batch_write_item(
-        RequestItems={
-            os.environ['FRIDGE_TABLE_NAME']: FRIDGE_DATA}
-        )
-
+        responses = []
+        response = None
+        for fridge in FRIDGE_DATA:
+            response = Fridge(fridge=fridge, db_client=db_client).add_item()
+            responses.append(response.get_dict_form())
+            if response.status_code != 200:
+                break
+        
         return {
-            'statusCode': response['ResponseMetadata']['HTTPStatusCode'],
+            'statusCode': response.status_code,
+            'isBase64Encoded': 'false',
+            'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({
-                'message': 'Filled DynamoDB',
+                'responses': responses,
             }),
         }
 
-    except ddbclient.exceptions.ResourceNotFoundException as e:
+    except db_client.exceptions.ResourceNotFoundException as e:
         logging.error('Table does not exist')
         raise e
     except ClientError as e:
