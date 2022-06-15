@@ -29,7 +29,7 @@ class DB_Response:
 
     def is_successful(self) -> bool:
         return self.success
-    
+
     def get_dict_form(self) -> dict:
         return {'messsage': self.message, 'success': self.success, 'status_code': self.status_code, 'db_item': self.db_items}
 
@@ -63,7 +63,7 @@ class DB_Item:
             if getattr(self, field) is None:
                 return (False, field)
         return (True, None)
-    
+
     def format_dynamodb_item(self):
         #generates a dictionary in the format dynamodb expects
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
@@ -74,7 +74,7 @@ class DB_Item:
                 fridge_item[key] = {self.ITEM_TYPES[key]: val}
         return fridge_item
 
-class Fridge(DB_Item):    
+class Fridge(DB_Item):
     REQUIRED_FIELDS = ['display_name', 'fridge_state', 'address', 'lat', 'long']
     TABLE_NAME = "fridge"
     STATES ={'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA',
@@ -145,7 +145,7 @@ class Fridge(DB_Item):
 
     def add_items(self):
         pass
-    
+
     def set_username(self):
         #Fridge username is the display_name with no spaces and all lower cased
         username = self.display_name.lower().replace(" ", "")
@@ -155,7 +155,7 @@ class Fridge(DB_Item):
         #A valid display_name is alphanumric and can contain spaces
         username = self.display_name.lower().replace(" ", "")
         return username.isalnum()
-    
+
     def set_last_edited(self):
         self.last_edited = str(int(time.time()))
 
@@ -198,11 +198,47 @@ class FrigeCheckIn(DB_Item):
         super().__init__(db_client=db_client)
 
 class FridgeHistory(DB_Item):
-    
+
     def __init__(self, db_client: 'botocore.client.DynamoDB'):
         super().__init__(db_client=db_client)
+
 
 class Tag(DB_Item):
-
-    def __init__(self, db_client: 'botocore.client.DynamoDB'):
+    TABLE_NAME = "tag"
+    def __init__(self, db_client: 'botocore.client.DynamoDB', tag_name:str= None):
         super().__init__(db_client=db_client)
+
+        self.db_client = db_client
+        self.tag_name = tag_name
+
+    def set_tag(self, tag_name):
+        #Tag_name is alphanumeric, can include hyphen and underscore, with no spaces and all lower cased
+        tag_name = tag_name.lower().replace(" ", "")
+        if not self.is_valid_tag_name(tag_name):
+            return False
+        else:
+            self.tag_name = tag_name
+            return True
+
+    def is_valid_tag_name(self, tag_name) --> bool:
+        #a valid tag name is alphanumeric, can include hyphen, underscore
+        for x in tag_name:
+            if not x.isalnum() and x not in ['_', '-']:
+                return False
+        return True
+
+    def add_item(self) -> DB_Response:
+        is_valid_field = self.is_valid_tag_name(self.tag_name)
+        if not is_valid_field:
+            return DB_Response(message = "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name, status_code=400, success=False)
+        item = {"tag_name" : { "S": self.tag_name }}
+
+        try:
+            self.db_client.put_item(
+                TableName=self.TABLE_NAME,
+                Item=item
+            )
+        except ClientError as e:
+            logging.error(e)
+            return DB_Response(message="Unexpected AWS service exception" , status_code=500, success=False)
+        return DB_Response(message="Tag was succesfully added", status_code=200, success=True)
