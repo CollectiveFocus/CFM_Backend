@@ -204,14 +204,13 @@ class FridgeHistory(DB_Item):
 
 
 class Tag(DB_Item):
+    REQUIRED_FIELDS = ['tag_name']
     TABLE_NAME = "tag"
     def __init__(self, db_client: 'botocore.client.DynamoDB', tag_name:str= None):
         super().__init__(db_client=db_client)
-
-        self.db_client = db_client
         self.tag_name = tag_name
 
-    def set_tag(self, tag_name):
+    def set_tag(self, tag_name) -> str:
         #Tag_name is alphanumeric, can include hyphen and underscore, with no spaces and all lower cased
         tag_name = tag_name.lower().replace(" ", "")
         if not self.is_valid_tag_name(tag_name):
@@ -220,7 +219,7 @@ class Tag(DB_Item):
             self.tag_name = tag_name
             return True
 
-    def is_valid_tag_name(self, tag_name) --> bool:
+    def is_valid_tag_name(self, tag_name) -> bool:
         #a valid tag name is alphanumeric, can include hyphen, underscore
         for x in tag_name:
             if not x.isalnum() and x not in ['_', '-']:
@@ -228,9 +227,14 @@ class Tag(DB_Item):
         return True
 
     def add_item(self) -> DB_Response:
+        has_required_fields, field = self.has_required_fields()
+        if not has_required_fields:
+            return DB_Response(message = "Missing Required Field: %s" % field, status_code=400, success=False)
         is_valid_field = self.is_valid_tag_name(self.tag_name)
         if not is_valid_field:
-            return DB_Response(message = "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name, status_code=400, success=False)
+            return DB_Response(
+            message = "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name,
+            status_code=400, success=False)
         item = {"tag_name" : { "S": self.tag_name }}
 
         try:
