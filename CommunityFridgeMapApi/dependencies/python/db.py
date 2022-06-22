@@ -210,7 +210,7 @@ class Tag(DB_Item):
         super().__init__(db_client=db_client)
         self.tag_name = tag_name
 
-    def set_tag(self, tag_name) -> str:
+    def set_tag(self, tag_name:str) -> str:
         #Tag_name is alphanumeric, can include hyphen and underscore, with no spaces and all lower cased
         tag_name = tag_name.lower().replace(" ", "")
         if not self.is_valid_tag_name(tag_name):
@@ -219,8 +219,8 @@ class Tag(DB_Item):
             self.tag_name = tag_name
             return True
 
-    def is_valid_tag_name(self, tag_name) -> bool:
-        #a valid tag name is alphanumeric, can include hyphen, underscore
+    def is_valid_tag_name(self, tag_name:str) -> bool:
+        #A valid tag name is alphanumeric, can include hyphen, underscore
         for x in tag_name:
             if not x.isalnum() and x not in ['_', '-']:
                 return False
