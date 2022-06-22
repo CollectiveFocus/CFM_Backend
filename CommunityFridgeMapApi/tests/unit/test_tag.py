@@ -1,15 +1,5 @@
-from multiprocessing import connection
-
-from dependencies.python.db import get_ddb_connection
 import unittest
 from dependencies.python.db import Tag
-
-#
-# def test_get_ddb_connection():
-#     connection = get_ddb_connection()
-#     assert str(type(connection)) == "<class 'botocore.client.DynamoDB'>"
-#     connection = get_ddb_connection(env="local")
-#     assert str(type(connection)) == "<class 'botocore.client.DynamoDB'>"
 
 class DynamoDbMockPutItem():
     def __init__(self):
@@ -28,7 +18,7 @@ class TagTest(unittest.TestCase):
         tag = Tag(tag_name='test-tag', db_client=None)
         self.assertTrue(tag.is_valid_tag_name('test-tag'))
         tag = Tag(tag_name='TEST-tag_tag123', db_client=None)
-        self.assertTrue(tag.is_valid_tag_name('test-tag_tag123'))
+        self.assertTrue(tag.is_valid_tag_name('Test-tag_tag123'))
 
 
     def test_set_tag(self):
