@@ -18,7 +18,7 @@ class TagTest(unittest.TestCase):
         tag = Tag(tag_name='test-tag', db_client=None)
         self.assertTrue(tag.is_valid_tag_name('test-tag'))
         tag = Tag(tag_name='TEST-tag_tag123', db_client=None)
-        self.assertTrue(tag.is_valid_tag_name('Test-tag_tag123'))
+        self.assertTrue(tag.is_valid_tag_name('TEST-tag_tag123'))
 
 
     def test_set_tag(self):
