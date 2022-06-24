@@ -15,15 +15,16 @@ class TagTest(unittest.TestCase):
     def test_is_valid_tag_name(self):
         tag = Tag(tag_name='test&tag', db_client=None)
         self.assertFalse(tag.is_valid_tag_name('test&tag'))
+        tag = Tag(tag_name='', db_client=None)
+        self.assertFalse(tag.is_valid_tag_name(''))
         tag = Tag(tag_name='test-tag', db_client=None)
         self.assertTrue(tag.is_valid_tag_name('test-tag'))
         tag = Tag(tag_name='TEST-tag_tag123', db_client=None)
         self.assertTrue(tag.is_valid_tag_name('TEST-tag_tag123'))
 
-
-    def test_set_tag(self):
+    def test_format_tag(self):
         tag = Tag(tag_name='Test Tag', db_client=None)
-        tag.set_tag('Test Tag')
+        tag.format_tag('Test Tag')
         self.assertEqual(tag.tag_name, 'testtag')
 
     def test_has_required_fields(self):

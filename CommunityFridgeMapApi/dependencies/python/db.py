@@ -210,21 +210,28 @@ class Tag(DB_Item):
         super().__init__(db_client=db_client)
         self.tag_name = tag_name
 
-    def set_tag(self, tag_name:str) -> str:
+    def format_tag(self, tag_name:str) -> str:
         #Tag_name is alphanumeric, can include hyphen and underscore, with no spaces and all lower cased
-        tag_name = tag_name.lower().replace(" ", "")
-        if not self.is_valid_tag_name(tag_name):
-            return False
+        if tag_name:
+            tag_name = tag_name.lower().replace(" ", "")
+            if not self.is_valid_tag_name(tag_name):
+                return False
+            else:
+                self.tag_name = tag_name
+                return True
         else:
-            self.tag_name = tag_name
-            return True
+            return False
 
     def is_valid_tag_name(self, tag_name:str) -> bool:
         #A valid tag name is alphanumeric, can include hyphen, underscore
-        for x in tag_name:
-            if not x.isalnum() and x not in ['_', '-']:
-                return False
-        return True
+        if tag_name:
+            for x in tag_name:
+                if not x.isalnum() and x not in ['_', '-']:
+                    return False
+            return True
+        else:
+            return False
+
 
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
