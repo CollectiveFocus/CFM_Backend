@@ -137,10 +137,35 @@ class Fridge(DB_Item):
     def is_valid_fridge_state(self) -> bool:
         return self.fridge_state in self.STATES
 
-    def get_item(self):
-        pass
+    def get_item(self) -> dict:
+        db_items = None
 
-    def get_items(self):
+        try:
+            db_response = self.db_client.get_item(
+                TableName=self.TABLE_NAME,
+                Key={
+                    ''
+                }
+            )
+
+            success = True
+            status_code = 200
+            message = "Fridge was found"
+            db_items = db_response['Item']
+
+        except self.db_client.exceptions.ResourceNotFoundException as e:
+            success = False
+            status_code = 404
+            message = "Fridge was not found"
+
+        except ClientError as e:
+            success = False
+            status_code = 500
+            message = "Unexpected Error"
+
+        return DB_Response(message, success, status_code, db_items).get_dict_form()
+
+    def get_all_items(self):
         pass
 
     def add_items(self):

@@ -107,6 +107,34 @@ Resources:
             Action:
             - dynamodb:BatchWriteItem
             Resource: !GetAtt FridgeTable.Arn
+
+    GetIndivFridgeFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: functions/get_indiv_fridge
+        Handler: app.lambda_handler
+        Runtime: python3.9
+        FunctionName: GetIndivFridgeFunction
+        Environment:
+          Variables:
+            Environment: !Ref Environment
+        Layers:
+          - !Ref CommonLayer
+        Policies:
+          - Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action:
+              - dynamodb:BatchWriteItem
+              Resource: !GetAtt FridgeTable.Arn
+
+              
     ##########################
     ##    Layers    ##
     ##########################
