@@ -1,3 +1,8 @@
+# AWS
+.aws-sam
+
+# VSCode
+.vscode
 
 # Created by https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
 
