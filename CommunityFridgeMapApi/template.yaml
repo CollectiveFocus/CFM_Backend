@@ -45,7 +45,7 @@ Resources:
             Method: get
 
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: functions/dev/get_all/
       Handler: app.lambda_handler
@@ -81,9 +81,9 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: v1
-          
+
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
-    Type: AWS::Serverless::Function 
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./functions/dev/load_fridge_data
       Handler: app.lambda_handler
@@ -130,102 +130,102 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - 
+        -
           AttributeName: 'username'
           AttributeType: 'S'
-        - 
+        -
           AttributeName: 'display_name'
           AttributeType: 'S'
-        - 
+        -
           AttributeName: "address"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "instagram"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "last_edited"
           AttributeType: "N"
-        - 
+        -
           AttributeName: "info"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "url"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "neighborhood"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "organizer_email"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "tags"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "food_accepts"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "food_restrictions"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "lat"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "long"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "profile_image"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_time"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_notes"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_status"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "fridge_state"
           KeyType: "S"
-      KeySchema: 
+      KeySchema:
         -
           AttributeName: "fridge_state"
           KeyType: "HASH"
         -
           AttributeName: "username"
-          KeyType: "RANGE"                           
+          KeyType: "RANGE"
       BillingMode: 'PAY_PER_REQUEST'
-  
+
   FridgeCheckInTable:
     TableName: !Ref FRIDGE_CHECKIN_TABLE_NAME
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - 
+        -
           AttributeName: 'notes'
           AttributeType: 'S'
-        - 
+        -
           AttributeName: "status"
           AttributeType: "N"
-        - 
+        -
           AttributeName: "image"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "#fridge_state#fridge_username"
           KeyType: "S"
-        - 
+        -
           AttributeName: "timestamp"
           KeyType: "N"
-      KeySchema: 
+      KeySchema:
         - #State#FridgeName
           AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
-          KeyType: "RANGE"                           
+          KeyType: "RANGE"
       BillingMode: 'PAY_PER_REQUEST'
 
   TagTable:
@@ -233,13 +233,13 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - 
+        -
           AttributeName: 'tag_name'
           AttributeType: 'S'
-      KeySchema: 
+      KeySchema:
         -
           AttributeName: "tag_name"
-          KeyType: "HASH"                       
+          KeyType: "HASH"
       BillingMode: 'PAY_PER_REQUEST'
 
   FridgeHistoryTable:
@@ -247,73 +247,73 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - 
+        -
           AttributeName: '#fridge_state#fridge_username'
           AttributeType: 'S'
-        - 
+        -
           AttributeName: "address"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "instagram"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "last_edited"
           AttributeType: "N"
-        - 
+        -
           AttributeName: "info"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "url"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "neighborhood"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "organizer_email"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "tags"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "food_accepts"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "food_restrictions"
           AttributeType: "L"
-        - 
+        -
           AttributeName: "lat"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "long"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "profile_image"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_time"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_notes"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_status"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - 
+        -
           AttributeName: "pk"
           KeyType: "S"
-        - 
+        -
           AttributeName: "timestamp"
           KeyType: "N"
-      KeySchema: 
+      KeySchema:
         -
           AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
-          KeyType: "RANGE"                           
+          KeyType: "RANGE"
       BillingMode: 'PAY_PER_REQUEST'
 
 
