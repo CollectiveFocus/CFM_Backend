@@ -1,11 +1,14 @@
 import json
+
 try:
     from db import layer_test
 except:
     from dependencies.python.db import layer_test
-    #If it gets here it's because we are performing a unit test. It's a common error when using lambda layers
-    #Here is an example of someone having a similar issue:
-    #https://stackoverflow.com/questions/69592094/pytest-failing-in-aws-sam-project-due-to-modulenotfounderror
+
+    # If it gets here it's because we are performing a unit test. It's a common error when using lambda layers
+    # Here is an example of someone having a similar issue:
+    # https://stackoverflow.com/questions/69592094/pytest-failing-in-aws-sam-project-due-to-modulenotfounderror
+
 
 def lambda_handler(event, context):
     """Sample pure Lambda function
@@ -29,9 +32,11 @@ def lambda_handler(event, context):
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
 
-    return {                                                                                                                                                                                                                                                                                                                                                                                                                                      
+    return {
         "statusCode": 200,
-        "body": json.dumps({
-            "message": layer_test(),
-        }),
+        "body": json.dumps(
+            {
+                "message": layer_test(),
+            }
+        ),
     }
