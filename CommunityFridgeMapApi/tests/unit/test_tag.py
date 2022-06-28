@@ -8,15 +8,15 @@ class DynamoDbMockPutItem():
     def put_item(self, TableName=None, Item=None, ConditionExpression=None):
         pass
 
-
-
 class TagTest(unittest.TestCase):
 
     def test_is_valid_tag_name(self):
-        tag = Tag(tag_name='test&tag', db_client=None)
-        self.assertFalse(tag.is_valid_tag_name('test&tag'))
         tag = Tag(tag_name='', db_client=None)
         self.assertFalse(tag.is_valid_tag_name(''))
+        tag = Tag(tag_name='ab', db_client=None)
+        self.assertFalse(tag.is_valid_tag_name('ab'))
+        tag = Tag(tag_name='test&tag', db_client=None)
+        self.assertFalse(tag.is_valid_tag_name('test&tag'))
         tag = Tag(tag_name='test-tag', db_client=None)
         self.assertTrue(tag.is_valid_tag_name('test-tag'))
         tag = Tag(tag_name='TEST-tag_tag123', db_client=None)
@@ -34,7 +34,6 @@ class TagTest(unittest.TestCase):
         self.assertFalse(has_required_field)
         tag = Tag(tag_name='test tag', db_client=None)
         self.assertTrue(tag.has_required_fields())
-
 
     def test_add_item(self):
         db_client = DynamoDbMockPutItem()
