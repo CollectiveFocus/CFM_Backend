@@ -12,15 +12,24 @@ class TagTest(unittest.TestCase):
 
     def test_is_valid_tag_name(self):
         tag = Tag(tag_name='', db_client=None)
-        self.assertFalse(tag.is_valid_tag_name(''))
+        self.assertFalse(tag.is_valid_tag_name('')[0])
+        self.assertEqual(tag.is_valid_tag_name('')[1], 'tag_name is an empty string')
+        tag = Tag(tag_name=None, db_client=None)
+        self.assertFalse(tag.is_valid_tag_name(None)[0])
+        self.assertEqual(tag.is_valid_tag_name(None)[1], 'tag_name is None')
         tag = Tag(tag_name='ab', db_client=None)
-        self.assertFalse(tag.is_valid_tag_name('ab'))
+        self.assertFalse(tag.is_valid_tag_name('ab')[0])
+        self.assertEqual(tag.is_valid_tag_name('ab')[1], 'Length of the tag_name is 2. It should be >= 3 but <= 32.')
         tag = Tag(tag_name='test&tag', db_client=None)
-        self.assertFalse(tag.is_valid_tag_name('test&tag'))
+        self.assertFalse(tag.is_valid_tag_name('test&tag')[0])
+        self.assertEqual(tag.is_valid_tag_name('test&tag')[1], 'tag_name contains invalid characters')
         tag = Tag(tag_name='test-tag', db_client=None)
-        self.assertTrue(tag.is_valid_tag_name('test-tag'))
-        tag = Tag(tag_name='TEST-tag_tag123', db_client=None)
-        self.assertTrue(tag.is_valid_tag_name('TEST-tag_tag123'))
+        self.assertTrue(tag.is_valid_tag_name('test-tag')[0])
+        self.assertEqual(tag.is_valid_tag_name('test-tag')[1], '')
+        tag = Tag(tag_name='TEST-tag_tag123xyui1234567890__--', db_client=None)
+        self.assertFalse(tag.is_valid_tag_name('TEST-tag_tag123xyui1234567890__--')[0])
+        self.assertEqual(tag.is_valid_tag_name('TEST-tag_tag123xyui1234567890__--')[1],
+         'Length of the tag_name is 33. It should be >= 3 but <= 32.')
 
     def test_format_tag(self):
         tag = Tag(tag_name='Test Tag', db_client=None)

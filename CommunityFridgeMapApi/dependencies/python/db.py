@@ -4,6 +4,8 @@ import boto3
 import time
 from botocore.exceptions import ClientError
 import logging
+from dependencies.python.constants import MIN_TAG_LENGTH, MAX_TAG_LENGTH
+from typing import Tuple
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -292,7 +294,10 @@ class FridgeHistory(DB_Item):
 
 
 class Tag(DB_Item):
-    def __init__(self, db_client: "botocore.client.DynamoDB"):
+    REQUIRED_FIELDS = ['tag_name']
+    TABLE_NAME = "tag"
+
+    def __init__(self, db_client: "botocore.client.DynamoDB", tag_name:str= None):
         super().__init__(db_client=db_client)
         self.tag_name = self.format_tag(tag_name)
 
@@ -302,15 +307,27 @@ class Tag(DB_Item):
             tag_name = tag_name.lower().replace(" ", "")
         return tag_name
 
-    def is_valid_tag_name(self, tag_name:str) -> bool:
+    def is_valid_tag_name(self, tag_name:str) -> Tuple[bool, str]:
         #A valid tag name is alphanumeric, can include hyphen, underscore, with no spaces and all lower cased
-        if tag_name and len(tag_name) >= 3:
-            for x in tag_name:
-                if not x.isalnum() and x not in ['_', '-']:
-                    return False
-            return True
+        if tag_name is None:
+            message = 'tag_name is None'
+            return False, message
+        elif tag_name:
+            length_tag_name = len(tag_name)
+            if length_tag_name >= MIN_TAG_LENGTH and length_tag_name <= MAX_TAG_LENGTH:
+                for x in tag_name:
+                    if not x.isalnum() and x not in ['_', '-']:
+                        message = 'tag_name contains invalid characters'
+                        return False, message
+                message = ''
+                return True, message
+            else:
+                message = f'Length of the tag_name is {length_tag_name}. It should be >= 3 but <= 32.'
+                return False, message
         else:
-            return False
+            message = 'tag_name is an empty string'
+            return False, message
+
 
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
