@@ -21,12 +21,12 @@ class TagTest(unittest.TestCase):
             Tag.is_valid_tag_name('TEST-tag_tag123xyui1234567890__--')[0]
         ]
         expected_equal = [
-            (Tag.is_valid_tag_name('')[1], 'tag_name is an empty string'),
-            (Tag.is_valid_tag_name(None)[1], 'tag_name is None'),
-            (Tag.is_valid_tag_name('ab')[1], 'Length of the tag_name is 2. It should be >= 3 but <= 32.'),
+            (Tag.is_valid_tag_name('')[1], 'Length of tag_name is 0. It should be >= 3 but <= 32.'),
+            (Tag.is_valid_tag_name(None)[1], 'Missing required fields: tag_name'),
+            (Tag.is_valid_tag_name('ab')[1], 'Length of tag_name is 2. It should be >= 3 but <= 32.'),
             (Tag.is_valid_tag_name('test&tag')[1], 'tag_name contains invalid characters'),
             (Tag.is_valid_tag_name('TEST-tag_tag123xyui1234567890__--')[1],
-                'Length of the tag_name is 33. It should be >= 3 but <= 32.')
+                'Length of tag_name is 33. It should be >= 3 but <= 32.')
         ]
         for i in range(5):
             self.assertFalse(expected_false[i])

@@ -4,7 +4,6 @@ import boto3
 import time
 from botocore.exceptions import ClientError
 import logging
-from dependencies.python.constants import MIN_TAG_LENGTH, MAX_TAG_LENGTH
 from typing import Tuple
 
 logger = logging.getLogger()
@@ -296,39 +295,38 @@ class FridgeHistory(DB_Item):
 class Tag(DB_Item):
     REQUIRED_FIELDS = ['tag_name']
     TABLE_NAME = "tag"
+    #Tag Class constants
+    MIN_TAG_LENGTH = 3
+    MAX_TAG_LENGTH = 32
 
     def __init__(self, db_client: "botocore.client.DynamoDB", tag_name:str= None):
         super().__init__(db_client=db_client)
         self.tag_name = self.format_tag(tag_name)
 
     def format_tag(self, tag_name:str) -> str:
-        #Tag_name is alphanumeric, can include hyphen and underscore, with no spaces and all lower cased
+        #tag_name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
         if tag_name:
             tag_name = tag_name.lower().replace(" ", "")
         return tag_name
 
     @staticmethod
     def is_valid_tag_name(tag_name:str) -> Tuple[bool, str]:
-        #A valid tag name is alphanumeric, can include hyphen, underscore, with no spaces and all lower cased
+        #valid tag name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
         if tag_name is None:
-            message = 'tag_name is None'
+            message = "Missing required fields: tag_name"
             return False, message
-        elif tag_name:
-            length_tag_name = len(tag_name)
-            if length_tag_name >= MIN_TAG_LENGTH and length_tag_name <= MAX_TAG_LENGTH:
-                for x in tag_name:
-                    if not x.isalnum() and x not in ['_', '-']:
-                        message = 'tag_name contains invalid characters'
-                        return False, message
-                message = ''
-                return True, message
-            else:
-                message = f'Length of the tag_name is {length_tag_name}. It should be >= 3 but <= 32.'
-                return False, message
+        length_tag_name = len(tag_name)
+        is_tag_length_valid = length_tag_name >= Tag.MIN_TAG_LENGTH and length_tag_name <= Tag.MAX_TAG_LENGTH
+        if tag_name and is_tag_length_valid:
+            for x in tag_name:
+                if not x.isalnum() and x not in ['_', '-']:
+                    message = 'tag_name contains invalid characters'
+                    return False, message
+            message = ''
+            return True, message
         else:
-            message = 'tag_name is an empty string'
+            message = f'Length of tag_name is {length_tag_name}. It should be >= {Tag.MIN_TAG_LENGTH} but <= {Tag.MAX_TAG_LENGTH}.'
             return False, message
-
 
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
