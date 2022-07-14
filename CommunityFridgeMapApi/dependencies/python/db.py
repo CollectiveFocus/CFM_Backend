@@ -307,7 +307,8 @@ class Tag(DB_Item):
             tag_name = tag_name.lower().replace(" ", "")
         return tag_name
 
-    def is_valid_tag_name(self, tag_name:str) -> Tuple[bool, str]:
+    @staticmethod
+    def is_valid_tag_name(tag_name:str) -> Tuple[bool, str]:
         #A valid tag name is alphanumeric, can include hyphen, underscore, with no spaces and all lower cased
         if tag_name is None:
             message = 'tag_name is None'
@@ -332,12 +333,19 @@ class Tag(DB_Item):
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
         if not has_required_fields:
-            return DB_Response(message = "Missing Required Field: %s" % field, status_code=400, success=False)
+            return DB_Response(
+            message = "Missing Required Field: %s" % field,
+            status_code=400,
+            success=False
+            )
         is_valid_field = self.is_valid_tag_name(self.tag_name)
         if not is_valid_field:
             return DB_Response(
-            message = "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name,
-            status_code=400, success=False)
+            message =
+            "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name,
+            status_code=400,
+            success=False
+            )
         item = {"tag_name" : { "S": self.tag_name }}
 
         try:
@@ -351,5 +359,11 @@ class Tag(DB_Item):
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:
             logging.error(e)
-            return DB_Response(message="Unexpected AWS service exception" , status_code=500, success=False)
-        return DB_Response(message="Tag was succesfully added", status_code=200, success=True)
+            return DB_Response(
+            message="Unexpected AWS service exception" ,
+            status_code=500,
+            success=False
+            )
+        return DB_Response(
+        message="Tag was succesfully added", status_code=200, success=True
+        )
