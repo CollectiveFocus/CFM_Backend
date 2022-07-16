@@ -4,6 +4,7 @@ import boto3
 import time
 from botocore.exceptions import ClientError
 import logging
+from typing import Tuple
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -281,7 +282,6 @@ class Fridge(DB_Item):
     def get_fridge_locations(self):
         pass
 
-
 class FrigeCheckIn(DB_Item):
     def __init__(self, db_client: "botocore.client.DynamoDB"):
         super().__init__(db_client=db_client)
@@ -293,5 +293,75 @@ class FridgeHistory(DB_Item):
 
 
 class Tag(DB_Item):
-    def __init__(self, db_client: "botocore.client.DynamoDB"):
+    REQUIRED_FIELDS = ['tag_name']
+    TABLE_NAME = "tag"
+    #Tag Class constants
+    MIN_TAG_LENGTH = 3
+    MAX_TAG_LENGTH = 32
+
+    def __init__(self, db_client: "botocore.client.DynamoDB", tag_name:str= None):
         super().__init__(db_client=db_client)
+        self.tag_name = self.format_tag(tag_name)
+
+    def format_tag(self, tag_name:str) -> str:
+        #tag_name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
+        if tag_name:
+            tag_name = tag_name.lower().replace(" ", "")
+        return tag_name
+
+    @staticmethod
+    def is_valid_tag_name(tag_name:str) -> Tuple[bool, str]:
+        #valid tag name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
+        if tag_name is None:
+            message = "Missing required fields: tag_name"
+            return False, message
+        length_tag_name = len(tag_name)
+        is_tag_length_valid = length_tag_name >= Tag.MIN_TAG_LENGTH and length_tag_name <= Tag.MAX_TAG_LENGTH
+        if tag_name and is_tag_length_valid:
+            for x in tag_name:
+                if not x.isalnum() and x not in ['_', '-']:
+                    message = 'tag_name contains invalid characters'
+                    return False, message
+            message = ''
+            return True, message
+        else:
+            message = f'Length of tag_name is {length_tag_name}. It should be >= {Tag.MIN_TAG_LENGTH} but <= {Tag.MAX_TAG_LENGTH}.'
+            return False, message
+
+    def add_item(self) -> DB_Response:
+        has_required_fields, field = self.has_required_fields()
+        if not has_required_fields:
+            return DB_Response(
+            message = "Missing Required Field: %s" % field,
+            status_code=400,
+            success=False
+            )
+        is_valid_field = self.is_valid_tag_name(self.tag_name)
+        if not is_valid_field:
+            return DB_Response(
+            message =
+            "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name,
+            status_code=400,
+            success=False
+            )
+        item = {"tag_name" : { "S": self.tag_name }}
+
+        try:
+            self.db_client.put_item(
+                TableName=self.TABLE_NAME,
+                Item=item
+            )
+        except self.db_client.exceptions.ResourceNotFoundException as e:
+            message = "Cannot do operations on a non-existent table:  %s" % Tag.TABLE_NAME
+            logging.error(message)
+            return DB_Response(message=message, status_code=500, success=False)
+        except ClientError as e:
+            logging.error(e)
+            return DB_Response(
+            message="Unexpected AWS service exception" ,
+            status_code=500,
+            success=False
+            )
+        return DB_Response(
+        message="Tag was succesfully added", status_code=200, success=True
+        )
