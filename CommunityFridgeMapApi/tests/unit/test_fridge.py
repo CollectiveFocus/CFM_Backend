@@ -137,3 +137,16 @@ class FridgeTest(unittest.TestCase):
             "report_image": {"S": "test"},
         }
         self.assertEqual(fridge_item, expected_response)
+
+    def test_is_valid_username(self):
+        is_valid, message = Fridge.is_valid_username(None)
+        self.assertEqual(message, "Missing Required Field: username")
+        self.assertFalse(is_valid)
+
+        is_valid, message = Fridge.is_valid_username("hi-there")
+        self.assertEqual(message, "Username Must Be Alphanumeric")
+        self.assertFalse(is_valid)
+
+        is_valid, message = Fridge.is_valid_username("hi")
+        self.assertEqual(message, "Username Must Have A Character Length >= 3 and <= 32")
+        self.assertFalse(is_valid)

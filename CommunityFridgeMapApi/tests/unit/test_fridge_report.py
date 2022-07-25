@@ -29,22 +29,6 @@ class FrdgeReportTest(unittest.TestCase):
         fridge_report = FridgeReport(fridge_report={'fridge_username': 'test', 'status': 'working', 'notes': 'all good out here', 'fridge_percentage': '33'}, db_client=None)
         fridge_report.set_timestamp()
         self.assertIsNotNone(fridge_report.timestamp)
-
-    def test_is_valid_username(self):
-        fridge_report = FridgeReport(fridge_report={}, db_client=None)
-        is_valid, message = fridge_report.is_valid_fridge_username()
-        self.assertEqual(message, "Missing Required Field: username")
-        self.assertFalse(is_valid)
-
-        fridge_report.fridge_username="hi-there"
-        is_valid, message = fridge_report.is_valid_fridge_username()
-        self.assertEqual(message, "Username Must Be Alphanumeric")
-        self.assertFalse(is_valid)
-
-        fridge_report.fridge_username="hi"
-        is_valid, message = fridge_report.is_valid_fridge_username()
-        self.assertEqual(message, "Username Must Have A Character Length >= 3 and <= 32")
-        self.assertFalse(is_valid)
     
     def test_is_valid_status(self):
         fridge_report = FridgeReport(fridge_report={'status': 'i am a hacker, drop table'}, db_client=None)

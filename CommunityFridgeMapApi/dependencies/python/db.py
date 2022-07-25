@@ -161,6 +161,18 @@ class Fridge(DB_Item):
         # A valid display_name is alphanumric and can contain spaces
         username = self.display_name.lower().replace(" ", "")
         return username.isalnum()
+    
+    @staticmethod
+    def is_valid_username(fridge_username):
+        if fridge_username is None:
+            return False, "Missing Required Field: username" 
+        if not fridge_username.isalnum():
+            return False, "Username Must Be Alphanumeric"
+        username_length = len(fridge_username)
+        is_valid_username_length = username_length >= Fridge.MIN_USERNAME_LENGTH and username_length <= Fridge.MAX_USERNAME_LENGTH
+        if not is_valid_username_length:
+            return False, f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}"
+        return True, "success"
 
     def set_last_edited(self):
         self.last_edited = str(int(time.time()))
@@ -245,17 +257,6 @@ class FridgeReport(DB_Item):
     def set_timestamp(self):
         self.timestamp = str(int(time.time()))
     
-    def is_valid_fridge_username(self):
-        if self.fridge_username is None:
-            return False, "Missing Required Field: username" 
-        if not self.fridge_username.isalnum():
-            return False, "Username Must Be Alphanumeric"
-        username_length = len(self.fridge_username)
-        is_valid_username_length = username_length >= Fridge.MIN_USERNAME_LENGTH and username_length <= Fridge.MAX_USERNAME_LENGTH
-        if not is_valid_username_length:
-            return False, f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}"
-        return True, "success"
-    
     def is_valid_status(self):
         return self.status in self.VALID_STATUS
     
@@ -266,7 +267,7 @@ class FridgeReport(DB_Item):
         has_required_fields, missing_field = self.has_required_fields()
         if not has_required_fields:
             return DB_Response(message = "Missing Required Field: %s" % missing_field, status_code=400, success=False)
-        is_valid_username, is_valid_username_message = self.is_valid_fridge_username()
+        is_valid_username, is_valid_username_message = Fridge.is_valid_username(self.fridge_username)
         if not is_valid_username:
             return DB_Response(message=is_valid_username_message, status_code=400, success=False)
         if not self.is_valid_status():
