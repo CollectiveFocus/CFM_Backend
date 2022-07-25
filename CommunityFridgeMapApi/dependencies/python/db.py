@@ -163,7 +163,7 @@ class Fridge(DB_Item):
         return username.isalnum()
     
     @staticmethod
-    def is_valid_username(fridge_username):
+    def is_valid_username(fridge_username) -> tuple[bool, str]:
         if fridge_username is None:
             return False, "Missing Required Field: username" 
         if not fridge_username.isalnum():
@@ -257,13 +257,13 @@ class FridgeReport(DB_Item):
     def set_timestamp(self):
         self.timestamp = str(int(time.time()))
     
-    def is_valid_status(self):
+    def is_valid_status(self) -> bool:
         return self.status in self.VALID_STATUS
     
-    def is_valid_fridge_percentage(self):
+    def is_valid_fridge_percentage(self) -> bool:
         return self.fridge_percentage in self.VALID_FRIDGE_PERCENTAGE
 
-    def add_item(self):
+    def add_item(self) -> DB_Response:
         has_required_fields, missing_field = self.has_required_fields()
         if not has_required_fields:
             return DB_Response(message = "Missing Required Field: %s" % missing_field, status_code=400, success=False)
