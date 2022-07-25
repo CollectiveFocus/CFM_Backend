@@ -4,7 +4,6 @@ from functions.dev.get_all.app import GetAllFridgesHandler
 TEST_DB_RESPONSE_SUCCESS = {
     "Items": {
         "name": {"S": "2 Fish 5 Loaves Fridge"},
-        "fridge_state": {"S": "NY"},
         "address": {"S": "63 Whipple St, Brooklyn, NY 11206"},
         "instagram": {"S": "https://www.instagram.com/2fish5loavesfridge/"},
     },
@@ -33,7 +32,7 @@ def test_format_api_response_success():
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        "body": '{"message": {"name": {"S": "2 Fish 5 Loaves Fridge"}, "fridge_state": {"S": "NY"}, "address": {"S": "63 Whipple St, Brooklyn, NY 11206"}, "instagram": {"S": "https://www.instagram.com/2fish5loavesfridge/"}}}',
+        "body": '{"message": {"name": {"S": "2 Fish 5 Loaves Fridge"}, "address": {"S": "63 Whipple St, Brooklyn, NY 11206"}, "instagram": {"S": "https://www.instagram.com/2fish5loavesfridge/"}}}',
     }
 
 
@@ -61,5 +60,5 @@ def test_handler_success():
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
         },
-        "body": '{"message": {"name": {"S": "2 Fish 5 Loaves Fridge"}, "fridge_state": {"S": "NY"}, "address": {"S": "63 Whipple St, Brooklyn, NY 11206"}, "instagram": {"S": "https://www.instagram.com/2fish5loavesfridge/"}}}',
+        "body": '{"message": {"name": {"S": "2 Fish 5 Loaves Fridge"}, "address": {"S": "63 Whipple St, Brooklyn, NY 11206"}, "instagram": {"S": "https://www.instagram.com/2fish5loavesfridge/"}}}',
     }

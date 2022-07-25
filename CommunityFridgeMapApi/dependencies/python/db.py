@@ -90,67 +90,15 @@ class DB_Item:
 
 
 class Fridge(DB_Item):
-    REQUIRED_FIELDS = ["display_name", "fridge_state", "address", "lat", "long"]
+    MIN_USERNAME_LENGTH = 3
+    MAX_USERNAME_LENGTH = 32
+    REQUIRED_FIELDS = ["display_name", "address", "lat", "long"]
     TABLE_NAME = "fridge"
-    STATES = {
-        "AK",
-        "AL",
-        "AR",
-        "AZ",
-        "CA",
-        "CO",
-        "CT",
-        "DC",
-        "DE",
-        "FL",
-        "GA",
-        "HI",
-        "IA",
-        "ID",
-        "IL",
-        "IN",
-        "KS",
-        "KY",
-        "LA",
-        "MA",
-        "MD",
-        "ME",
-        "MI",
-        "MN",
-        "MO",
-        "MS",
-        "MT",
-        "NC",
-        "ND",
-        "NE",
-        "NH",
-        "NJ",
-        "NM",
-        "NV",
-        "NY",
-        "OH",
-        "OK",
-        "OR",
-        "PA",
-        "RI",
-        "SC",
-        "SD",
-        "TN",
-        "TX",
-        "UT",
-        "VA",
-        "VT",
-        "WA",
-        "WI",
-        "WV",
-        "WY",
-    }
     FOOD_ACCEPTS = []  # TODO: Fill this in
     FOOD_RESTRICTIONS = []  # TODO: fill this in
     ITEM_TYPES = {
         "display_name": "S",
         "username": "S",
-        "fridge_state": "S",
         "address": "S",
         "instagram": "S",
         "info": "S",
@@ -164,21 +112,19 @@ class Fridge(DB_Item):
         "long": "S",
         "last_edited": "N",
         "profile_image": "S",
-        "check_in_time": "S",
-        "check_in_notes": "S",
-        "check_in_status": "S",
-        "check_in_image": "S",
+        "report_timestamp": "S",
+        "report_notes": "S",
+        "report_status": "S",
+        "report_image": "S",
     }
 
     def __init__(self, db_client: "botocore.client.DynamoDB", fridge: dict = None):
         super().__init__(db_client=db_client)
-        self.db_client = db_client
         if fridge is not None:
             self.display_name: str = fridge.get(
                 "display_name", None
             )  # display_name must be alphanumeric (spaces are fine)
             self.username: str = fridge.get("username", None)
-            self.fridge_state: str = fridge.get("fridge_state", None)
             self.address: str = fridge.get("address", None)
             self.instagram: str = fridge.get("instagram", None)
             self.info: str = fridge.get("info", None)
@@ -192,15 +138,10 @@ class Fridge(DB_Item):
             self.long: str = fridge.get("long", None)
             self.profile_image: str = fridge.get("profile_image", None)
             self.last_edited: str = fridge.get("last_edited", None)
-            self.check_in_time: int = fridge.get("check_in_time", None)
-            self.check_in_notes: str = fridge.get("check_in_notes", None)
-            self.check_in_status: str = fridge.get("check_in_status", None)
-            self.check_in_image: str = fridge.get("check_in_image", None)
-            if self.fridge_state is not None:
-                self.fridge_state = self.fridge_state.upper()
-
-    def is_valid_fridge_state(self) -> bool:
-        return self.fridge_state in self.STATES
+            self.report_timestamp: int = fridge.get("report_timestamp", None)
+            self.report_notes: str = fridge.get("report_notes", None)
+            self.report_status: str = fridge.get("report_status", None)
+            self.report_image: str = fridge.get("report_image", None)
 
     def get_item(self):
         pass
@@ -232,12 +173,6 @@ class Fridge(DB_Item):
                 status_code=400,
                 success=False,
             )
-        if not self.is_valid_fridge_state():
-            return DB_Response(
-                message="Invalid State Given: %s" % self.fridge_state,
-                status_code=400,
-                success=False,
-            )
         if not self.is_valid_display_name():
             return DB_Response(
                 message="Display Name Can Only Contain Letters, Numbers, and Spaces",
@@ -248,7 +183,7 @@ class Fridge(DB_Item):
         self.set_last_edited()
         item = self.format_dynamodb_item()
         conditional_expression = (
-            "attribute_not_exists(fridge_state) AND attribute_not_exists(username)"
+            "attribute_not_exists(username)"
         )
         try:
             self.db_client.put_item(
@@ -282,9 +217,78 @@ class Fridge(DB_Item):
     def get_fridge_locations(self):
         pass
 
-class FrigeCheckIn(DB_Item):
-    def __init__(self, db_client: "botocore.client.DynamoDB"):
+
+class FridgeReport(DB_Item):
+
+    REQUIRED_FIELDS = ['fridge_username', 'status', 'notes', 'fridge_percentage']
+    ITEM_TYPES = {
+        'notes': 'S',
+        'fridge_username': 'S',
+        'image_url': 'S',
+        'timestamp': 'N',
+        'status': 'S',
+        'fridge_percentage': 'S'
+    }
+    TABLE_NAME = "fridge_report"
+    VALID_STATUS = set(["working", "needs cleaning", "needs servicing", "not at location"])
+    VALID_FRIDGE_PERCENTAGE = set(["0", "33", "66", "100"])
+    
+    def __init__(self, db_client: 'botocore.client.DynamoDB', fridge_report: dict=None):
         super().__init__(db_client=db_client)
+        if fridge_report is not None:
+            self.notes:str = fridge_report.get('notes', None)
+            self.status:str = fridge_report.get('status', None)
+            self.image_url:str = fridge_report.get('image_url', None)
+            self.fridge_username:str = fridge_report.get('fridge_username', None)
+            self.fridge_percentage:int = fridge_report.get('fridge_percentage', None) 
+    
+    def set_timestamp(self):
+        self.timestamp = str(int(time.time()))
+    
+    def is_valid_fridge_username(self):
+        if self.fridge_username is None:
+            return False, "Missing Required Field: username" 
+        if not self.fridge_username.isalnum():
+            return False, "Username Must Be Alphanumeric"
+        username_length = len(self.fridge_username)
+        is_valid_username_length = username_length >= Fridge.MIN_USERNAME_LENGTH and username_length <= Fridge.MAX_USERNAME_LENGTH
+        if not is_valid_username_length:
+            return False, f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}"
+        return True, "success"
+    
+    def is_valid_status(self):
+        return self.status in self.VALID_STATUS
+    
+    def is_valid_fridge_percentage(self):
+        return self.fridge_percentage in self.VALID_FRIDGE_PERCENTAGE
+
+    def add_item(self):
+        has_required_fields, missing_field = self.has_required_fields()
+        if not has_required_fields:
+            return DB_Response(message = "Missing Required Field: %s" % missing_field, status_code=400, success=False)
+        is_valid_username, is_valid_username_message = self.is_valid_fridge_username()
+        if not is_valid_username:
+            return DB_Response(message=is_valid_username_message, status_code=400, success=False)
+        if not self.is_valid_status():
+            return DB_Response(message="Invalid Status, must to be one of: %s" % str(self.VALID_STATUS), status_code=400, success=False)
+        if not self.is_valid_fridge_percentage():
+            return DB_Response(message="Invalid Fridge Percetage, must to be one of: %s" % str(self.VALID_FRIDGE_PERCENTAGE), status_code=400, success=False)
+        self.set_timestamp()
+        item = self.format_dynamodb_item()
+        try:
+            self.db_client.put_item(
+                TableName=self.TABLE_NAME,
+                Item=item
+            )
+        except self.db_client.exceptions.ResourceNotFoundException as e:
+            message = "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
+            logging.error(message)
+            return DB_Response(message=message, status_code=500, success=False)
+        except ClientError as e:
+            logging.error(e)
+            return DB_Response(message="Unexpected AWS service exception" , status_code=500, success=False)
+        return DB_Response(message="Fridge Report was succesfully added", status_code=200, success=True)
+
 
 
 class FridgeHistory(DB_Item):
