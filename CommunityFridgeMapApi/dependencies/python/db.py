@@ -242,8 +242,8 @@ class FridgeReport(DB_Item):
         'fridge_percentage': 'S'
     }
     TABLE_NAME = "fridge_report"
-    VALID_STATUS = set(["working", "needs cleaning", "needs servicing", "not at location"])
-    VALID_FRIDGE_PERCENTAGE = set(["0", "33", "67", "100"])
+    VALID_STATUS = {"working", "needs cleaning", "needs servicing", "not at location"}
+    VALID_FRIDGE_PERCENTAGE = {"0", "33", "67", "100"}
     MAX_NOTES_LENGTH = 256
     
     def __init__(self, db_client: 'botocore.client.DynamoDB', fridge_report: dict=None):
