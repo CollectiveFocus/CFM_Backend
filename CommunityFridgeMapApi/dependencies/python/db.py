@@ -232,7 +232,7 @@ class Fridge(DB_Item):
 
 class FridgeReport(DB_Item):
 
-    REQUIRED_FIELDS = ['fridge_username', 'status', 'notes', 'fridge_percentage']
+    REQUIRED_FIELDS = ['fridge_username', 'status', 'fridge_percentage']
     ITEM_TYPES = {
         'notes': 'S',
         'fridge_username': 'S',
@@ -243,12 +243,13 @@ class FridgeReport(DB_Item):
     }
     TABLE_NAME = "fridge_report"
     VALID_STATUS = set(["working", "needs cleaning", "needs servicing", "not at location"])
-    VALID_FRIDGE_PERCENTAGE = set(["0", "33", "66", "100"])
+    VALID_FRIDGE_PERCENTAGE = set(["0", "33", "67", "100"])
+    MAX_NOTES_LENGTH = 256
     
     def __init__(self, db_client: 'botocore.client.DynamoDB', fridge_report: dict=None):
         super().__init__(db_client=db_client)
         if fridge_report is not None:
-            self.notes:str = fridge_report.get('notes', None)
+            self.set_notes(fridge_report.get('notes', None))
             self.status:str = fridge_report.get('status', None)
             self.image_url:str = fridge_report.get('image_url', None)
             self.fridge_username:str = fridge_report.get('fridge_username', None)
@@ -257,23 +258,43 @@ class FridgeReport(DB_Item):
     def set_timestamp(self):
         self.timestamp = str(int(time.time()))
     
-    def is_valid_status(self) -> bool:
-        return self.status in self.VALID_STATUS
+    def set_notes(self, notes: str):
+        """
+        Notes is optional. If Notes is an empty string then set to None
+        """
+        if notes is None:
+            self.notes = None
+            return
+        if len(notes) == 0:
+            self.notes = None
+        else:
+            self.notes = notes
+        
+    @staticmethod
+    def is_valid_notes(notes: str) -> bool:
+        return notes is None or len(notes) <= FridgeReport.MAX_NOTES_LENGTH
+
+    @staticmethod
+    def is_valid_status(status: str) -> bool:
+        return status in FridgeReport.VALID_STATUS
     
-    def is_valid_fridge_percentage(self) -> bool:
-        return self.fridge_percentage in self.VALID_FRIDGE_PERCENTAGE
+    @staticmethod
+    def is_valid_fridge_percentage(fridge_percentage: str) -> bool:
+        return fridge_percentage in FridgeReport.VALID_FRIDGE_PERCENTAGE
 
     def add_item(self) -> DB_Response:
         has_required_fields, missing_field = self.has_required_fields()
         if not has_required_fields:
-            return DB_Response(message = "Missing Required Field: %s" % missing_field, status_code=400, success=False)
+            return DB_Response(message = f"Missing Required Field: {missing_field}", status_code=400, success=False)
         is_valid_username, is_valid_username_message = Fridge.is_valid_username(self.fridge_username)
         if not is_valid_username:
             return DB_Response(message=is_valid_username_message, status_code=400, success=False)
-        if not self.is_valid_status():
-            return DB_Response(message="Invalid Status, must to be one of: %s" % str(self.VALID_STATUS), status_code=400, success=False)
-        if not self.is_valid_fridge_percentage():
-            return DB_Response(message="Invalid Fridge Percetage, must to be one of: %s" % str(self.VALID_FRIDGE_PERCENTAGE), status_code=400, success=False)
+        if not FridgeReport.is_valid_status(self.status):
+            return DB_Response(message=f"Invalid Status, must to be one of: {str(self.VALID_STATUS)}" , status_code=400, success=False)
+        if not FridgeReport.is_valid_fridge_percentage(self.fridge_percentage):
+            return DB_Response(message=f"Invalid Fridge percentage, must to be one of: {str(self.VALID_FRIDGE_PERCENTAGE)}", status_code=400, success=False)
+        if not FridgeReport.is_valid_notes(self.notes):
+            return DB_Response(message=f"Notes character length must be <= {self.MAX_NOTES_LENGTH}", status_code=400, success=False)
         self.set_timestamp()
         item = self.format_dynamodb_item()
         try:

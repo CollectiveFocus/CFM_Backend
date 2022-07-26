@@ -1,5 +1,5 @@
 from multiprocessing import connection
-from CommunityFridgeMapApi.dependencies.python.db import DB_Response
+from CommunityFridgeMapApi.dependencies.python.db import DB_Response, Fridge
 
 from dependencies.python.db import layer_test
 from dependencies.python.db import get_ddb_connection
@@ -31,64 +31,64 @@ class FrdgeReportTest(unittest.TestCase):
         self.assertIsNotNone(fridge_report.timestamp)
     
     def test_is_valid_status(self):
-        fridge_report = FridgeReport(fridge_report={'status': 'i am a hacker, drop table'}, db_client=None)
-        self.assertFalse(fridge_report.is_valid_status())
-
-        fridge_report.status = "working"
-        self.assertTrue(fridge_report.is_valid_status())
-
-        fridge_report.status = "needs cleaning"
-        self.assertTrue(fridge_report.is_valid_status())
-
-        fridge_report.status = "needs servicing"
-        self.assertTrue(fridge_report.is_valid_status())
-
-        fridge_report.status = "not at location"
-        self.assertTrue(fridge_report.is_valid_status())
+        self.assertFalse(FridgeReport.is_valid_status("i am a hacker, drop table"))
+        valid_statuses = ["working", "needs cleaning", "needs servicing", "not at location"]
+        for status in valid_statuses:
+            self.assertTrue(status)
     
     def test_is_valid_fridge_percentage(self):
-        fridge_report = FridgeReport(fridge_report={'fridge_percentage': '50'}, db_client=None)
-        self.assertFalse(fridge_report.is_valid_status())
-
-        fridge_report.fridge_percentage = "0"
-        self.assertTrue(fridge_report.is_valid_fridge_percentage())
-
-        fridge_report.fridge_percentage = "33"
-        self.assertTrue(fridge_report.is_valid_fridge_percentage())
-
-        fridge_report.fridge_percentage = "66"
-        self.assertTrue(fridge_report.is_valid_fridge_percentage())
-
-        fridge_report.fridge_percentage = "100"
-        self.assertTrue(fridge_report.is_valid_fridge_percentage())
+        self.assertFalse(FridgeReport.is_valid_fridge_percentage("50"))
+        valid_fridge_percentages = ["0", "33", "67", "100"]
+        for fridge_percentage in valid_fridge_percentages:
+            self.assertTrue(fridge_percentage)
     
+    def test_is_valid_notes(self):
+        valid_notes = [None, "", "t"*256]
+        for notes in valid_notes:
+            self.assertTrue(FridgeReport.is_valid_notes(notes))
+        self.assertFalse(FridgeReport.is_valid_notes("t"*257))
+
     def test_add_item(self):
-        fridge_report = FridgeReport(fridge_report={}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertFalse(db_reponse.success)
-        self.assertEqual(db_reponse.message, "Missing Required Field: fridge_username")
+        test_data = [
+            {
+                "fridge_report": {},
+                "message": "Missing Required Field: fridge_username",
+                "success": False
+            },
+            {
+                "fridge_report": { 'fridge_username': 'hi', 'status': 'working', 'fridge_percentage': '33'},
+                "message": "Username Must Have A Character Length >= 3 and <= 32",
+                "success": False
+            },
+            {
+                "fridge_report": {'fridge_username': 'hi-', 'status': 'working','fridge_percentage': '33'},
+                "message": "Username Must Be Alphanumeric",
+                "success": False,
+            },
+            {
+                "fridge_report": {'fridge_username': 'valid', 'status': 'hacking', 'fridge_percentage': '33'},
+                "message": "Invalid Status, must to be one of",
+                "success": False
+            },
+            {
+                "fridge_report": {'fridge_username': 'valid', 'status': 'working', 'fridge_percentage': '50'} ,
+                "message": "Invalid Fridge percentage, must to be one of",
+                "success": False
+            },
+            {
+                "fridge_report":  {'fridge_username': 'test', 'status': 'working', 'fridge_percentage': '33', 'notes': 't'*257},
+                "message": "Notes character length must be <= 256",
+                "success": False           
+            },
+            {
+                "fridge_report":  {'fridge_username': 'test', 'status': 'working', 'fridge_percentage': '33'},
+                "message": "Fridge Report was succesfully added",
+                "success": True
+            }
+        ]
 
-        fridge_report = FridgeReport(fridge_report={'fridge_username': 'hi', 'status': 'working', 'notes': 'all good out here', 'fridge_percentage': '33'}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertFalse(db_reponse.success)
-        self.assertEqual(db_reponse.message, "Username Must Have A Character Length >= 3 and <= 32")
+        for data in test_data:
+            response = FridgeReport(fridge_report=data['fridge_report'], db_client=DynamoDbMockPutItem()).add_item()
+            self.assertEqual(response.success, data['success'])
+            self.assertTrue(data['message'] in response.message)
 
-        fridge_report = FridgeReport(fridge_report={'fridge_username': 'hi-', 'status': 'working', 'notes': 'all good out here', 'fridge_percentage': '33'}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertFalse(db_reponse.success)
-        self.assertEqual(db_reponse.message, "Username Must Be Alphanumeric")
-
-        fridge_report = FridgeReport(fridge_report={'fridge_username': 'valid', 'status': 'hacking', 'notes': 'all good out here', 'fridge_percentage': '33'}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertFalse(db_reponse.success)
-        self.assertTrue("Invalid Status, must to be one of" in db_reponse.message)
-
-        fridge_report = FridgeReport(fridge_report={'fridge_username': 'valid', 'status': 'working', 'notes': 'all good out here', 'fridge_percentage': '50'}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertFalse(db_reponse.success)
-        self.assertTrue("Invalid Fridge Percetage, must to be one of:" in db_reponse.message)
-
-        fridge_report = FridgeReport(fridge_report={'fridge_username': 'test', 'status': 'working', 'notes': 'all good out here', 'fridge_percentage': '33'}, db_client=DynamoDbMockPutItem())
-        db_reponse = fridge_report.add_item()
-        self.assertTrue(db_reponse.success)
-        self.assertEqual(db_reponse.message, "Fridge Report was succesfully added")
