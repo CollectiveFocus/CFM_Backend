@@ -148,5 +148,7 @@ class FridgeTest(unittest.TestCase):
         self.assertFalse(is_valid)
 
         is_valid, message = Fridge.is_valid_username("hi")
-        self.assertEqual(message, "Username Must Have A Character Length >= 3 and <= 32")
+        self.assertEqual(
+            message, "Username Must Have A Character Length >= 3 and <= 32"
+        )
         self.assertFalse(is_valid)

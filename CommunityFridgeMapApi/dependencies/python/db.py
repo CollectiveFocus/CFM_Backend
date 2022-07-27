@@ -161,17 +161,23 @@ class Fridge(DB_Item):
         # A valid display_name is alphanumric and can contain spaces
         username = self.display_name.lower().replace(" ", "")
         return username.isalnum()
-    
+
     @staticmethod
     def is_valid_username(fridge_username) -> tuple[bool, str]:
         if fridge_username is None:
-            return False, "Missing Required Field: username" 
+            return False, "Missing Required Field: username"
         if not fridge_username.isalnum():
             return False, "Username Must Be Alphanumeric"
         username_length = len(fridge_username)
-        is_valid_username_length = username_length >= Fridge.MIN_USERNAME_LENGTH and username_length <= Fridge.MAX_USERNAME_LENGTH
+        is_valid_username_length = (
+            username_length >= Fridge.MIN_USERNAME_LENGTH
+            and username_length <= Fridge.MAX_USERNAME_LENGTH
+        )
         if not is_valid_username_length:
-            return False, f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}"
+            return (
+                False,
+                f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}",
+            )
         return True, "success"
 
     def set_last_edited(self):
@@ -194,9 +200,7 @@ class Fridge(DB_Item):
         self.set_username()
         self.set_last_edited()
         item = self.format_dynamodb_item()
-        conditional_expression = (
-            "attribute_not_exists(username)"
-        )
+        conditional_expression = "attribute_not_exists(username)"
         try:
             self.db_client.put_item(
                 TableName=self.TABLE_NAME,
@@ -232,32 +236,34 @@ class Fridge(DB_Item):
 
 class FridgeReport(DB_Item):
 
-    REQUIRED_FIELDS = ['fridge_username', 'status', 'fridge_percentage']
+    REQUIRED_FIELDS = ["fridge_username", "status", "fridge_percentage"]
     ITEM_TYPES = {
-        'notes': 'S',
-        'fridge_username': 'S',
-        'image_url': 'S',
-        'timestamp': 'N',
-        'status': 'S',
-        'fridge_percentage': 'S'
+        "notes": "S",
+        "fridge_username": "S",
+        "image_url": "S",
+        "timestamp": "N",
+        "status": "S",
+        "fridge_percentage": "S",
     }
     TABLE_NAME = "fridge_report"
     VALID_STATUS = {"working", "needs cleaning", "needs servicing", "not at location"}
     VALID_FRIDGE_PERCENTAGE = {"0", "33", "67", "100"}
     MAX_NOTES_LENGTH = 256
-    
-    def __init__(self, db_client: 'botocore.client.DynamoDB', fridge_report: dict=None):
+
+    def __init__(
+        self, db_client: "botocore.client.DynamoDB", fridge_report: dict = None
+    ):
         super().__init__(db_client=db_client)
         if fridge_report is not None:
-            self.set_notes(fridge_report.get('notes', None))
-            self.status:str = fridge_report.get('status', None)
-            self.image_url:str = fridge_report.get('image_url', None)
-            self.fridge_username:str = fridge_report.get('fridge_username', None)
-            self.fridge_percentage:int = fridge_report.get('fridge_percentage', None) 
-    
+            self.set_notes(fridge_report.get("notes", None))
+            self.status: str = fridge_report.get("status", None)
+            self.image_url: str = fridge_report.get("image_url", None)
+            self.fridge_username: str = fridge_report.get("fridge_username", None)
+            self.fridge_percentage: int = fridge_report.get("fridge_percentage", None)
+
     def set_timestamp(self):
         self.timestamp = str(int(time.time()))
-    
+
     def set_notes(self, notes: str):
         """
         Notes is optional. If Notes is an empty string then set to None
@@ -269,7 +275,7 @@ class FridgeReport(DB_Item):
             self.notes = None
         else:
             self.notes = notes
-        
+
     @staticmethod
     def is_valid_notes(notes: str) -> bool:
         return notes is None or len(notes) <= FridgeReport.MAX_NOTES_LENGTH
@@ -277,7 +283,7 @@ class FridgeReport(DB_Item):
     @staticmethod
     def is_valid_status(status: str) -> bool:
         return status in FridgeReport.VALID_STATUS
-    
+
     @staticmethod
     def is_valid_fridge_percentage(fridge_percentage: str) -> bool:
         return fridge_percentage in FridgeReport.VALID_FRIDGE_PERCENTAGE
@@ -285,32 +291,56 @@ class FridgeReport(DB_Item):
     def add_item(self) -> DB_Response:
         has_required_fields, missing_field = self.has_required_fields()
         if not has_required_fields:
-            return DB_Response(message = f"Missing Required Field: {missing_field}", status_code=400, success=False)
-        is_valid_username, is_valid_username_message = Fridge.is_valid_username(self.fridge_username)
+            return DB_Response(
+                message=f"Missing Required Field: {missing_field}",
+                status_code=400,
+                success=False,
+            )
+        is_valid_username, is_valid_username_message = Fridge.is_valid_username(
+            self.fridge_username
+        )
         if not is_valid_username:
-            return DB_Response(message=is_valid_username_message, status_code=400, success=False)
+            return DB_Response(
+                message=is_valid_username_message, status_code=400, success=False
+            )
         if not FridgeReport.is_valid_status(self.status):
-            return DB_Response(message=f"Invalid Status, must to be one of: {str(self.VALID_STATUS)}" , status_code=400, success=False)
+            return DB_Response(
+                message=f"Invalid Status, must to be one of: {str(self.VALID_STATUS)}",
+                status_code=400,
+                success=False,
+            )
         if not FridgeReport.is_valid_fridge_percentage(self.fridge_percentage):
-            return DB_Response(message=f"Invalid Fridge percentage, must to be one of: {str(self.VALID_FRIDGE_PERCENTAGE)}", status_code=400, success=False)
+            return DB_Response(
+                message=f"Invalid Fridge percentage, must to be one of: {str(self.VALID_FRIDGE_PERCENTAGE)}",
+                status_code=400,
+                success=False,
+            )
         if not FridgeReport.is_valid_notes(self.notes):
-            return DB_Response(message=f"Notes character length must be <= {self.MAX_NOTES_LENGTH}", status_code=400, success=False)
+            return DB_Response(
+                message=f"Notes character length must be <= {self.MAX_NOTES_LENGTH}",
+                status_code=400,
+                success=False,
+            )
         self.set_timestamp()
         item = self.format_dynamodb_item()
         try:
-            self.db_client.put_item(
-                TableName=self.TABLE_NAME,
-                Item=item
-            )
+            self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
+            message = (
+                "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
+            )
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:
             logging.error(e)
-            return DB_Response(message="Unexpected AWS service exception" , status_code=500, success=False)
-        return DB_Response(message="Fridge Report was succesfully added", status_code=200, success=True)
-
+            return DB_Response(
+                message="Unexpected AWS service exception",
+                status_code=500,
+                success=False,
+            )
+        return DB_Response(
+            message="Fridge Report was succesfully added", status_code=200, success=True
+        )
 
 
 class FridgeHistory(DB_Item):
@@ -319,75 +349,77 @@ class FridgeHistory(DB_Item):
 
 
 class Tag(DB_Item):
-    REQUIRED_FIELDS = ['tag_name']
+    REQUIRED_FIELDS = ["tag_name"]
     TABLE_NAME = "tag"
-    #Tag Class constants
+    # Tag Class constants
     MIN_TAG_LENGTH = 3
     MAX_TAG_LENGTH = 32
 
-    def __init__(self, db_client: "botocore.client.DynamoDB", tag_name:str= None):
+    def __init__(self, db_client: "botocore.client.DynamoDB", tag_name: str = None):
         super().__init__(db_client=db_client)
         self.tag_name = self.format_tag(tag_name)
 
-    def format_tag(self, tag_name:str) -> str:
-        #tag_name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
+    def format_tag(self, tag_name: str) -> str:
+        # tag_name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
         if tag_name:
             tag_name = tag_name.lower().replace(" ", "")
         return tag_name
 
     @staticmethod
-    def is_valid_tag_name(tag_name:str) -> Tuple[bool, str]:
-        #valid tag name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
+    def is_valid_tag_name(tag_name: str) -> Tuple[bool, str]:
+        # valid tag name is alphanumeric, all lowercased, may include hyphen and underscore but no spaces.
         if tag_name is None:
             message = "Missing required fields: tag_name"
             return False, message
         length_tag_name = len(tag_name)
-        is_tag_length_valid = length_tag_name >= Tag.MIN_TAG_LENGTH and length_tag_name <= Tag.MAX_TAG_LENGTH
+        is_tag_length_valid = (
+            length_tag_name >= Tag.MIN_TAG_LENGTH
+            and length_tag_name <= Tag.MAX_TAG_LENGTH
+        )
         if tag_name and is_tag_length_valid:
             for x in tag_name:
-                if not x.isalnum() and x not in ['_', '-']:
-                    message = 'tag_name contains invalid characters'
+                if not x.isalnum() and x not in ["_", "-"]:
+                    message = "tag_name contains invalid characters"
                     return False, message
-            message = ''
+            message = ""
             return True, message
         else:
-            message = f'Length of tag_name is {length_tag_name}. It should be >= {Tag.MIN_TAG_LENGTH} but <= {Tag.MAX_TAG_LENGTH}.'
+            message = f"Length of tag_name is {length_tag_name}. It should be >= {Tag.MIN_TAG_LENGTH} but <= {Tag.MAX_TAG_LENGTH}."
             return False, message
 
     def add_item(self) -> DB_Response:
         has_required_fields, field = self.has_required_fields()
         if not has_required_fields:
             return DB_Response(
-            message = "Missing Required Field: %s" % field,
-            status_code=400,
-            success=False
+                message="Missing Required Field: %s" % field,
+                status_code=400,
+                success=False,
             )
         is_valid_field = self.is_valid_tag_name(self.tag_name)
         if not is_valid_field:
             return DB_Response(
-            message =
-            "Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s" % self.tag_name,
-            status_code=400,
-            success=False
+                message="Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s"
+                % self.tag_name,
+                status_code=400,
+                success=False,
             )
-        item = {"tag_name" : { "S": self.tag_name }}
+        item = {"tag_name": {"S": self.tag_name}}
 
         try:
-            self.db_client.put_item(
-                TableName=self.TABLE_NAME,
-                Item=item
-            )
+            self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = "Cannot do operations on a non-existent table:  %s" % Tag.TABLE_NAME
+            message = (
+                "Cannot do operations on a non-existent table:  %s" % Tag.TABLE_NAME
+            )
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:
             logging.error(e)
             return DB_Response(
-            message="Unexpected AWS service exception" ,
-            status_code=500,
-            success=False
+                message="Unexpected AWS service exception",
+                status_code=500,
+                success=False,
             )
         return DB_Response(
-        message="Tag was succesfully added", status_code=200, success=True
+            message="Tag was succesfully added", status_code=200, success=True
         )

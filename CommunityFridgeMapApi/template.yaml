@@ -189,14 +189,14 @@ Resources:
       KeySchema:
         -
           AttributeName: "username"
-          KeyType: "HASH"   
-      TableName: !Ref FRIDGE_TABLE_NAME                        
+          KeyType: "HASH"
+      TableName: !Ref FRIDGE_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
 
   FridgeReportTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      
+
       AttributeDefinitions:
         -
           AttributeName: 'notes'
@@ -204,7 +204,7 @@ Resources:
         -
           AttributeName: "status"
           AttributeType: "N"
-        - 
+        -
           AttributeName: "fridge_percentage"
           AttributeType: "N"
         -
@@ -222,15 +222,15 @@ Resources:
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
-          KeyType: "RANGE" 
-      TableName: !Ref FRIDGE_REPORT_TABLE_NAME                          
+          KeyType: "RANGE"
+      TableName: !Ref FRIDGE_REPORT_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
       ScanIndexForward: true
 
   TagTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      
+
       AttributeDefinitions:
         -
           AttributeName: 'tag_name'
@@ -238,14 +238,14 @@ Resources:
       KeySchema:
         -
           AttributeName: "tag_name"
-          KeyType: "HASH"          
-      TableName: !Ref TAG_TABLE_NAME             
+          KeyType: "HASH"
+      TableName: !Ref TAG_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
 
   FridgeHistoryTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      
+
       AttributeDefinitions:
         -
           AttributeName: 'fridge_username'
@@ -313,8 +313,8 @@ Resources:
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
-          KeyType: "RANGE"   
-      TableName: !Ref FRIDGE_HISTORY_TABLE_NAME                        
+          KeyType: "RANGE"
+      TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
 
 
