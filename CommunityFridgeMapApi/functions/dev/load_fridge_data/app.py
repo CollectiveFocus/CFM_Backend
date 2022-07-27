@@ -10,7 +10,6 @@ logger.setLevel(logging.INFO)
 
 FRIDGE_DATA = [
     {
-        "fridge_state": "NY",
         "display_name": "The Friendly Fridge",
         "address": "1046 Broadway Brooklyn, NY 11221",
         "instagram": "https://www.instagram.com/thefriendlyfridge/",
@@ -18,7 +17,6 @@ FRIDGE_DATA = [
         "long": "-73.932180",
     },
     {
-        "fridge_state": "NY",
         "display_name": "2 Fish 5 Loaves Fridge",
         "address": "63 Whipple St, Brooklyn, NY 11206",
         "instagram": "https://www.instagram.com/2fish5loavesfridge/",
@@ -28,7 +26,7 @@ FRIDGE_DATA = [
 ]
 
 
-FRIDGE_CHECK_IN_DATA = []
+FRIDGE_REPORT_DATA = []
 FRIDGE_HISTORY_DATA = []
 
 
