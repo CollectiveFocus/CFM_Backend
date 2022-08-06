@@ -104,9 +104,7 @@ class DB_Item:
                 success=False,
             )
         except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = (
-                "Cannot do operations on a non-existent table:  %s" % self.TABLE_NAME
-            )
+            message = f"Cannot do operations on a non-existent table: {self.TABLE_NAME}"
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:
@@ -191,7 +189,7 @@ class DB_Item:
                 continue
             val = getattr(self, key)
             if val is not None:
-                if type(val) == dict:
+                if isinstance(val, dict):
                     val = json.dumps(val)
                 fridge_item[key] = {self.FIELD_VALIDATION[key]["type"]: val}
         return fridge_item
@@ -208,13 +206,13 @@ class DB_Item:
                 object_dict (dict):
         """
         for key, value in object_dict.items():
-            if type(value) == str:
+            if isinstance(value, str):
                 object_dict[key] = DB_Item.remove_whitespace(value)
-            if type(value) == dict:
+            if isinstance(value, dict):
                 object_dict[key] = DB_Item.process_fields(value)
-            if type(value) == list:
+            if isinstance(value, list):
                 for index, val in enumerate(value):
-                    if type(val) == str:
+                    if isinstance(val, str):
                         value[index] = DB_Item.remove_whitespace(val)
         return object_dict
 
@@ -388,9 +386,7 @@ class Fridge(DB_Item):
         if not fridge_id.isalnum():
             return False, "id Must Be Alphanumeric"
         id_length = len(fridge_id)
-        is_valid_id_length = (
-            id_length >= Fridge.MIN_ID_LENGTH and id_length <= Fridge.MAX_ID_LENGTH
-        )
+        is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
         if not is_valid_id_length:
             return (
                 False,
@@ -508,7 +504,7 @@ class FridgeReport(DB_Item):
             self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
             message = (
-                "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
+                f"Cannot do operations on a non-existent table:  {self.TABLE_NAME}"
             )
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
@@ -572,15 +568,14 @@ class Tag(DB_Item):
         has_required_fields, field = self.has_required_fields()
         if not has_required_fields:
             return DB_Response(
-                message="Missing Required Field: %s" % field,
+                message=f"Missing Required Field: {field}",
                 status_code=400,
                 success=False,
             )
         is_valid_field = self.is_valid_tag_name(self.tag_name)
         if not is_valid_field:
             return DB_Response(
-                message="Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s"
-                % self.tag_name,
+                message=f"Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: {self.tag_name}",
                 status_code=400,
                 success=False,
             )
@@ -589,9 +584,7 @@ class Tag(DB_Item):
         try:
             self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = (
-                "Cannot do operations on a non-existent table:  %s" % Tag.TABLE_NAME
-            )
+            message = f"Cannot do operations on a non-existent table: {Tag.TABLE_NAME}"
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:
