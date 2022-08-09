@@ -6,6 +6,7 @@ import logging
 from typing import Tuple
 import re
 import json
+from dataclasses import dataclass
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -26,22 +27,10 @@ def layer_test() -> str:
     return "hello world"
 
 
+@dataclass
 class Field_Validator:
-    def __init__(self, success, message):
-        self.success = success
-        self.message = message
-
-    def get_message(self):
-        """
-        Gets message field
-        """
-        return self.message
-
-    def is_valid(self):
-        """
-        Gets success field
-        """
-        return self.success
+    is_valid: str
+    message: str
 
 
 class DB_Response:
@@ -86,9 +75,9 @@ class DB_Item:
                 db_response (DB_Response): returns a DB_Response
         """
         field_validation = self.validate_fields()
-        if not field_validation.is_valid():
+        if not field_validation.is_valid:
             return DB_Response(
-                message=field_validation.get_message(), status_code=400, success=False
+                message=field_validation.message, status_code=400, success=False
             )
         item = self.format_dynamodb_item_v2()
         try:
@@ -207,19 +196,20 @@ class DB_Item:
         """
         for key, value in object_dict.items():
             if isinstance(value, str):
-                object_dict[key] = DB_Item.remove_whitespace(value)
+                object_dict[key] = DB_Item.remove_extra_whitespace(value)
             if isinstance(value, dict):
                 object_dict[key] = DB_Item.process_fields(value)
             if isinstance(value, list):
                 for index, val in enumerate(value):
                     if isinstance(val, str):
-                        value[index] = DB_Item.remove_whitespace(val)
+                        value[index] = DB_Item.remove_extra_whitespace(val)
         return object_dict
 
     @staticmethod
-    def remove_whitespace(value: str):
+    def remove_extra_whitespace(value: str):
         """
         Removes extra white spaces, trailing spaces, and leading spaces
+        Example: Input: " hi    there " Output: "hi there"
             Parameters:
                 value (str): a string
             Returns:
@@ -245,22 +235,22 @@ class DB_Item:
             if required:
                 if class_field_value is None:
                     return Field_Validator(
-                        success=False, message=f"Missing Required Field: {key}"
+                        is_valid=False, message=f"Missing Required Field: {key}"
                     )
             if min_length and is_not_none:
                 if len(str(class_field_value)) < min_length:
                     return Field_Validator(
-                        success=False,
+                        is_valid=False,
                         message=f"{key} character length must be >= {min_length}",
                     )
             if max_length and is_not_none:
                 if len(str(class_field_value)) > max_length:
                     return Field_Validator(
-                        success=False,
+                        is_valid=False,
                         message=f"{key} character length must be <= {max_length}",
                     )
         return Field_Validator(
-            success=True, message="All Fields Were Successfully Validated"
+            is_valid=True, message="All Fields Were Successfully Validated"
         )
 
 
@@ -366,12 +356,12 @@ class Fridge(DB_Item):
         All fields are valid if they pass all the constraints set in FIELD_VALIDATION
         """
         field_validator = super().validate_fields()
-        if not field_validator.is_valid():
+        if not field_validator.is_valid:
             return field_validator
         if not self.is_valid_name():
             return Field_Validator(
                 message="Name Can Only Contain Letters, Numbers, and Spaces",
-                success=False,
+                is_valid=False,
             )
         return field_validator
 

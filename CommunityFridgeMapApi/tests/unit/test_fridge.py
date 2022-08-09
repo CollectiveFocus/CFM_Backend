@@ -155,24 +155,20 @@ class FridgeTest(unittest.TestCase):
     def test_validate_fields_required_fields(self):
         fridge = Fridge(fridge={}, db_client=None)
         field_validator = fridge.validate_fields()
-        self.assertFalse(field_validator.is_valid())
-        self.assertEqual(field_validator.get_message(), "Missing Required Field: id")
+        self.assertFalse(field_validator.is_valid)
+        self.assertEqual(field_validator.message, "Missing Required Field: id")
 
     def test_validate_fields_min_length(self):
         fridge = Fridge(fridge={"id": "x"}, db_client=None)
         field_validator = fridge.validate_fields()
-        self.assertFalse(field_validator.is_valid())
-        self.assertEqual(
-            field_validator.get_message(), "id character length must be >= 3"
-        )
+        self.assertFalse(field_validator.is_valid)
+        self.assertEqual(field_validator.message, "id character length must be >= 3")
 
     def test_validate_fields_max_length(self):
         fridge = Fridge(fridge={"id": "x" * 33}, db_client=None)
         field_validator = fridge.validate_fields()
-        self.assertFalse(field_validator.is_valid())
-        self.assertEqual(
-            field_validator.get_message(), "id character length must be <= 32"
-        )
+        self.assertFalse(field_validator.is_valid)
+        self.assertEqual(field_validator.message, "id character length must be <= 32")
 
     def test_validate_fields_success(self):
         fridge = Fridge(
@@ -184,7 +180,7 @@ class FridgeTest(unittest.TestCase):
             db_client=None,
         )
         field_validator = fridge.validate_fields()
-        self.assertTrue(field_validator.is_valid())
+        self.assertTrue(field_validator.is_valid)
         self.assertEqual(
-            field_validator.get_message(), "All Fields Were Successfully Validated"
+            field_validator.message, "All Fields Were Successfully Validated"
         )

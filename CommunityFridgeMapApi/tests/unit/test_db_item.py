@@ -4,8 +4,8 @@ import unittest
 
 
 class DB_Item_Test(unittest.TestCase):
-    def test_remove_whitespace(self):
-        result = DB_Item.remove_whitespace("   h  i th er  h o w    ")
+    def test_remove_extra_whitespace(self):
+        result = DB_Item.remove_extra_whitespace("   h  i th er  h o w    ")
         self.assertEqual(result, "h i th er h o w")
 
     def test_process_fields(self):
