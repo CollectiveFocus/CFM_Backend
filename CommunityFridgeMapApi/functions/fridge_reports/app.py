@@ -19,15 +19,6 @@ class FridgReportHandler:
         pass
 
     @staticmethod
-    def get_fridge_id(event: dict):
-        """
-        Gets the fridge_id from the event dictionary
-        """
-        pathParameters = event.get("pathParameters", {})
-        fridge_id = pathParameters.get("fridge_id", None)
-        return fridge_id
-
-    @staticmethod
     def lambda_handler(event: dict, ddbclient: "botocore.client.DynamoDB") -> dict:
         """
         Extracts the necessary data from events dict, and executes a function corresponding
@@ -35,7 +26,7 @@ class FridgReportHandler:
         """
         body = json.loads(event["body"])
         httpMethod = event.get("httpMethod", None)
-        body["fridge_id"] = FridgReportHandler.get_fridge_id(event)
+        body["fridge_id"] = event.get("pathParameters", {}).get("fridge_id", None)
         db_response = None
         if httpMethod == "POST":
             db_response = FridgeReport(
@@ -43,7 +34,7 @@ class FridgReportHandler:
             ).add_item()
         elif httpMethod == "GET":
             pass
-        if db_response == None:
+        else:
             raise ValueError(f'Invalid httpMethod "{httpMethod}"')
         return db_response.api_format()
 

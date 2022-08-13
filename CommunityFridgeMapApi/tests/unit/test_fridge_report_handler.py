@@ -50,10 +50,3 @@ class FrdgeReportHandlerTest(unittest.TestCase):
             FridgReportHandler.lambda_handler(
                 event=event, ddbclient=DynamoDbMockPutItem()
             )
-
-    def test_get_fridge_id(self):
-        self.assertEqual(FridgReportHandler.get_fridge_id({}), None)
-        self.assertEqual(
-            FridgReportHandler.get_fridge_id({"pathParameters": {"fridge_id": "hi"}}),
-            "hi",
-        )
