@@ -99,7 +99,7 @@ class FridgeTest(unittest.TestCase):
         response = fridge.add_item()
         self.assertTrue(response.success)
         self.assertEqual(response.message, "fridge was succesfully added")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(fridge.last_edited)
 
     def test_format_dynamodb_item_v2(self):

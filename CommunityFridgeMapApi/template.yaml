@@ -29,6 +29,42 @@ Parameters:
 ##    Resources    ##
 ##########################
 Resources:
+  FridgeReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridge_reports
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: FridgeReportFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:PutItem
+            Resource: !GetAtt FridgeReportTable.Arn
+      Events:
+        FridgeReport:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges/{fridge_id}/reports
+            Method: post
+            RequestParameters:
+              - method.request.path.fridge_id:
+                  Required: true
+                  Caching: false
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
