@@ -1,7 +1,11 @@
+import pytest
+from CommunityFridgeMapApi.dependencies.python.db import FridgeReport
+from CommunityFridgeMapApi.functions.fridges.v1.app import FridgHandler
 from dependencies.python.db import layer_test
 from dependencies.python.db import get_ddb_connection
 import unittest
 from dependencies.python.db import Fridge
+import json
 
 
 def test_layer_test():
@@ -23,6 +27,14 @@ class DynamoDbMockPutItem:
 
     def put_item(self, TableName=None, Item=None, ConditionExpression=None):
         pass
+
+
+class DynamoDbMockGetItem:
+    def __init__(self):
+        pass
+
+    def get_item(self, TableName=None, Key=None):
+        return {"Item": {"json_data": {"S": '{"id": {"S": "test"}}'}}}
 
 
 class FridgeTest(unittest.TestCase):
@@ -116,7 +128,7 @@ class FridgeTest(unittest.TestCase):
             "last_edited": 2342353,
             "verified": True,
             "latest_report": {},
-            "fake_field": {},
+            # "fake_field": {},
         }
         fridge_item = Fridge(fridge=fridge, db_client=None).format_dynamodb_item_v2()
         expected_response = {
@@ -133,11 +145,12 @@ class FridgeTest(unittest.TestCase):
             "verified": {"B": True},
             "latest_report": {"S": "{}"},
         }
+        expected_response["json_data"] = {"S": json.dumps(fridge)}
         self.assertEqual(fridge_item, expected_response)
         fridge_item = Fridge(
             fridge={"id": ""}, db_client=None
         ).format_dynamodb_item_v2()
-        self.assertEqual(fridge_item, {})
+        self.assertEqual(fridge_item, {"json_data": {"S": "{}"}})
 
     def test_is_valid_id(self):
         is_valid, message = Fridge.is_valid_id(None)
@@ -183,4 +196,24 @@ class FridgeTest(unittest.TestCase):
         self.assertTrue(field_validator.is_valid)
         self.assertEqual(
             field_validator.message, "All Fields Were Successfully Validated"
+        )
+
+    def test_get_item_success(self):
+        json_data = '{"id": {"S": "test"}}'
+        response = FridgHandler.lambda_handler(
+            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "test"}},
+            ddbclient=DynamoDbMockGetItem(),
+        )
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(response["body"], json_data)
+
+    def test_get_item_failure(self):
+        response = FridgHandler.lambda_handler(
+            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "hi"}},
+            ddbclient=DynamoDbMockGetItem(),
+        )
+        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(
+            response["body"],
+            '{"message": "id Must Have A Character Length >= 3 and <= 32"}',
         )

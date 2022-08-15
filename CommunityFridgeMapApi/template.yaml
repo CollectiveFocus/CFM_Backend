@@ -80,6 +80,47 @@ Resources:
             Path: /hello
             Method: get
 
+  FridgesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridges/v1
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: FridgesFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:getItem
+            Resource: !GetAtt FridgeTable.Arn
+      Events:
+        GetFridge:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges/{fridge_id}
+            Method: get
+            RequestParameters:
+              - method.request.path.fridge_id:
+                  Required: false
+                  Caching: false
+        GetFridges:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges
+            Method: get
+
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
     Properties:
@@ -221,6 +262,9 @@ Resources:
           AttributeType: "S"
         -
           AttributeName: "report_image"
+          AttributeType: "S"
+        -
+          AttributeName: "json_data"
           AttributeType: "S"
       KeySchema:
         -
