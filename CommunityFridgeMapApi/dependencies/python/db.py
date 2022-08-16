@@ -7,6 +7,7 @@ from typing import Tuple
 import re
 import json
 from dataclasses import dataclass
+import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -320,6 +321,7 @@ class Fridge(DB_Item):
         "last_edited": {"required": False, "type": "N", "max_length": 20},
         "verified": {"required": False, "type": "B"},
         "latest_report": {"required": False, "type": "S"},
+        "latest_report/epochTimestamp": {"required": False},
         "latest_report/timestamp": {"required": False},
         "latest_report/condition": {"required": False},
         "latest_report/foodPercentage": {"required": False},
@@ -450,7 +452,8 @@ class FridgeReport(DB_Item):
         "notes": "S",
         "fridge_id": "S",
         "image_url": "S",
-        "timestamp": "N",
+        "epochTimestamp": "N",
+        "timestamp": "S",
         "status": "S",
         "fridge_percentage": "N",
     }
@@ -471,7 +474,14 @@ class FridgeReport(DB_Item):
             self.fridge_percentage: int = fridge_report.get("fridge_percentage", None)
 
     def set_timestamp(self):
-        self.timestamp = str(int(time.time()))
+        """
+        Sets epochTimestamp and timestamp fields
+        timestamp is ISO formatted date/time and is what the API user will use
+        epochTimestamp will be what is used to query the database
+        """
+        self.epochTimestamp = str(int(time.time()))
+        utc_time = datetime.datetime.utcnow()
+        self.timestamp = utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def set_notes(self, notes: str):
         """

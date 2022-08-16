@@ -295,13 +295,16 @@ Resources:
           KeyType: "S"
         -
           AttributeName: "timestamp"
+          KeyType: "S"
+        -
+          AttributeName: "epochTimestamp"
           KeyType: "N"
       KeySchema:
         - #State#FridgeName
           AttributeName: "fridge_id"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "epochTimestamp"
           KeyType: "RANGE"
       TableName: !Ref FRIDGE_REPORT_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
@@ -386,13 +389,16 @@ Resources:
           KeyType: "S"
         -
           AttributeName: "timestamp"
+          KeyType: "S"
+        -
+          AttributeName: "epochTimestamp"
           KeyType: "N"
       KeySchema:
         -
           AttributeName: "fridge_id"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "epochTimestamp"
           KeyType: "RANGE"
       TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
