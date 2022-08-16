@@ -255,6 +255,9 @@ Resources:
           AttributeName: "report_timestamp"
           AttributeType: "S"
         -
+          AttributeName: "report_epochTimestamp"
+          AttributeType: "N"
+        -
           AttributeName: "report_notes"
           AttributeType: "S"
         -
