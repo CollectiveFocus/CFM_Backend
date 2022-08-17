@@ -1,6 +1,6 @@
 import pytest
 from CommunityFridgeMapApi.dependencies.python.db import FridgeReport
-from CommunityFridgeMapApi.functions.fridges.v1.app import FridgHandler
+from CommunityFridgeMapApi.functions.fridges.v1.app import FridgeHandler
 from dependencies.python.db import layer_test
 from dependencies.python.db import get_ddb_connection
 import unittest
@@ -200,7 +200,7 @@ class FridgeTest(unittest.TestCase):
 
     def test_get_item_success(self):
         json_data = '{"id": {"S": "test"}}'
-        response = FridgHandler.lambda_handler(
+        response = FridgeHandler.lambda_handler(
             event={"httpMethod": "GET", "pathParameters": {"fridge_id": "test"}},
             ddbclient=DynamoDbMockGetItem(),
         )
@@ -208,7 +208,7 @@ class FridgeTest(unittest.TestCase):
         self.assertEqual(response["body"], json_data)
 
     def test_get_item_failure(self):
-        response = FridgHandler.lambda_handler(
+        response = FridgeHandler.lambda_handler(
             event={"httpMethod": "GET", "pathParameters": {"fridge_id": "hi"}},
             ddbclient=DynamoDbMockGetItem(),
         )

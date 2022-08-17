@@ -14,7 +14,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class FridgHandler:
+class FridgeHandler:
     @staticmethod
     def get_fridge_id(event: dict):
         """
@@ -32,7 +32,7 @@ class FridgHandler:
         to the event httpMethod
         """
         httpMethod = event.get("httpMethod", None)
-        fridge_id = FridgHandler.get_fridge_id(event)
+        fridge_id = FridgeHandler.get_fridge_id(event)
         db_response = None
         if httpMethod == "GET":
             if fridge_id:
@@ -51,4 +51,4 @@ def lambda_handler(
 ) -> dict:
     env = os.environ["Environment"]
     ddbclient = get_ddb_connection(env)
-    return FridgHandler.lambda_handler(event, ddbclient)
+    return FridgeHandler.lambda_handler(event, ddbclient)
