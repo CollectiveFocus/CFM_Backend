@@ -16,23 +16,14 @@ logger.setLevel(logging.INFO)
 
 class FridgeHandler:
     @staticmethod
-    def get_fridge_id(event: dict):
-        """
-        Gets the fridge_id from the event dictionary
-        """
-        fridge_id = None
-        if event["pathParameters"] is not None:
-            fridge_id = event["pathParameters"].get("fridge_id", None)
-        return fridge_id
-
-    @staticmethod
     def lambda_handler(event: dict, ddbclient: "botocore.client.DynamoDB") -> dict:
         """
         Extracts the necessary data from events dict, and executes a function corresponding
         to the event httpMethod
         """
         httpMethod = event.get("httpMethod", None)
-        fridge_id = FridgeHandler.get_fridge_id(event)
+        path_parameters = event["pathParameters"] or {}
+        fridge_id = path_parameters.get("fridge_id")
         db_response = None
         if httpMethod == "GET":
             if fridge_id:

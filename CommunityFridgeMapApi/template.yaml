@@ -251,11 +251,12 @@ Resources:
         -
           AttributeName: "profile_image"
           AttributeType: "S"
+        #report_timestamp and report_epochTimestamp have the same time but in different formats
         -
-          AttributeName: "report_timestamp"
+          AttributeName: "report_timestamp" #ISO formatted date/time, used by clients
           AttributeType: "S"
         -
-          AttributeName: "report_epochTimestamp"
+          AttributeName: "report_epochTimestamp" #epoch time used for querying data
           AttributeType: "N"
         -
           AttributeName: "report_notes"
@@ -296,11 +297,12 @@ Resources:
         -
           AttributeName: "fridge_id"
           KeyType: "S"
+        #timestamp and epochTimestamp have the same time but in different formats
         -
-          AttributeName: "timestamp"
+          AttributeName: "timestamp"  #ISO formatted date/time, used by clients
           KeyType: "S"
         -
-          AttributeName: "epochTimestamp"
+          AttributeName: "epochTimestamp" #epoch time used for querying data
           KeyType: "N"
       KeySchema:
         - #State#FridgeName

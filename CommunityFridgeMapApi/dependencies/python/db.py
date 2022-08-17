@@ -55,7 +55,7 @@ class DB_Response:
         }
 
     def api_format(self) -> dict:
-        if self.json_data is not None:
+        if self.json_data:
             body = self.json_data
         else:
             body = json.dumps({"message": self.message})
@@ -448,6 +448,7 @@ class Fridge(DB_Item):
 class FridgeReport(DB_Item):
 
     REQUIRED_FIELDS = ["fridge_id", "status", "fridge_percentage"]
+    # timestamp and epochTimestamp have the same time but in different formats
     ITEM_TYPES = {
         "notes": "S",
         "fridge_id": "S",
