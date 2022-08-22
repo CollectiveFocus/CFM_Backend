@@ -28,6 +28,8 @@ Follow these steps to get Dynamodb running locally
 1. **Start a local DynamoDB service**
     ```sh
     docker compose up
+    # OR if you want to run it in the background:
+    docker compose up -d
     ```
 1. **Create tables**
     ```sh
