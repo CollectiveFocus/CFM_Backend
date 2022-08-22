@@ -21,6 +21,7 @@ Parameters:
   Environment:
     Type: String
     Description: Choose between local or AWS
+    Default: local
     AllowedValues:
       - local
       - aws
@@ -121,6 +122,35 @@ Resources:
             Path: /v1/fridges
             Method: get
 
+  ImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/image/v1
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: ImageFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+      Events:
+        UploadImage:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/image
+            Method: post
+            RestApiId: !Ref MyApi
+
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
     Properties:
@@ -158,6 +188,8 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: v1
+      BinaryMediaTypes:
+      - image/webp
 
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
