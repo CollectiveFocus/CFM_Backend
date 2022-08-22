@@ -120,6 +120,9 @@ Resources:
           Properties:
             Path: /v1/fridges
             Method: get
+            RequestParameters:
+              - method.request.querystring.tag:
+                  Required: false
 
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
