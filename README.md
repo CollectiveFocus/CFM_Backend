@@ -33,7 +33,7 @@ Follow these steps to get Dynamodb running locally
     ```
 1. **Create tables**
     ```sh
-    ./scripts/create_local_dynamodb_tables.sh
+    ./scripts/create_local_dynamodb_tables.py
     ```
 1. **Load data into your local Dynamodb tables**
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
