@@ -80,6 +80,47 @@ Resources:
             Path: /hello
             Method: get
 
+  FridgesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridges/v1
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: FridgesFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:getItem
+            Resource: !GetAtt FridgeTable.Arn
+      Events:
+        GetFridge:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges/{fridge_id}
+            Method: get
+            RequestParameters:
+              - method.request.path.fridge_id:
+                  Required: false
+                  Caching: false
+        GetFridges:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges
+            Method: get
+
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
     Properties:
@@ -210,9 +251,13 @@ Resources:
         -
           AttributeName: "profile_image"
           AttributeType: "S"
+        #report_timestamp and report_epochTimestamp have the same time but in different formats
         -
-          AttributeName: "report_timestamp"
+          AttributeName: "report_timestamp" #ISO formatted date/time, used by clients
           AttributeType: "S"
+        -
+          AttributeName: "report_epochTimestamp" #epoch time used for querying data
+          AttributeType: "N"
         -
           AttributeName: "report_notes"
           AttributeType: "S"
@@ -221,6 +266,9 @@ Resources:
           AttributeType: "S"
         -
           AttributeName: "report_image"
+          AttributeType: "S"
+        -
+          AttributeName: "json_data"
           AttributeType: "S"
       KeySchema:
         -
@@ -249,15 +297,19 @@ Resources:
         -
           AttributeName: "fridge_id"
           KeyType: "S"
+        #timestamp and epochTimestamp have the same time but in different formats
         -
-          AttributeName: "timestamp"
+          AttributeName: "timestamp"  #ISO formatted date/time, used by clients
+          KeyType: "S"
+        -
+          AttributeName: "epochTimestamp" #epoch time used for querying data
           KeyType: "N"
       KeySchema:
         - #State#FridgeName
           AttributeName: "fridge_id"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "epochTimestamp"
           KeyType: "RANGE"
       TableName: !Ref FRIDGE_REPORT_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
@@ -342,13 +394,16 @@ Resources:
           KeyType: "S"
         -
           AttributeName: "timestamp"
+          KeyType: "S"
+        -
+          AttributeName: "epochTimestamp"
           KeyType: "N"
       KeySchema:
         -
           AttributeName: "fridge_id"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "epochTimestamp"
           KeyType: "RANGE"
       TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'

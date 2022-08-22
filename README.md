@@ -42,12 +42,26 @@ Follow these steps to get Dynamodb running locally
 
 ## API
 
+Choose your favorite API platform for using APIs.
+Recommend: https://www.postman.com/
+
+
+### Fridge
+
+### One Time Use
+1. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+
+### Local Server
+1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+2. Go to http://localhost:3000/v1/fridges/{fridge_id}
+    * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
+
 ### Fridge Report
 
 #### One Time Use
-1. API Request: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
-        * Add `"fridge_id": "2fish5loavesfridge"` to pathParameter in generated file
+        * Add `"fridge_id": "{FRIDGE_ID}"` to pathParameter in generated file
 2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 #### Local Server

@@ -50,7 +50,7 @@ def lambda_handler(
         for fridge in FRIDGE_DATA:
             response = Fridge(fridge=fridge, db_client=db_client).add_item()
             responses.append(response.get_dict_form())
-            if response.status_code != 200:
+            if response.status_code != 201:
                 break
 
         return {

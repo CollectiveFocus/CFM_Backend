@@ -6,7 +6,7 @@
       "AttributeType": "S"
     },
     {
-      "AttributeName": "timestamp",
+      "AttributeName": "epochTimestamp",
       "AttributeType": "N"
     }
   ],
@@ -16,7 +16,7 @@
       "KeyType": "HASH"
     },
     {
-      "AttributeName": "timestamp",
+      "AttributeName": "epochTimestamp",
       "KeyType": "RANGE"
     }
   ],
