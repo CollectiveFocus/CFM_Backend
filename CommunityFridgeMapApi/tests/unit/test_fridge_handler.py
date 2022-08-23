@@ -30,7 +30,11 @@ class FridgeHandlerTest(unittest.TestCase):
     def test_get_item_success(self):
         json_data = '{"id": {"S": "test"}}'
         response = FridgeHandler.lambda_handler(
-            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "test"}},
+            event={
+                "httpMethod": "GET",
+                "pathParameters": {"fridge_id": "test"},
+                "queryStringParameters": None,
+            },
             ddbclient=DynamoDbMockGetItem(),
         )
         self.assertEqual(response["statusCode"], 200)
@@ -38,7 +42,11 @@ class FridgeHandlerTest(unittest.TestCase):
 
     def test_get_item_failure(self):
         response = FridgeHandler.lambda_handler(
-            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "hi"}},
+            event={
+                "httpMethod": "GET",
+                "pathParameters": {"fridge_id": "hi"},
+                "queryStringParameters": None,
+            },
             ddbclient=DynamoDbMockGetItem(),
         )
         self.assertEqual(response["statusCode"], 400)
@@ -50,7 +58,11 @@ class FridgeHandlerTest(unittest.TestCase):
     def test_get_items(self):
         json_data = '[{"id": {"S": "test"}}]'
         response = FridgeHandler.lambda_handler(
-            event={"httpMethod": "GET", "pathParameters": None},
+            event={
+                "httpMethod": "GET",
+                "pathParameters": None,
+                "queryStringParameters": None,
+            },
             ddbclient=DynamoDbMockScan(),
         )
         self.assertEqual(response["statusCode"], 200)
