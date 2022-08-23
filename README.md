@@ -55,6 +55,7 @@ Recommend: https://www.postman.com/
 
 ### One Time Use
 1. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+2. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 
 ### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`

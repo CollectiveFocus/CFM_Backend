@@ -22,8 +22,9 @@ class FridgeHandler:
         to the event httpMethod
         """
         httpMethod = event.get("httpMethod", None)
-        path_parameters = event["pathParameters"] or {}
-        fridge_id = path_parameters.get("fridge_id")
+        body = event.get("body", None)
+        path_parameters = event.get("pathParameters", {})
+        fridge_id = path_parameters.get("fridge_id", None)
         db_response = None
         if httpMethod == "GET":
             if fridge_id:
@@ -31,7 +32,8 @@ class FridgeHandler:
             else:
                 raise ValueError(f"Query Fridges API Not Yet Developed")
         elif httpMethod == "POST":
-            pass
+            body = json.loads(body)
+            db_response= Fridge(db_client=ddbclient, fridge=body).add_item()
         else:
             raise ValueError(f'Invalid httpMethod "{httpMethod}"')
         return db_response.api_format()
