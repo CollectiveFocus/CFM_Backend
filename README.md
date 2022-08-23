@@ -35,6 +35,7 @@ Follow these steps to get Dynamodb running locally
     ```sh
     ./scripts/create_local_dynamodb_tables.py
     ```
+1. `cd CommunityFridgeMapApi/`
 1. **Load data into your local Dynamodb tables**
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 1. **Get data from your local Dynamodb tables**
