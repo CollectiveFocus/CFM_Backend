@@ -390,12 +390,9 @@ class Fridge(DB_Item):
             response = self.db_client.scan(
                 TableName=self.TABLE_NAME, ProjectionExpression="json_data"
             )
-        items = response["Items"]
-        data = []
+        json_data_list = [item["json_data"]["S"] for item in response["Items"]]
         # Converts list of json to json.
-        for item in items:
-            data.append(item["json_data"]["S"])
-        json_response = f"[{','.join( data)}]"
+        json_response = f"[{','.join(json_data_list)}]"
         return DB_Response(
             success=True,
             status_code=200,
