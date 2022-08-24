@@ -8,7 +8,7 @@ from botocore.config import Config
 def get_s3_client(env=os.getenv("Environment")):
     endpoint_url="http://localstack:4566/" if env == "local" else None
     config = Config(
-        signature_version=botocore.UNSIGNED,
+        signature_version=botocore.UNSIGNED, # Do not include signatures in s3 presigned-urls.
     )
 
     return boto3.client(
@@ -32,13 +32,30 @@ def translate_s3_url_for_client(url: str, env=os.getenv("Environment")) -> str:
 
 
 class Storage:
+    """
+    Adapter class for persisting binary files.
+    """
     def __init__(self):
         self._client = get_s3_client()
 
     def idempotent_create_bucket(self, bucket: str):
+        """
+        creates a bucket if there is no existing bucket with the same name.
+            Parameters:
+                bucket: name of the bucket
+        """
         self._client.create_bucket(Bucket=bucket)
 
     def write(self, bucket: str, extension: str, blob: bytes):
+        """
+        writes a binary file to the storage.
+            Parameters:
+                bucket: bucket to put file into
+                extension: file extension
+                blob: binary data to be written
+            Returns:
+                The key of the newly created file
+        """
         key = f"{str(uuid.uuid4())}.{extension}"
         self.idempotent_create_bucket(bucket)
         self._client.put_object(
@@ -49,6 +66,14 @@ class Storage:
         return key
 
     def generate_file_url(self, bucket: str, key: str):
+        """
+        generates an url for the client to access a persisted file.
+            Parameters:
+                bucket: name of the bucket that contains the file
+                key: key of the file within the bucket
+            Returns:
+                A public url for the specified file
+        """
         url = self._client.generate_presigned_url(
             "get_object",
             Params={

@@ -9,11 +9,16 @@ except:
 class ImageHandler:
     @staticmethod
     def get_binary_body_from_event(event: dict) -> bytes:
+        """Extract binary data from request body"""
         assert event["isBase64Encoded"]
         return base64.b64decode(event["body"])
 
     @staticmethod
     def encode_binary_file_for_response(blob: bytes) -> bytes:
+        """
+        Binary response body of lambda functions should be encoded in base64.
+        https://docs.aws.amazon.com/apigateway/latest/developerguide/lambda-proxy-binary-media.html
+        """
         return base64.b64encode(blob)
 
     @staticmethod

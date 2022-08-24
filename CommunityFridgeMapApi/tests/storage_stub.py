@@ -1,4 +1,5 @@
 class StorageStub:
+    """Stub implementation of the Storage class for testing"""
     def __init__(self):
         self._buckets = {}
         self._current_index = 0

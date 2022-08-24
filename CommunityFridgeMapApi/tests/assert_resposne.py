@@ -7,6 +7,15 @@ def assert_response(
     headers: Optional[dict]=None,
     body: Union[str, bytes, dict, None]=None,
 ):
+    """
+    Make assertions against a lambda response.
+
+    Only specified parameters are checked.
+        Parameters:
+            status: expected status code
+            headers: expected headers
+            body: expected body. It can be a string, dict (json), or (base64 encoded) bytes.
+    """
     if status is not None:
         assert response["statusCode"] == status
     if headers is not None:
