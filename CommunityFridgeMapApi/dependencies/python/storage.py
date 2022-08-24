@@ -38,12 +38,6 @@ class Storage:
     def idempotent_create_bucket(self, bucket: str):
         self._client.create_bucket(Bucket=bucket)
 
-    def read(self, bucket: str, key: str):
-        return self._client.get_object(
-            Bucket=bucket,
-            Key=key,
-        )["Body"].read()
-
     def write(self, bucket: str, extension: str, blob: bytes):
         key = f"{str(uuid.uuid4())}.{extension}"
         self.idempotent_create_bucket(bucket)
