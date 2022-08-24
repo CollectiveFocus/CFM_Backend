@@ -17,9 +17,9 @@ class ImageHandler:
         return base64.b64encode(blob)
 
     @staticmethod
-    def upload_handler(event: dict) -> dict:
+    def upload_handler(event: dict, storage: Storage) -> dict:
         bucket = "fridge-report"
-        key = Storage().write(bucket, ImageHandler.get_binary_body_from_event(event))
+        key = storage.write(bucket, ImageHandler.get_binary_body_from_event(event))
         return {
             "statusCode": 200,
             "headers": {
@@ -33,12 +33,12 @@ class ImageHandler:
         }
 
     @staticmethod
-    def download_handler(event) -> dict:
+    def download_handler(event: dict, storage: Storage) -> dict:
         path_parameters = event["pathParameters"] or {}
         bucket = path_parameters["bucket"]
         key = path_parameters["key"]
         body = ImageHandler.encode_binary_file_for_response(
-            Storage().read(bucket, key)
+            storage.read(bucket, key)
         )
         return {
             "isBase64Encoded": True,
@@ -54,7 +54,8 @@ def lambda_handler(
     event: dict, context: "awslambdaric.lambda_context.LambdaContext"
 ) -> dict:
     httpMethod = event.get("httpMethod")
+    storage = Storage()
     if httpMethod == "GET":
-        return ImageHandler.download_handler(event)
+        return ImageHandler.download_handler(event, storage)
     if httpMethod == "POST":
-        return ImageHandler.upload_handler(event)
+        return ImageHandler.upload_handler(event, storage)
