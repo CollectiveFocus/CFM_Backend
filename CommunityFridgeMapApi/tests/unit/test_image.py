@@ -3,9 +3,10 @@ import base64
 from unittest.mock import patch, ANY
 from functions.image.v1.app import ImageHandler
 from tests.assert_resposne import assert_response
+from tests.storage_stub import StorageStub
 
 
-def test_upload(storage_stub):
+def test_upload(storage_stub: StorageStub):
     blob = b'123123123'
     b64encoded_blob = base64.b64encode(blob).decode("ascii")
     with patch.object(storage_stub, "write", wraps=storage_stub.write) as write_spy:
