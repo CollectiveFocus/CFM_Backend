@@ -10,8 +10,8 @@ class StorageStub:
     def read(self, bucket: str, key: str):
         return self._buckets[bucket][key]
 
-    def write(self, bucket: str, blob: bytes):
-        key = str(self._current_index)
+    def write(self, bucket: str, extension: str, blob: bytes):
+        key = f"{self._current_index}.{extension}"
         self._current_index += 1
         self.idempotent_create_bucket(bucket)
         self._buckets[bucket][key] = blob

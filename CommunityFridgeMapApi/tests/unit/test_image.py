@@ -18,7 +18,7 @@ def test_upload(storage_stub):
                 storage=storage_stub
             )
 
-            write_spy.assert_called_once_with(ANY, blob)
+            write_spy.assert_called_once_with(ANY, "webp", blob)
             generate_file_url_spy.assert_called_once()
             assert_response(
                 response,
