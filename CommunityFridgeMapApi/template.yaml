@@ -7,6 +7,9 @@ Description: >
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
+  Api:
+    BinaryMediaTypes:
+      - image/webp
   Function:
     Timeout: 60
     Environment:
@@ -21,7 +24,6 @@ Parameters:
   Environment:
     Type: String
     Description: Choose between local or AWS
-    Default: local
     AllowedValues:
       - local
       - aws
@@ -149,7 +151,18 @@ Resources:
           Properties:
             Path: /v1/image
             Method: post
-            RestApiId: !Ref MyApi
+        DownloadImage:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/image/{bucket}/{key}
+            Method: get
+            RequestParameters:
+              - method.request.path.bucket:
+                Required: true
+                Caching: false
+              - method.request.path.key:
+                Required: true
+                Caching: false
 
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
@@ -188,8 +201,6 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: v1
-      BinaryMediaTypes:
-      - image/webp
 
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
