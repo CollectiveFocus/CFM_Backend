@@ -36,10 +36,7 @@ class Storage:
         self._client = get_s3_client()
 
     def idempotent_create_bucket(self, bucket: str):
-        self._client.create_bucket(
-            Bucket=bucket,
-            ACL="public-read"
-        )
+        self._client.create_bucket(Bucket=bucket)
 
     def read(self, bucket: str, key: str):
         return self._client.get_object(
