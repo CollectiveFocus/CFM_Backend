@@ -16,3 +16,6 @@ class StorageStub:
         self.idempotent_create_bucket(bucket)
         self._buckets[bucket][key] = blob
         return key
+
+    def generate_file_url(self, bucket: str, key: str):
+        return f"http://localhost:4566/{bucket}/{key}"

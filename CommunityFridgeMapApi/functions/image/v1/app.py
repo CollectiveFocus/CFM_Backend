@@ -20,6 +20,7 @@ class ImageHandler:
     def lambda_handler(event: dict, storage: Storage) -> dict:
         bucket = "fridge-report"
         key = storage.write(bucket, ImageHandler.get_binary_body_from_event(event))
+        url = storage.generate_file_url(bucket, key)
         return {
             "statusCode": 200,
             "headers": {
@@ -27,8 +28,7 @@ class ImageHandler:
                 "Access-Control-Allow-Origin": "*",
             },
             "body": json.dumps({
-                "bucket": bucket,
-                "key": key,
+                "photoURL": url,
             })
         }
 
