@@ -53,11 +53,16 @@ Recommend: https://www.postman.com/
 
 ### One Time Use
 1. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+2. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+3. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 
 ### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. Go to http://localhost:3000/v1/fridges/{fridge_id}
+2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridge_id}
     * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
+3. GET Fridges: Go to http://localhost:3000/v1/fridges
+4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
+    * Example: http://localhost:3000/v1/fridges?tag=tag1
 
 ### Fridge Report
 

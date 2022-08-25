@@ -120,6 +120,9 @@ Resources:
           Properties:
             Path: /v1/fridges
             Method: get
+            RequestParameters:
+              - method.request.querystring.tag:
+                  Required: false
 
   GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
@@ -212,30 +215,18 @@ Resources:
         -
           AttributeName: 'name'
           AttributeType: 'S'
-        -
-          AttributeName: "address"
-          AttributeType: "S"
-        -
-          AttributeName: "instagram"
-          AttributeType: "S"
-        -
-          AttributeName: "last_edited"
-          AttributeType: "N"
-        -
-          AttributeName: "info"
-          AttributeType: "S"
-        -
-          AttributeName: "url"
-          AttributeType: "S"
-        -
-          AttributeName: "neighborhood"
-          AttributeType: "S"
-        -
-          AttributeName: "organizer_email"
-          AttributeType: "S"
-        -
+        - #List of Tag names Example: [{"S": "tag1"},...]
           AttributeName: "tags"
           AttributeType: "L"
+        - #{street:, city:, state:, zip:, geoLat:, geoLng}
+          AttributeName: "location"
+          AttributeType: "S"
+        - #{name, organization, phone, email, website, instagram}
+          AttributeName: "maintainer"
+          AttributeType: "S"
+        -
+          AttributeName: "notes"
+          AttributeType: "S"
         -
           AttributeName: "food_accepts"
           AttributeType: "L"
@@ -243,31 +234,18 @@ Resources:
           AttributeName: "food_restrictions"
           AttributeType: "L"
         -
-          AttributeName: "lat"
+          AttributeName: "photoURL"
           AttributeType: "S"
         -
-          AttributeName: "long"
+          AttributeName: "last_edited"
           AttributeType: "S"
         -
-          AttributeName: "profile_image"
+          AttributeName: "verified"
+          AttributeType: "B"
+        - #{epochTimestamp:, timestamp:, condition:, foodPercentage:, foodPhotoURL:, notes:}
+          AttributeName: "latest_report"
           AttributeType: "S"
-        #report_timestamp and report_epochTimestamp have the same time but in different formats
-        -
-          AttributeName: "report_timestamp" #ISO formatted date/time, used by clients
-          AttributeType: "S"
-        -
-          AttributeName: "report_epochTimestamp" #epoch time used for querying data
-          AttributeType: "N"
-        -
-          AttributeName: "report_notes"
-          AttributeType: "S"
-        -
-          AttributeName: "report_status"
-          AttributeType: "S"
-        -
-          AttributeName: "report_image"
-          AttributeType: "S"
-        -
+        - #All of the above data fields in json format. This is what's returned to the client
           AttributeName: "json_data"
           AttributeType: "S"
       KeySchema:
