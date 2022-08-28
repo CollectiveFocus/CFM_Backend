@@ -41,7 +41,7 @@ Follow these steps to get Dynamodb running locally
 1. **Get data from your local Dynamodb tables**
     1. **Generate sample payload:** `sam local generate-event apigateway aws-proxy --method GET --path document --body "" > local-event.json`
     2. `sam local invoke GetAllFunction --event local-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-    3. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
+    3. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
 
 ## API
 
@@ -65,7 +65,7 @@ Recommend: https://www.postman.com/
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridge_id": "{FRIDGE_ID}"` to pathParameter in generated file
-2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
+2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
 
 #### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
@@ -106,8 +106,8 @@ CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
     * Use this command before running the backend if you updated the code
 
 ## Useful Dynamodb Commands
-1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
-2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
+1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
+2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
 
 ## Useful formatting Command
 ```bash
