@@ -1,4 +1,4 @@
-class StorageStub:
+class S3ServiceStub:
     """Stub implementation of the Storage class for testing"""
     def __init__(self):
         self._buckets = {}

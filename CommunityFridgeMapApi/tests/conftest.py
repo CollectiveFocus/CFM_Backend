@@ -1,6 +1,6 @@
 import pytest
-from tests.storage_stub import StorageStub
+from tests.s3_service_stub import S3ServiceStub
 
 @pytest.fixture
-def storage_stub():
-    return StorageStub()
+def s3_service_stub():
+    return S3ServiceStub()
