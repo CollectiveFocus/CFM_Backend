@@ -2,9 +2,9 @@ import json
 import base64
 
 try:
-    from storage import Storage
+    from s3_service import S3Service
 except:
-    from dependencies.python.storage import Storage
+    from dependencies.python.s3_service import S3Service
 
 class ImageHandler:
     @staticmethod
@@ -22,10 +22,10 @@ class ImageHandler:
         return base64.b64encode(blob)
 
     @staticmethod
-    def lambda_handler(event: dict, storage: Storage) -> dict:
+    def lambda_handler(event: dict, s3: S3Service) -> dict:
         bucket = "fridge-report"
-        key = storage.write(bucket, "webp", ImageHandler.get_binary_body_from_event(event))
-        url = storage.generate_file_url(bucket, key)
+        key = s3.write(bucket, "webp", ImageHandler.get_binary_body_from_event(event))
+        url = s3.generate_file_url(bucket, key)
         return {
             "statusCode": 200,
             "headers": {
@@ -41,5 +41,5 @@ class ImageHandler:
 def lambda_handler(
     event: dict, context: "awslambdaric.lambda_context.LambdaContext"
 ) -> dict:
-    storage = Storage()
-    return ImageHandler.lambda_handler(event, storage)
+    s3 = S3Service()
+    return ImageHandler.lambda_handler(event, s3)

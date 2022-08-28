@@ -31,9 +31,9 @@ def translate_s3_url_for_client(url: str, env=os.getenv("Environment")) -> str:
     return url
 
 
-class Storage:
+class S3Service:
     """
-    Adapter class for persisting binary files.
+    Adapter class for persisting binary files in S3 buckets.
     """
     def __init__(self):
         self._client = get_s3_client()

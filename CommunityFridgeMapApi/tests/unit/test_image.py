@@ -16,7 +16,7 @@ def test_upload(storage_stub: StorageStub):
                     "isBase64Encoded": True,
                     "body": b64encoded_blob,
                 },
-                storage=storage_stub
+                s3=storage_stub
             )
 
             write_spy.assert_called_once_with(ANY, "webp", blob)
