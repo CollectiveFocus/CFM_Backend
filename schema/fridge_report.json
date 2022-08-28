@@ -2,7 +2,7 @@
   "TableName": "fridge_report",
   "AttributeDefinitions": [
     {
-      "AttributeName": "fridge_id",
+      "AttributeName": "fridgeId",
       "AttributeType": "S"
     },
     {
@@ -12,7 +12,7 @@
   ],
   "KeySchema": [
     {
-      "AttributeName": "fridge_id",
+      "AttributeName": "fridgeId",
       "KeyType": "HASH"
     },
     {
