@@ -31,6 +31,10 @@ def translate_s3_url_for_client(url: str, env=os.getenv("Environment")) -> str:
     return url
 
 
+class S3ServiceException(Exception):
+    pass
+
+
 class S3Service:
     """
     Adapter class for persisting binary files in S3 buckets.
@@ -44,7 +48,10 @@ class S3Service:
             Parameters:
                 bucket: name of the bucket
         """
-        self._client.create_bucket(Bucket=bucket)
+        try:
+            self._client.create_bucket(Bucket=bucket)
+        except:
+            raise S3ServiceException(f"Failed to create a bucket {bucket}")
 
     def write(self, bucket: str, extension: str, blob: bytes):
         """
@@ -58,11 +65,16 @@ class S3Service:
         """
         key = f"{str(uuid.uuid4())}.{extension}"
         self.idempotent_create_bucket(bucket)
-        self._client.put_object(
-            Bucket=bucket,
-            Key=key,
-            Body=blob,
-        )
+
+        try:
+            self._client.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=blob,
+            )
+        except:
+            raise S3ServiceException(f"Failed to save file {key} in bucket {bucket}")
+
         return key
 
     def generate_file_url(self, bucket: str, key: str):
@@ -74,12 +86,16 @@ class S3Service:
             Returns:
                 A public url for the specified file
         """
-        url = self._client.generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": bucket,
-                "Key": key,
-            },
-            ExpiresIn=0,
-        )
+        try:
+            url = self._client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": bucket,
+                    "Key": key,
+                },
+                ExpiresIn=0,
+            )
+        except:
+            raise S3ServiceException(f"Failed to generate url for file {key} in bucket {bucket}")
+
         return translate_s3_url_for_client(url)

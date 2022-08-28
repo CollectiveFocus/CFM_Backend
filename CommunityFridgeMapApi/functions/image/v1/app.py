@@ -24,8 +24,20 @@ class ImageHandler:
     @staticmethod
     def lambda_handler(event: dict, s3: S3Service) -> dict:
         bucket = "fridge-report"
-        key = s3.write(bucket, "webp", ImageHandler.get_binary_body_from_event(event))
-        url = s3.generate_file_url(bucket, key)
+        try:
+            key = s3.write(bucket, "webp", ImageHandler.get_binary_body_from_event(event))
+            url = s3.generate_file_url(bucket, key)
+        except:
+            return {
+                "statusCode": 500,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                "body": json.dumps({
+                    "error": "Unexpected error prevented server from fulfilling request."
+                }),
+            }
         return {
             "statusCode": 200,
             "headers": {
