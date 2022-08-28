@@ -7,7 +7,7 @@ from tests.s3_service_stub import S3ServiceStub
 
 
 def test_upload(s3_service_stub: S3ServiceStub):
-    blob = b'123123123'
+    blob = base64.b64decode("UklGRmh2AABXRUJQVlA4IFx2AADSvgGd")  # Minimal blob with webp magic number.
     b64encoded_blob = base64.b64encode(blob).decode("ascii")
     with patch.object(s3_service_stub, "write", wraps=s3_service_stub.write) as write_spy:
         with patch.object(s3_service_stub, "generate_file_url", wraps=s3_service_stub.generate_file_url) as generate_file_url_spy:
@@ -32,3 +32,26 @@ def test_upload(s3_service_stub: S3ServiceStub):
                     "photoURL": ANY
                 }
             )
+
+def test_upload_invalid_binary(s3_service_stub: S3ServiceStub):
+    blob = b"notwebp"
+    b64encoded_blob = base64.b64encode(blob).decode("ascii")
+    response = ImageHandler.lambda_handler(
+        event={
+            "isBase64Encoded": True,
+            "body": b64encoded_blob,
+        },
+        s3=s3_service_stub
+    )
+
+    assert_response(
+        response,
+        status=400,
+        headers={
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        },
+        body={
+            "error": "Request could not be understood due to incorrect syntax.",
+        },
+    )
