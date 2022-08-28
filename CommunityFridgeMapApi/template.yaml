@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   CommunityFridgeMapApi
@@ -12,13 +12,6 @@ Globals:
       - image/webp
   Function:
     Timeout: 60
-    Environment:
-      Variables:
-        TABLE_NAME: my-table
-        FRIDGE_TABLE_NAME: fridge
-        FRIDGE_REPORT_TABLE_NAME: fridge_report
-        FRIDGE_HISTORY_TABLE_NAME: fridge_history
-        TAG_TABLE_NAME: tag
 
 Parameters:
   Environment:
@@ -45,7 +38,7 @@ Resources:
       Layers:
         - !Ref CommonLayer
       Policies:
-        - Version: '2012-10-17'
+        - Version: "2012-10-17"
           Statement:
           - Effect: Allow
             Action:
@@ -96,7 +89,7 @@ Resources:
       Layers:
         - !Ref CommonLayer
       Policies:
-        - Version: '2012-10-17'
+        - Version: "2012-10-17"
           Statement:
           - Effect: Allow
             Action:
@@ -106,7 +99,9 @@ Resources:
             Resource: arn:aws:logs:*:*:*
           - Effect: Allow
             Action:
-            - dynamodb:getItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            - dynamodb:PutItem
             Resource: !GetAtt FridgeTable.Arn
       Events:
         GetFridge:
@@ -123,6 +118,9 @@ Resources:
           Properties:
             Path: /v1/fridges
             Method: get
+            RequestParameters:
+              - method.request.querystring.tag:
+                  Required: false
 
   ImageFunction:
     Type: AWS::Serverless::Function
@@ -152,44 +150,6 @@ Resources:
             Path: /v1/image
             Method: post
 
-  GetAllFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/dev/get_all/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      FunctionName: GetAllFunction
-      Events:
-        GetDocument:
-          Type: Api
-          Properties:
-            Path: /get_all
-            Method: get
-            RestApiId: !Ref MyApi
-      Environment:
-        Variables:
-          Environment: !Ref Environment
-          FridgeTableName: "fridge"
-      Layers:
-        - !Ref CommonLayer
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            Resource: arn:aws:logs:*:*:*
-          - Effect: Allow
-            Action:
-            - dynamodb:getItem
-            Resource: !GetAtt FridgeTable.Arn
-  MyApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: v1
-
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
     Properties:
@@ -203,7 +163,7 @@ Resources:
       Layers:
         - !Ref CommonLayer
       Policies:
-        - Version: '2012-10-17'
+        - Version: "2012-10-17"
           Statement:
           - Effect: Allow
             Action:
@@ -213,7 +173,7 @@ Resources:
             Resource: arn:aws:logs:*:*:*
           - Effect: Allow
             Action:
-            - dynamodb:BatchWriteItem
+            - dynamodb:PutItem
             Resource: !GetAtt FridgeTable.Arn
     ##########################
     ##    Layers    ##
@@ -237,207 +197,58 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        -
-          AttributeName: 'id'
-          AttributeType: 'S'
-        -
-          AttributeName: 'name'
-          AttributeType: 'S'
-        -
-          AttributeName: "address"
-          AttributeType: "S"
-        -
-          AttributeName: "instagram"
-          AttributeType: "S"
-        -
-          AttributeName: "last_edited"
-          AttributeType: "N"
-        -
-          AttributeName: "info"
-          AttributeType: "S"
-        -
-          AttributeName: "url"
-          AttributeType: "S"
-        -
-          AttributeName: "neighborhood"
-          AttributeType: "S"
-        -
-          AttributeName: "organizer_email"
-          AttributeType: "S"
-        -
-          AttributeName: "tags"
-          AttributeType: "L"
-        -
-          AttributeName: "food_accepts"
-          AttributeType: "L"
-        -
-          AttributeName: "food_restrictions"
-          AttributeType: "L"
-        -
-          AttributeName: "lat"
-          AttributeType: "S"
-        -
-          AttributeName: "long"
-          AttributeType: "S"
-        -
-          AttributeName: "profile_image"
-          AttributeType: "S"
-        #report_timestamp and report_epochTimestamp have the same time but in different formats
-        -
-          AttributeName: "report_timestamp" #ISO formatted date/time, used by clients
-          AttributeType: "S"
-        -
-          AttributeName: "report_epochTimestamp" #epoch time used for querying data
-          AttributeType: "N"
-        -
-          AttributeName: "report_notes"
-          AttributeType: "S"
-        -
-          AttributeName: "report_status"
-          AttributeType: "S"
-        -
-          AttributeName: "report_image"
-          AttributeType: "S"
-        -
-          AttributeName: "json_data"
+        - AttributeName: "id"
           AttributeType: "S"
       KeySchema:
-        -
-          AttributeName: "id"
+        - AttributeName: "id"
           KeyType: "HASH"
-      TableName: !Ref FRIDGE_TABLE_NAME
-      BillingMode: 'PAY_PER_REQUEST'
+      TableName: fridge
+      BillingMode: "PAY_PER_REQUEST"
 
   FridgeReportTable:
     Type: AWS::DynamoDB::Table
     Properties:
-
       AttributeDefinitions:
-        -
-          AttributeName: 'notes'
-          AttributeType: 'S'
-        -
-          AttributeName: "status"
-          AttributeType: "N"
-        -
-          AttributeName: "fridge_percentage"
-          AttributeType: "N"
-        -
-          AttributeName: "image_url"
+        - AttributeName: "fridge_id"
           AttributeType: "S"
-        -
-          AttributeName: "fridge_id"
-          KeyType: "S"
-        #timestamp and epochTimestamp have the same time but in different formats
-        -
-          AttributeName: "timestamp"  #ISO formatted date/time, used by clients
-          KeyType: "S"
-        -
-          AttributeName: "epochTimestamp" #epoch time used for querying data
-          KeyType: "N"
+        - AttributeName: "epochTimestamp" #epoch time used for querying data
+          AttributeType: "N"
       KeySchema:
-        - #State#FridgeName
-          AttributeName: "fridge_id"
+        - AttributeName: "fridge_id"
           KeyType: "HASH"
-        -
-          AttributeName: "epochTimestamp"
+        - AttributeName: "epochTimestamp"
           KeyType: "RANGE"
-      TableName: !Ref FRIDGE_REPORT_TABLE_NAME
-      BillingMode: 'PAY_PER_REQUEST'
-      ScanIndexForward: true
+      TableName: fridge_report
+      BillingMode: "PAY_PER_REQUEST"
 
   TagTable:
     Type: AWS::DynamoDB::Table
     Properties:
 
       AttributeDefinitions:
-        -
-          AttributeName: 'tag_name'
-          AttributeType: 'S'
+        - AttributeName: "tag_name"
+          AttributeType: "S"
       KeySchema:
-        -
-          AttributeName: "tag_name"
+        - AttributeName: "tag_name"
           KeyType: "HASH"
-      TableName: !Ref TAG_TABLE_NAME
-      BillingMode: 'PAY_PER_REQUEST'
+      TableName: tag
+      BillingMode: "PAY_PER_REQUEST"
 
   FridgeHistoryTable:
     Type: AWS::DynamoDB::Table
     Properties:
-
       AttributeDefinitions:
-        -
-          AttributeName: 'fridge_id'
-          AttributeType: 'S'
-        -
-          AttributeName: "address"
+        - AttributeName: "fridge_id"
           AttributeType: "S"
-        -
-          AttributeName: "instagram"
-          AttributeType: "S"
-        -
-          AttributeName: "last_edited"
+        - AttributeName: "epochTimestamp" #epoch time used for querying data
           AttributeType: "N"
-        -
-          AttributeName: "info"
-          AttributeType: "S"
-        -
-          AttributeName: "url"
-          AttributeType: "S"
-        -
-          AttributeName: "neighborhood"
-          AttributeType: "S"
-        -
-          AttributeName: "organizer_email"
-          AttributeType: "S"
-        -
-          AttributeName: "tags"
-          AttributeType: "L"
-        -
-          AttributeName: "food_accepts"
-          AttributeType: "L"
-        -
-          AttributeName: "food_restrictions"
-          AttributeType: "L"
-        -
-          AttributeName: "lat"
-          AttributeType: "S"
-        -
-          AttributeName: "long"
-          AttributeType: "S"
-        -
-          AttributeName: "profile_image"
-          AttributeType: "S"
-        -
-          AttributeName: "report_time"
-          AttributeType: "S"
-        -
-          AttributeName: "report_notes"
-          AttributeType: "S"
-        -
-          AttributeName: "report_status"
-          AttributeType: "S"
-        -
-          AttributeName: "report_image"
-          AttributeType: "S"
-        -
-          AttributeName: "pk"
-          KeyType: "S"
-        -
-          AttributeName: "timestamp"
-          KeyType: "S"
-        -
-          AttributeName: "epochTimestamp"
-          KeyType: "N"
       KeySchema:
-        -
-          AttributeName: "fridge_id"
+        - AttributeName: "fridge_id"
           KeyType: "HASH"
-        -
-          AttributeName: "epochTimestamp"
+        - AttributeName: "epochTimestamp"
           KeyType: "RANGE"
-      TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
-      BillingMode: 'PAY_PER_REQUEST'
+      TableName: fridge_history
+      BillingMode: "PAY_PER_REQUEST"
 
 
 Outputs:
