@@ -75,6 +75,17 @@ Recommend: https://www.postman.com/
 2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridge_id}/reports`
     * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
 
+### Image
+
+1. Start local SAM API `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. Upload image (replace `<file-path>` with your actual image path like `"@/home/user/Downloads/sample.webp"`)
+    ```
+    curl --request POST \
+      --url http://localhost:3000/v1/image \
+      --header 'Content-Type: image/webp' \
+      --data-binary "@<file-path>"
+    ```
+
 ## Tests
 
 Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
