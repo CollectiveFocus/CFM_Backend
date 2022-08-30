@@ -52,6 +52,6 @@ def test_upload_invalid_binary(s3_service_stub: S3ServiceStub):
             "Access-Control-Allow-Origin": "*",
         },
         body={
-            "error": "Request could not be understood due to incorrect syntax.",
+            "message": "Request could not be understood due to incorrect syntax. Image type must be webp."
         },
     )

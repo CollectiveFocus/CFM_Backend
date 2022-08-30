@@ -55,7 +55,7 @@ class ImageHandler:
                     "Access-Control-Allow-Origin": "*",
                 },
                 "body": json.dumps({
-                    "error": "Request could not be understood due to incorrect syntax."
+                    "message": "Request could not be understood due to incorrect syntax. Image type must be webp."
                 }),
             }
         try:
@@ -69,7 +69,7 @@ class ImageHandler:
                     "Access-Control-Allow-Origin": "*",
                 },
                 "body": json.dumps({
-                    "error": "Unexpected error prevented server from fulfilling request."
+                    "message": "Unexpected error prevented server from fulfilling request."
                 }),
             }
         return {
