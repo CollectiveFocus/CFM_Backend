@@ -1,8 +1,10 @@
 import os
 import uuid
 from urllib.parse import urlparse, urlunparse
+import logging
 import boto3
 import botocore
+from botocore.exceptions import ClientError
 from botocore.config import Config
 
 def get_s3_client(env=os.getenv("Environment")):
@@ -50,7 +52,8 @@ class S3Service:
         """
         try:
             self._client.create_bucket(Bucket=bucket)
-        except:
+        except ClientError as e:
+            logging.error(e)
             raise S3ServiceException(f"Failed to create a bucket {bucket}")
 
     def write(self, bucket: str, extension: str, blob: bytes):
@@ -72,7 +75,8 @@ class S3Service:
                 Key=key,
                 Body=blob,
             )
-        except:
+        except ClientError as e:
+            logging.error(e)
             raise S3ServiceException(f"Failed to save file {key} in bucket {bucket}")
 
         return key
@@ -95,7 +99,8 @@ class S3Service:
                 },
                 ExpiresIn=0,
             )
-        except:
+        except ClientError as e:
+            logging.error(e)
             raise S3ServiceException(f"Failed to generate url for file {key} in bucket {bucket}")
 
         return translate_s3_url_for_client(url)
