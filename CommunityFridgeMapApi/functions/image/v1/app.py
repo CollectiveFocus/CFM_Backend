@@ -45,7 +45,7 @@ class ImageHandler:
 
     @staticmethod
     def lambda_handler(event: dict, s3: S3Service) -> dict:
-        bucket = "fridge-report"
+        bucket = "CommunityFridgeMapImages"
         blob = ImageHandler.get_binary_body_from_event(event)
         if not has_webp_magic_number(blob):
             return {
