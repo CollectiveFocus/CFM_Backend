@@ -143,6 +143,13 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+            Resource:
+              - !Sub arn:aws:s3:::community-fridge-map-images/*
+              - !Sub arn:aws:s3:::community-fridge-map-images
       Events:
         UploadImage:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -189,6 +196,23 @@ Resources:
               - python3.8
               - python3.9
             RetentionPolicy: Delete
+  ##########################
+  ##      S3 Buckets      ##
+  ##########################
+  CommunityFridgeMapImages:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: community-fridge-map-images
+      CorsConfiguration:
+        CorsRules:
+        - AllowedHeaders:
+            - "*"
+          AllowedMethods:
+            - GET
+            - PUT
+            - HEAD
+          AllowedOrigins:
+            - "*"
   ##########################
   ##    DynamoDB Tables    ##
   ##########################
