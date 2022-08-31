@@ -1,11 +1,23 @@
 {
-  "body": "{\"name\": \"The Greenpoint Fridge\",\"location\": {\"address\": \"9 W. Elm St.\", \"geoLat\": \"40.730610\", \"geoLng\": \"-73.935242\"}}",
+  "body": "",
   "resource": "/{proxy+}",
   "path": "/document",
-  "pathParameters":{},
-  "queryStringParameters":{},
-  "httpMethod": "POST",
-  "isBase64Encoded": false,
+  "httpMethod": "GET",
+  "isBase64Encoded": true,
+  "queryStringParameters": {
+    "tag": "tag3"
+  },
+  "multiValueQueryStringParameters": {
+    "foo": [
+      "bar"
+    ]
+  },
+  "pathParameters": {
+    "proxy": "/document"
+  },
+  "stageVariables": {
+    "baz": "qux"
+  },
   "headers": {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Encoding": "gzip, deflate, sdch",
@@ -104,7 +116,7 @@
     },
     "path": "/prod/document",
     "resourcePath": "/{proxy+}",
-    "httpMethod": "POST",
+    "httpMethod": "GET",
     "apiId": "1234567890",
     "protocol": "HTTP/1.1"
   }

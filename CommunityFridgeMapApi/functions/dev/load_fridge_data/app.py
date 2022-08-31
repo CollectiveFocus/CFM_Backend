@@ -19,6 +19,7 @@ FRIDGE_DATA = [
             "state": "NY",
             "city": "Brooklyn",
         },
+        "tags": ["tag1", "tag3"],
         "maintainer": {"instagram": "https://www.instagram.com/thefriendlyfridge/"},
     },
     {
@@ -31,6 +32,7 @@ FRIDGE_DATA = [
             "state": "NY",
             "city": "Brooklyn",
         },
+        "tags": ["tag1", "tag4"],
         "maintainer": {"instagram": "https://www.instagram.com/2fish5loavesfridge/"},
     },
 ]
