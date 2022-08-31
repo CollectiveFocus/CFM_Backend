@@ -35,8 +35,9 @@ class FridgeHandler:
             else:
                 db_response = Fridge(db_client=ddbclient).get_items(tag=tag)
         elif httpMethod == "POST":
-            body = json.loads(body)
-            db_response= Fridge(db_client=ddbclient, fridge=body).add_item()
+            if body is not None:
+                body = json.loads(body)
+                db_response= Fridge(db_client=ddbclient, fridge=body).add_item()
         else:
             raise ValueError(f'Invalid httpMethod "{httpMethod}"')
         return db_response.api_format()
