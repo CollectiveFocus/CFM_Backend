@@ -7,7 +7,7 @@ import botocore
 from botocore.exceptions import ClientError
 from botocore.config import Config
 
-def get_s3_client(env=os.getenv("Environment")):
+def get_s3_client(env):
     endpoint_url="http://localstack:4566/" if env == "local" else None
     config = Config(
         signature_version=botocore.UNSIGNED, # Do not include signatures in s3 presigned-urls.
@@ -41,15 +41,19 @@ class S3Service:
     """
     Adapter class for persisting binary files in S3 buckets.
     """
-    def __init__(self):
-        self._client = get_s3_client()
+    def __init__(self, env=os.getenv("Environment")):
+        self._env = env
+        self._client = get_s3_client(env)
 
     def idempotent_create_bucket(self, bucket: str):
         """
-        creates a bucket if there is no existing bucket with the same name.
+        Creates a bucket if there is no existing bucket with the same name.
+        No-op when not local.
             Parameters:
                 bucket: name of the bucket
         """
+        if self._env != "local":
+            return
         try:
             self._client.create_bucket(Bucket=bucket)
         except ClientError as e:
