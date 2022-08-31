@@ -19,7 +19,7 @@ def test_upload(s3_service_stub: S3ServiceStub):
                 s3=s3_service_stub
             )
 
-            write_spy.assert_called_once_with(ANY, "webp", blob)
+            write_spy.assert_called_once_with("community-fridge-map-images", "webp", blob)
             generate_file_url_spy.assert_called_once()
             assert_response(
                 response,
