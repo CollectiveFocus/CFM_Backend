@@ -145,11 +145,11 @@ Resources:
             Resource: arn:aws:logs:*:*:*
           - Effect: Allow
             Action:
-              - s3:PutObject
-              - s3:GetObject
+            - s3:PutObject
+            - s3:GetObject
             Resource:
-              - !Sub arn:aws:s3:::community-fridge-map-images/*
-              - !Sub arn:aws:s3:::community-fridge-map-images
+            - "arn:aws:s3:::community-fridge-map-images/*"
+            - "arn:aws:s3:::community-fridge-map-images"
       Events:
         UploadImage:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -206,13 +206,13 @@ Resources:
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:
-            - "*"
+          - "*"
           AllowedMethods:
-            - GET
-            - PUT
-            - HEAD
+          - GET
+          - PUT
+          - HEAD
           AllowedOrigins:
-            - "*"
+          - "*"
   ##########################
   ##    DynamoDB Tables    ##
   ##########################
