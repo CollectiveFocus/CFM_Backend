@@ -200,21 +200,20 @@ Resources:
   ##   Bucket Policies    ##
   ##########################
   ImageFunctionBucketPolicy:
-  Type: AWS::S3::BucketPolicy
-  Properties:
-    Bucket: !Ref CommunityFridgeMapImages
-    PolicyDocument:
-      Statement:
-        -
-          Action:
-            - s3:*
-          Effect: Allow
-          Resource:
-            - !Sub arn:aws:s3:::${CommunityFridgeMapImages}
-            - !Sub arn:aws:s3:::${CommunityFridgeMapImages}/*
-          Principal:
-            AWS:
-              - '*'
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref CommunityFridgeMapImages
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:*
+            Effect: Allow
+            Resource:
+              - !Sub arn:aws:s3:::${CommunityFridgeMapImages}
+              - !Sub arn:aws:s3:::${CommunityFridgeMapImages}/*
+            Principal:
+              AWS:
+                - '*'
   ##########################
   ##      S3 Buckets      ##
   ##########################
