@@ -121,7 +121,6 @@ Resources:
             RequestParameters:
               - method.request.querystring.tag:
                   Required: false
-
   ImageFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -143,13 +142,14 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: arn:aws:logs:*:*:*
+          Statement:
           - Effect: Allow
             Action:
             - s3:PutObject
             - s3:GetObject
             Resource:
-            - "arn:aws:s3:::community-fridge-map-images/*"
-            - "arn:aws:s3:::community-fridge-map-images"
+            - !Sub "arn:aws:s3:::${CommunityFridgeMapImages}/*"
+            - !Sub "arn:aws:s3:::${CommunityFridgeMapImages}"
       Events:
         UploadImage:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -196,6 +196,25 @@ Resources:
               - python3.8
               - python3.9
             RetentionPolicy: Delete
+  ##########################
+  ##   Bucket Policies    ##
+  ##########################
+  ImageFunctionBucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref CommunityFridgeMapImages
+    PolicyDocument:
+      Statement:
+        -
+          Action:
+            - s3:*
+          Effect: Allow
+          Resource:
+            - !Sub arn:aws:s3:::${CommunityFridgeMapImages}
+            - !Sub arn:aws:s3:::${CommunityFridgeMapImages}/*
+          Principal:
+            AWS:
+              - '*'
   ##########################
   ##      S3 Buckets      ##
   ##########################
