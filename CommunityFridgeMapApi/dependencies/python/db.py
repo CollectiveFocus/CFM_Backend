@@ -18,7 +18,7 @@ def get_ddb_connection(
 ) -> "botocore.client.DynamoDB":
     ddbclient = ""
     if env == "local":
-        ddbclient = boto3.client("dynamodb", endpoint_url="http://dynamodb:8000/")
+        ddbclient = boto3.client("dynamodb", endpoint_url="http://localstack:4566/")
     else:
         ddbclient = boto3.client("dynamodb")
     return ddbclient
