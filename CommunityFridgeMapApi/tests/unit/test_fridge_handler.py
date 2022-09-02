@@ -32,7 +32,7 @@ class FridgeHandlerTest(unittest.TestCase):
         response = FridgeHandler.lambda_handler(
             event={
                 "httpMethod": "GET",
-                "pathParameters": {"fridge_id": "test"},
+                "pathParameters": {"fridgeId": "test"},
                 "queryStringParameters": None,
             },
             ddbclient=DynamoDbMockGetItem(),
@@ -44,7 +44,7 @@ class FridgeHandlerTest(unittest.TestCase):
         response = FridgeHandler.lambda_handler(
             event={
                 "httpMethod": "GET",
-                "pathParameters": {"fridge_id": "hi"},
+                "pathParameters": {"fridgeId": "hi"},
                 "queryStringParameters": None,
             },
             ddbclient=DynamoDbMockGetItem(),

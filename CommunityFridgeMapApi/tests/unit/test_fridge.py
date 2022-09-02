@@ -133,7 +133,7 @@ class FridgeTest(unittest.TestCase):
             "photoURL": "test",
             "last_edited": 2342353,
             "verified": True,
-            "latest_report": {},
+            "latestFridgeReport": {},
         }
         fridge_item = Fridge(fridge=fridge, db_client=None).format_dynamodb_item_v2()
         expected_response = {
@@ -146,9 +146,9 @@ class FridgeTest(unittest.TestCase):
             "food_accepts": {"L": [{"S": "dairy"}]},
             "food_restrictions": {"L": [{"S": "meat"}]},
             "photoURL": {"S": "test"},
-            "last_edited": {"N": 2342353},
+            "last_edited": {"N": "2342353"},
             "verified": {"B": True},
-            "latest_report": {"S": "{}"},
+            "latestFridgeReport": {"S": "{}"},
             "json_data": {"S": json.dumps(fridge)},
         }
         self.assertEqual(fridge_item, expected_response)

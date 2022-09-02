@@ -14,7 +14,7 @@
   },
   "pathParameters": {
     "proxy": "/document",
-    "fridge_id": "2fish5loavesfridge"
+    "fridgeId": "2fish5loavesfridge"
   },
   "stageVariables": {
     "baz": "qux"

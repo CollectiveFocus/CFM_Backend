@@ -96,11 +96,14 @@ class DB_Item:
             )
         item = self.format_dynamodb_item_v2()
         try:
-            self.db_client.put_item(
-                TableName=self.TABLE_NAME,
-                Item=item,
-                ConditionExpression=conditional_expression,
-            )
+            if conditional_expression:
+                self.db_client.put_item(
+                    TableName=self.TABLE_NAME,
+                    Item=item,
+                    ConditionExpression=conditional_expression,
+                )
+            else:
+                self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ConditionalCheckFailedException as e:
             return DB_Response(
                 message=f"{self.TABLE_NAME} already exists, pick a different Name",
@@ -150,16 +153,6 @@ class DB_Item:
                 return (False, field)
         return (True, None)
 
-    def format_dynamodb_item(self):
-        # generates a dictionary in the format dynamodb expects
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
-        fridge_item = {}
-        for key in self.ITEM_TYPES:
-            val = getattr(self, key)
-            if val is not None:
-                fridge_item[key] = {self.ITEM_TYPES[key]: str(val)}
-        return fridge_item
-
     def get_class_field_value(self, key: str):
         """
         Gets the class field value based on a key.
@@ -188,7 +181,6 @@ class DB_Item:
             class_field_value = getattr(self, key)
         return class_field_value
 
-    # TODO: deprecate format_dynamodb_item in favor of format_dynamodb_item_v2
     def format_dynamodb_item_v2(self):
         """
         Creates a dictionary in the syntax that dynamodb expects
@@ -202,6 +194,8 @@ class DB_Item:
             val = getattr(self, key)
             if val is not None:
                 fridge_json[key] = val
+                if isinstance(val, int) and not isinstance(val, bool):
+                    val = str(val)
                 if isinstance(val, dict):
                     val = json.dumps(val)
                 elif isinstance(val, list):
@@ -263,6 +257,7 @@ class DB_Item:
             required = field_validation.get("required", None)
             min_length = field_validation.get("min_length", None)
             max_length = field_validation.get("max_length", None)
+            choices = field_validation.get("choices", None)
             if required:
                 if class_field_value is None:
                     return Field_Validator(
@@ -279,6 +274,12 @@ class DB_Item:
                     return Field_Validator(
                         is_valid=False,
                         message=f"{key} character length must be <= {max_length}",
+                    )
+            if choices and is_not_none:
+                if class_field_value not in choices:
+                    return Field_Validator(
+                        is_valid=False,
+                        message=f"{key} must to be one of: {str(choices)}",
                     )
         return Field_Validator(
             is_valid=True, message="All Fields Were Successfully Validated"
@@ -326,13 +327,13 @@ class Fridge(DB_Item):
         },
         "last_edited": {"required": False, "type": "N", "max_length": 20},
         "verified": {"required": False, "type": "B"},
-        "latest_report": {"required": False, "type": "S"},
-        "latest_report/epochTimestamp": {"required": False},
-        "latest_report/timestamp": {"required": False},
-        "latest_report/condition": {"required": False},
-        "latest_report/foodPercentage": {"required": False},
-        "latest_report/foodPhotoURL": {"required": False},
-        "latest_report/notes": {"required": False},
+        "latestFridgeReport": {"required": False, "type": "S"},
+        "latestFridgeReport/epochTimestamp": {"required": False},
+        "latestFridgeReport/timestamp": {"required": False},
+        "latestFridgeReport/condition": {"required": False},
+        "latestFridgeReport/foodPercentage": {"required": False},
+        "latestFridgeReport/photoURL": {"required": False},
+        "latestFridgeReport/notes": {"required": False},
     }
     TABLE_NAME = "fridge"
     FOOD_ACCEPTS = []  # TODO: Fill this in
@@ -354,14 +355,14 @@ class Fridge(DB_Item):
             self.food_restrictions: list = fridge.get("food_restrictions", None)
             self.photoURL: str = fridge.get("photoURL", None)
             self.last_edited: str = fridge.get("last_edited", None)
-            self.latest_report: dict = fridge.get("latest_report", None)
+            self.latestFridgeReport: dict = fridge.get("latestFridgeReport", None)
             self.verified: bool = fridge.get("verified", None)
 
-    def get_item(self, fridge_id):
-        is_valid, message = Fridge.is_valid_id(fridge_id=fridge_id)
+    def get_item(self, fridgeId):
+        is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
         if not is_valid:
             return DB_Response(success=False, status_code=400, message=message)
-        key = {"id": {"S": fridge_id}}
+        key = {"id": {"S": fridgeId}}
         result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
         if "Item" not in result:
             return DB_Response(
@@ -435,16 +436,16 @@ class Fridge(DB_Item):
         return field_validator
 
     @staticmethod
-    def is_valid_id(fridge_id: str) -> tuple[bool, str]:
+    def is_valid_id(fridgeId: str) -> tuple[bool, str]:
         """
         Checks if the fridge is id valid. A valid fridge id is alphanumeric and
         must have character length >= 3 and <= 32
         """
-        if fridge_id is None:
+        if fridgeId is None:
             return False, "Missing Required Field: id"
-        if not fridge_id.isalnum():
+        if not fridgeId.isalnum():
             return False, "id Must Be Alphanumeric"
-        id_length = len(fridge_id)
+        id_length = len(fridgeId)
         is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
         if not is_valid_id_length:
             return (
@@ -471,35 +472,89 @@ class Fridge(DB_Item):
     def get_fridge_locations(self):
         pass
 
+    def update_fridge_report(self, fridgeId: str, fridge_report: dict) -> DB_Response:
+        """
+        Updates latestFridgeReport field with new Fridge Report.
+        This function is called when a new FridgeReport is added to the database
+        """
+        db_reponse = self.get_item(fridgeId=fridgeId)
+        if not db_reponse.is_successful():
+            # Fridge was not found
+            return db_reponse
+        fridge_dict = json.loads(db_reponse.json_data)
+        fridge_dict["latestFridgeReport"] = fridge_report
+        fridge_json_data = json.dumps(fridge_dict)
+        latestFridgeReport = json.dumps(fridge_report)
+        """
+        JD and #LFR are mapped to the values set in ExpressionAttributeNames
+        :fj and :fr are mapped to the values set in ExpressionAttributeValues
+        UpdateExpression becomes: "json_data":  {"S": fridge_json_data}, "latestFridgeReport": {"S": latestFridgeReport}
+        """
+        self.db_client.update_item(
+            TableName=self.TABLE_NAME,
+            Key={"id": {"S": fridgeId}},
+            ExpressionAttributeNames={"#LFR": "latestFridgeReport", "#JD": "json_data"},
+            ExpressionAttributeValues={
+                ":fr": {"S": latestFridgeReport},
+                ":fj": {"S": fridge_json_data},
+            },
+            UpdateExpression="SET #JD = :fj, #LFR = :fr",
+        )
+        return DB_Response(
+            success=True, status_code=201, message="fridge_report was succesfully added"
+        )
+
 
 class FridgeReport(DB_Item):
-
-    REQUIRED_FIELDS = ["fridge_id", "status", "fridge_percentage"]
-    # timestamp and epochTimestamp have the same time but in different formats
-    ITEM_TYPES = {
-        "notes": "S",
-        "fridge_id": "S",
-        "image_url": "S",
-        "epochTimestamp": "N",
-        "timestamp": "S",
-        "status": "S",
-        "fridge_percentage": "N",
-    }
     TABLE_NAME = "fridge_report"
-    VALID_STATUS = {"working", "needs cleaning", "needs servicing", "not at location"}
-    VALID_FRIDGE_PERCENTAGE = {0, 33, 67, 100}
-    MAX_NOTES_LENGTH = 256
+    VALID_CONDITIONS = {
+        "working",
+        "needs cleaning",
+        "needs servicing",
+        "not at location",
+    }
+    VALID_FOOD_PERCENTAGE = {0, 33, 67, 100}
+    FIELD_VALIDATION = {
+        "notes": {"required": False, "max_length": 256, "type": "S"},
+        "fridgeId": {
+            "required": True,
+            "min_length": Fridge.MIN_ID_LENGTH,
+            "max_length": Fridge.MAX_ID_LENGTH,
+            "type": "S",
+        },
+        "photoURL": {
+            "required": False,
+            "max_length": 2048,
+            "type": "S",
+        },
+        "epochTimestamp": {"required": False, "type": "N"},
+        "timestamp": {"required": False, "type": "S"},
+        "condition": {"required": True, "type": "S", "choices": VALID_CONDITIONS},
+        "foodPercentage": {
+            "required": True,
+            "type": "N",
+            "choices": VALID_FOOD_PERCENTAGE,
+        },
+    }
 
     def __init__(
         self, db_client: "botocore.client.DynamoDB", fridge_report: dict = None
     ):
         super().__init__(db_client=db_client)
         if fridge_report is not None:
-            self.set_notes(fridge_report.get("notes", None))
-            self.status: str = fridge_report.get("status", None)
-            self.image_url: str = fridge_report.get("image_url", None)
-            self.fridge_id: str = fridge_report.get("fridge_id", None)
-            self.fridge_percentage: int = fridge_report.get("fridge_percentage", None)
+            fridge_report = self.process_fields(fridge_report)
+            self.notes: str = fridge_report.get("notes", None)
+            self.condition: str = fridge_report.get("condition", None)
+            self.photoURL: str = fridge_report.get("photoURL", None)
+            self.fridgeId: str = fridge_report.get("fridgeId", None)
+            self.foodPercentage: int = fridge_report.get("foodPercentage", None)
+            # timestamp and epochTimestamp have the same time but in different formats
+            self.timestamp: str = fridge_report.get(
+                "timestamp", None
+            )  # ISO formatted timestamp for api clients
+            self.epochTimestamp: str = fridge_report.get(
+                "epochTimestamp", None
+            )  # Epoch timestamp for querying
 
     def set_timestamp(self):
         """
@@ -511,80 +566,25 @@ class FridgeReport(DB_Item):
         utc_time = datetime.datetime.utcnow()
         self.timestamp = utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    def set_notes(self, notes: str):
+    def object_to_dict(self):
         """
-        Notes is optional. If Notes is an empty string then set to None
+        Converts object into a dictionary
         """
-        if notes is None:
-            self.notes = None
-            return
-        if len(notes) == 0:
-            self.notes = None
-        else:
-            self.notes = notes
-
-    @staticmethod
-    def is_valid_notes(notes: str) -> bool:
-        return notes is None or len(notes) <= FridgeReport.MAX_NOTES_LENGTH
-
-    @staticmethod
-    def is_valid_status(status: str) -> bool:
-        return status in FridgeReport.VALID_STATUS
-
-    @staticmethod
-    def is_valid_fridge_percentage(fridge_percentage: int) -> bool:
-        return fridge_percentage in FridgeReport.VALID_FRIDGE_PERCENTAGE
+        object_dict = {}
+        for key in self.FIELD_VALIDATION:
+            val = getattr(self, key)
+            if val is not None:
+                object_dict[key] = val
+        return object_dict
 
     def add_item(self) -> DB_Response:
-        has_required_fields, missing_field = self.has_required_fields()
-        if not has_required_fields:
-            return DB_Response(
-                message=f"Missing Required Field: {missing_field}",
-                status_code=400,
-                success=False,
-            )
-        is_valid_id, is_valid_id_message = Fridge.is_valid_id(self.fridge_id)
-        if not is_valid_id:
-            return DB_Response(
-                message=is_valid_id_message, status_code=400, success=False
-            )
-        if not FridgeReport.is_valid_status(self.status):
-            return DB_Response(
-                message=f"Invalid Status, must to be one of: {str(self.VALID_STATUS)}",
-                status_code=400,
-                success=False,
-            )
-        if not FridgeReport.is_valid_fridge_percentage(self.fridge_percentage):
-            return DB_Response(
-                message=f"Invalid Fridge percentage, must to be one of: {str(self.VALID_FRIDGE_PERCENTAGE)}",
-                status_code=400,
-                success=False,
-            )
-        if not FridgeReport.is_valid_notes(self.notes):
-            return DB_Response(
-                message=f"Notes character length must be <= {self.MAX_NOTES_LENGTH}",
-                status_code=400,
-                success=False,
-            )
         self.set_timestamp()
-        item = self.format_dynamodb_item()
-        try:
-            self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
-        except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = (
-                f"Cannot do operations on a non-existent table:  {self.TABLE_NAME}"
-            )
-            logging.error(message)
-            return DB_Response(message=message, status_code=500, success=False)
-        except ClientError as e:
-            logging.error(e)
-            return DB_Response(
-                message="Unexpected AWS service exception",
-                status_code=500,
-                success=False,
-            )
-        return DB_Response(
-            message="Fridge Report was succesfully added", status_code=201, success=True
+        fridge_report_dict = self.object_to_dict()
+        db_response = super().add_item()
+        if not db_response.is_successful():
+            return db_response
+        return Fridge(db_client=self.db_client).update_fridge_report(
+            fridgeId=self.fridgeId, fridge_report=fridge_report_dict
         )
 
 
