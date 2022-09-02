@@ -1,5 +1,5 @@
 {
-  "body": "{\"status\": \"working\", \"fridge_percentage\": 33}",
+  "body": "{\"condition\": \"working\", \"foodPercentage\": 33}",
   "resource": "/{proxy+}",
   "path": "/document",
   "httpMethod": "POST",
@@ -14,7 +14,7 @@
   },
   "pathParameters": {
     "proxy": "/document",
-    "fridge_id": "2fish5loavesfridge"
+    "fridgeId": "2fish5loavesfridge"
   },
   "stageVariables": {
     "baz": "qux"
