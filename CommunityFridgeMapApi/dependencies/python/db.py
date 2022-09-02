@@ -485,6 +485,11 @@ class Fridge(DB_Item):
         fridge_dict["latestFridgeReport"] = fridge_report
         fridge_json_data = json.dumps(fridge_dict)
         latestFridgeReport = json.dumps(fridge_report)
+        """
+        JD and #LFR are mapped to the values set in ExpressionAttributeNames
+        :fj and :fr are mapped to the values set in ExpressionAttributeValues
+        UpdateExpression becomes: "json_data":  {"S": fridge_json_data}, "latestFridgeReport": {"S": latestFridgeReport}
+        """
         self.db_client.update_item(
             TableName=self.TABLE_NAME,
             Key={"id": {"S": fridgeId}},
