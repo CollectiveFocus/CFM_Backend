@@ -38,9 +38,9 @@ Follow these steps to get Dynamodb running locally
 3. `cd CommunityFridgeMapApi/`
 4. `sam build --use-container`
 5. **Load data into your local Dynamodb tables**
-    1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+    1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 6. **Get data from your local Dynamodb tables**
-    1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
+    1. `aws dynamodb scan --table-name fridge_dev --endpoint-url http://localhost:4566`
 
 ## API
 
@@ -51,13 +51,13 @@ Recommend: https://www.postman.com/
 ### Fridge
 
 ### One Time Use
-1. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-3. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-4. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+3. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+4. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 
 ### Local Server
-1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
     * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
 3. GET Fridges: Go to http://localhost:3000/v1/fridges
@@ -67,19 +67,19 @@ Recommend: https://www.postman.com/
 ### Fridge Report
 
 #### One Time Use
-1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
 2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 #### Local Server
-1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridgeId}/reports`
     * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
 
 ### Image
 
-1. Start local SAM API `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. Start local SAM API `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 1. Upload image (replace `<file-path>` with your actual image path like `"@/home/user/Downloads/sample.webp"`)
     ```
     curl --request POST \

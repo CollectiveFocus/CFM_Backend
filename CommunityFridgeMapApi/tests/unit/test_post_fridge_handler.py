@@ -20,13 +20,13 @@ class PostFridgeHandlerTest(unittest.TestCase):
             "body": '{"name": "greenpointfridge", "location": {"address":"9 W. Elm St.", "geoLat": "40.730610", "geoLng": "-73.935242"}}',
             "httpMethod": "POST",
             "pathParameters": {},
-            "queryStringParameters": {}
+            "queryStringParameters": {},
         }
         response = FridgeHandler.lambda_handler(
             event=event, ddbclient=DynamoDbMockPutItem()
         )
         message = json.loads(response["body"])["message"]
-        self.assertEqual(message, "fridge was succesfully added")
+        self.assertEqual(message, "fridge_ was succesfully added")
         self.assertEqual(response["statusCode"], 201)
 
     def test_lambda_handler_fail(self):
@@ -34,7 +34,7 @@ class PostFridgeHandlerTest(unittest.TestCase):
             "body": '{"name": "greenpointfridge"}',
             "httpMethod": "POST",
             "pathParameters": {},
-            "queryStringParameters": {}
+            "queryStringParameters": {},
         }
         response = FridgeHandler.lambda_handler(
             event=event, ddbclient=DynamoDbMockPutItem()
@@ -47,9 +47,7 @@ class PostFridgeHandlerTest(unittest.TestCase):
         event = {
             "body": '{"name": "greenpointfridge", "location": {"address":"9 W. Elm St.", "geoLat": "40.730610", "geoLng": "-73.935242"}}',
             "pathParameters": {},
-            "queryStringParameters": {}
+            "queryStringParameters": {},
         }
         with pytest.raises(ValueError):
-            FridgeHandler.lambda_handler(
-                event=event, ddbclient=DynamoDbMockPutItem()
-            )
+            FridgeHandler.lambda_handler(event=event, ddbclient=DynamoDbMockPutItem())

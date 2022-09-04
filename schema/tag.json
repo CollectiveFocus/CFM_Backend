@@ -1,5 +1,5 @@
 {
-  "TableName": "tag",
+  "TableName": "tag_dev",
   "AttributeDefinitions": [
     {
       "AttributeName": "tag_name",
