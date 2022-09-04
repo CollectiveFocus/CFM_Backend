@@ -1,5 +1,5 @@
 {
-  "TableName": "fridge",
+  "TableName": "fridge_dev",
   "AttributeDefinitions": [
     {
       "AttributeName": "id",

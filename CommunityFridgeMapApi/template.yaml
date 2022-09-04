@@ -20,11 +20,43 @@ Parameters:
     AllowedValues:
       - local
       - aws
+  Stage:
+    Type: String
+    Description: Choose between dev, staging, prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  CFM_HostedZoneId:
+    Type: String
+    Description: Grab the HostedZoneId from Route53 console
 
 ##########################
 ##    Resources    ##
 ##########################
 Resources:
+  ApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub api-${Stage}.communityfridgefinder.com
+      DomainValidationOptions:
+       - DomainName: !Sub api-${Stage}.communityfridgefinder.com
+         HostedZoneId: !Sub ${CFM_HostedZoneId}
+      ValidationMethod: DNS
+  ApiGatewayApi:
+      Type: AWS::Serverless::Api
+      Properties:
+        StageName: !Ref Stage
+        # Allows www.YOUR_DOMAIN.com to call these APIs
+        # SAM will automatically add AllowMethods with a list of methods for this API
+        Cors: "'www.communityfridgefinder.com'"
+        EndpointConfiguration: REGIONAL
+        Domain:
+          DomainName: !Sub api-${Stage}.communityfridgefinder.com
+          CertificateArn: !Ref ApiCertificate
+          Route53:
+            HostedZoneName: "communityfridgefinder.com." # NOTE: The period at the end is required
+
   FridgeReportFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -35,6 +67,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
+          Stage: !Ref Stage
       Layers:
         - !Ref CommonLayer
       Policies:
@@ -50,12 +83,19 @@ Resources:
             Action:
             - dynamodb:PutItem
             Resource: !GetAtt FridgeReportTable.Arn
+          - Effect: Allow
+            Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            Resource: !GetAtt FridgeTable.Arn
       Events:
         FridgeReport:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /v1/fridges/{fridgeId}/reports
             Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
             RequestParameters:
               - method.request.path.fridgeId:
                   Required: true
@@ -75,6 +115,9 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+    Description: Responds with 'hello world' if successful.
 
   FridgesFunction:
     Type: AWS::Serverless::Function
@@ -86,6 +129,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
+          Stage: !Ref Stage
       Layers:
         - !Ref CommonLayer
       Policies:
@@ -113,6 +157,8 @@ Resources:
               - method.request.path.fridgeId:
                   Required: false
                   Caching: false
+            RestApiId:
+              Ref: ApiGatewayApi
         GetFridges:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
@@ -121,6 +167,16 @@ Resources:
             RequestParameters:
               - method.request.querystring.tag:
                   Required: false
+            RestApiId:
+              Ref: ApiGatewayApi
+        PostFridge:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/fridges
+            Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
+
   ImageFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -131,6 +187,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
+          Stage: !Ref Stage
       Layers:
         - !Ref CommonLayer
       Policies:
@@ -156,6 +213,8 @@ Resources:
           Properties:
             Path: /v1/image
             Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
 
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
@@ -167,6 +226,7 @@ Resources:
       Environment:
         Variables:
           Environment: !Ref Environment
+          Stage: !Ref Stage
       Layers:
         - !Ref CommonLayer
       Policies:
@@ -220,7 +280,7 @@ Resources:
   CommunityFridgeMapImages:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: community-fridge-map-images
+      BucketName: !Sub community-fridge-map-images-${Stage}
       CorsConfiguration:
         CorsRules:
         - AllowedHeaders:
@@ -244,7 +304,7 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
-      TableName: fridge
+      TableName: !Sub fridge_${Stage}
       BillingMode: "PAY_PER_REQUEST"
 
   FridgeReportTable:
@@ -260,7 +320,7 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "epochTimestamp"
           KeyType: "RANGE"
-      TableName: fridge_report
+      TableName: !Sub fridge_report_${Stage}
       BillingMode: "PAY_PER_REQUEST"
 
   TagTable:
@@ -273,7 +333,7 @@ Resources:
       KeySchema:
         - AttributeName: "tag_name"
           KeyType: "HASH"
-      TableName: tag
+      TableName: !Sub tag_${Stage}
       BillingMode: "PAY_PER_REQUEST"
 
   FridgeHistoryTable:
@@ -289,17 +349,11 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "epochTimestamp"
           KeyType: "RANGE"
-      TableName: fridge_history
+      TableName: !Sub fridge_history_${Stage}
       BillingMode: "PAY_PER_REQUEST"
 
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
