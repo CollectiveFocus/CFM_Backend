@@ -75,6 +75,7 @@ class DB_Item:
     ITEM_TYPES = {}
     TABLE_NAME = ""
     FIELD_VALIDATION = {}
+    STAGE = os.getenv("Stage", "")
 
     def __init__(self, db_client: "botocore.client.DynamoDB"):
         self.db_client = db_client
@@ -335,7 +336,8 @@ class Fridge(DB_Item):
         "latestFridgeReport/photoURL": {"required": False},
         "latestFridgeReport/notes": {"required": False},
     }
-    TABLE_NAME = "fridge"
+
+    TABLE_NAME = f"fridge_{DB_Item.STAGE}"
     FOOD_ACCEPTS = []  # TODO: Fill this in
     FOOD_RESTRICTIONS = []  # TODO: fill this in
 
@@ -506,7 +508,7 @@ class Fridge(DB_Item):
 
 
 class FridgeReport(DB_Item):
-    TABLE_NAME = "fridge_report"
+    TABLE_NAME = f"fridge_report_{DB_Item.STAGE}"
     VALID_CONDITIONS = {
         "working",
         "needs cleaning",
@@ -595,7 +597,7 @@ class FridgeHistory(DB_Item):
 
 class Tag(DB_Item):
     REQUIRED_FIELDS = ["tag_name"]
-    TABLE_NAME = "tag"
+    TABLE_NAME = f"tag_{DB_Item.STAGE}"
     # Tag Class constants
     MIN_TAG_LENGTH = 3
     MAX_TAG_LENGTH = 32

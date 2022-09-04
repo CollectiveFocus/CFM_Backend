@@ -1,5 +1,5 @@
 {
-  "TableName": "fridge_history",
+  "TableName": "fridge_history_dev",
   "AttributeDefinitions": [
     {
       "AttributeName": "fridgeId",
