@@ -27,7 +27,7 @@ Parameters:
       - dev
       - staging
       - prod
-  CFM_HostedZoneId:
+  CFMHostedZoneId:
     Type: String
     Description: Grab the HostedZoneId from Route53 console
 
@@ -41,7 +41,7 @@ Resources:
       DomainName: !Sub api-${Stage}.communityfridgefinder.com
       DomainValidationOptions:
        - DomainName: !Sub api-${Stage}.communityfridgefinder.com
-         HostedZoneId: !Sub ${CFM_HostedZoneId}
+         HostedZoneId: !Sub ${CFMHostedZoneId}
       ValidationMethod: DNS
   ApiGatewayApi:
       Type: AWS::Serverless::Api
