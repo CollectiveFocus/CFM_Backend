@@ -44,7 +44,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "notes": "all good",
                     "fridgeId": "thefriendlyfridge",
-                    "photoURL": "s3.url",
+                    "photoUrl": "s3.url",
                     "epochTimestamp": 34234,
                     "timestamp": "good",
                     "condition": "working",
@@ -109,10 +109,10 @@ class FrdgeReportTest(unittest.TestCase):
                     "fridgeId": "thefriendlyfridge",
                     "condition": "working",
                     "foodPercentage": 100,
-                    "photoURL": "x" * 2049,
+                    "photoUrl": "x" * 2049,
                 },
                 "valid": False,
-                "message": "photoURL character length must be <= 2048",
+                "message": "photoUrl character length must be <= 2048",
             },
         ]
 

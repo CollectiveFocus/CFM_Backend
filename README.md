@@ -83,7 +83,7 @@ Recommend: https://www.postman.com/
 1. Upload image (replace `<file-path>` with your actual image path like `"@/home/user/Downloads/sample.webp"`)
     ```
     curl --request POST \
-      --url http://localhost:3000/v1/image \
+      --url http://localhost:3000/v1/photo \
       --header 'Content-Type: image/webp' \
       --data-binary "@<file-path>"
     ```
