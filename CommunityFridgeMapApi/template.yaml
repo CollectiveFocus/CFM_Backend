@@ -216,6 +216,28 @@ Resources:
             RestApiId:
               Ref: ApiGatewayApi
 
+  SendSESFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: functions/email_service/v1
+      Handler: app.lambda_handler
+      FunctionName: SendSESFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          Stage: !Ref Stage
+      Runtime: python3.9
+      Layers:
+        - !Ref CommonLayer
+      Events:
+        SendSESFunction:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/contact_us
+            Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
+
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
     Properties:
