@@ -2,10 +2,11 @@
 
 ## Setup
 
-1. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+1. AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+2. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
     * **You do not need to create an aws account to use SAM CLI, creating an aws account is OPTIONAL**
-2. Python 3 - [Install Python 3](https://www.python.org/downloads/)
-3. Docker - [Install Docker](https://docs.docker.com/get-docker/)
+3. Python 3 - [Install Python 3](https://www.python.org/downloads/)
+4. Docker - [Install Docker](https://docs.docker.com/get-docker/)
 
 ## Build and Test Locally
 
