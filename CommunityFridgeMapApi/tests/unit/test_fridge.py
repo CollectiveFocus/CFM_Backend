@@ -147,7 +147,7 @@ class FridgeTest(unittest.TestCase):
             "food_restrictions": {"L": [{"S": "meat"}]},
             "photoUrl": {"S": "test"},
             "last_edited": {"N": "2342353"},
-            "verified": {"B": True},
+            "verified": {"BOOL": True},
             "latestFridgeReport": {"S": "{}"},
             "json_data": {"S": json.dumps(fridge)},
         }
@@ -162,8 +162,8 @@ class FridgeTest(unittest.TestCase):
         self.assertEqual(message, "Missing Required Field: id")
         self.assertFalse(is_valid)
 
-        is_valid, message = Fridge.is_valid_id("hi-there")
-        self.assertEqual(message, "id Must Be Alphanumeric")
+        is_valid, message = Fridge.is_valid_id("hi there")
+        self.assertEqual(message, "id has invalid characters")
         self.assertFalse(is_valid)
 
         is_valid, message = Fridge.is_valid_id("hi")
@@ -191,8 +191,8 @@ class FridgeTest(unittest.TestCase):
     def test_validate_fields_success(self):
         fridge = Fridge(
             fridge={
-                "id": "good",
-                "name": "good",
+                "id": "goodAZaz09_#-‘'.",
+                "name": "goodAZaz09_#-‘'. ",
                 "location": {"geoLat": 232342, "geoLng": 2342342},
             },
             db_client=None,
