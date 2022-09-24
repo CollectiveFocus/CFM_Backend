@@ -347,9 +347,7 @@ class Fridge(DB_Item):
         if fridge is not None:
             fridge = DB_Item.process_fields(fridge)
             self.id: str = fridge.get("id", None)
-            self.name: str = fridge.get(
-                "name", None
-            )  # name must be alphanumeric and can contain spaces
+            self.name: str = fridge.get("name", None)
             self.tags: list = fridge.get("tags", None)
             self.location: dict = fridge.get("location", None)
             self.maintainer: dict = fridge.get("maintainer", None)
@@ -417,7 +415,7 @@ class Fridge(DB_Item):
 
     def is_valid_name(self) -> bool:
         """
-        Checks if a Fridge name is valid. A valid name is alphanumric and can contain spaces
+        Checks if a Fridge name is valid.
             Returns:
                 bool (bool):
         """
