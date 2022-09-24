@@ -328,7 +328,7 @@ class Fridge(DB_Item):
             "type": "S",
         },
         "last_edited": {"required": False, "type": "N", "max_length": 20},
-        "verified": {"required": False, "type": "B"},
+        "verified": {"required": False, "type": "BOOL"},
         "latestFridgeReport": {"required": False, "type": "S"},
         "latestFridgeReport/epochTimestamp": {"required": False},
         "latestFridgeReport/timestamp": {"required": False},
@@ -347,9 +347,7 @@ class Fridge(DB_Item):
         if fridge is not None:
             fridge = DB_Item.process_fields(fridge)
             self.id: str = fridge.get("id", None)
-            self.name: str = fridge.get(
-                "name", None
-            )  # name must be alphanumeric and can contain spaces
+            self.name: str = fridge.get("name", None)
             self.tags: list = fridge.get("tags", None)
             self.location: dict = fridge.get("location", None)
             self.maintainer: dict = fridge.get("maintainer", None)
@@ -411,17 +409,17 @@ class Fridge(DB_Item):
         """
         Sets the Fridge id. Fridge id is the Fridge name with no spaces and all lower cased
         """
-        id = self.name.lower().replace(" ", "")
-        self.id = id
+        if self.name is not None:
+            id = self.name.lower().replace(" ", "")
+            self.id = id
 
     def is_valid_name(self) -> bool:
         """
-        Checks if a Fridge name is valid. A valid name is alphanumric and can contain spaces
+        Checks if a Fridge name is valid.
             Returns:
                 bool (bool):
         """
-        id = self.name.lower().replace(" ", "")
-        return id.isalnum()
+        return re.match(r"^[A-Za-z0-9_#\-‘'. ]+$", self.name) is not None
 
     def validate_fields(self) -> Field_Validator:
         """
@@ -446,8 +444,8 @@ class Fridge(DB_Item):
         """
         if fridgeId is None:
             return False, "Missing Required Field: id"
-        if not fridgeId.isalnum():
-            return False, "id Must Be Alphanumeric"
+        if re.match(r"^[A-Za-z0-9_#\-‘'.]+$", fridgeId) is None:
+            return False, "id has invalid characters"
         id_length = len(fridgeId)
         is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
         if not is_valid_id_length:
