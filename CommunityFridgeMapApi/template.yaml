@@ -130,10 +130,10 @@ Resources:
     Properties:
       AttributeDefinitions:
         -
-          AttributeName: 'id'
+          AttributeName: 'username'
           AttributeType: 'S'
         -
-          AttributeName: 'name'
+          AttributeName: 'display_name'
           AttributeType: 'S'
         -
           AttributeName: "address"
@@ -188,7 +188,7 @@ Resources:
           AttributeType: "S"
       KeySchema:
         -
-          AttributeName: "id"
+          AttributeName: "username"
           KeyType: "HASH"
       TableName: !Ref FRIDGE_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
@@ -211,14 +211,14 @@ Resources:
           AttributeName: "image_url"
           AttributeType: "S"
         -
-          AttributeName: "fridge_id"
+          AttributeName: "fridge_username"
           KeyType: "S"
         -
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema:
         - #State#FridgeName
-          AttributeName: "fridge_id"
+          AttributeName: "fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
@@ -248,7 +248,7 @@ Resources:
 
       AttributeDefinitions:
         -
-          AttributeName: 'fridge_id'
+          AttributeName: 'fridge_username'
           AttributeType: 'S'
         -
           AttributeName: "address"
@@ -309,7 +309,7 @@ Resources:
           KeyType: "N"
       KeySchema:
         -
-          AttributeName: "fridge_id"
+          AttributeName: "fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"

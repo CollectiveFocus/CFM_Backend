@@ -1,12 +1,10 @@
+from email import message
 import os
 import boto3
 import time
 from botocore.exceptions import ClientError
 import logging
 from typing import Tuple
-import re
-import json
-from dataclasses import dataclass
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -25,12 +23,6 @@ def get_ddb_connection(
 
 def layer_test() -> str:
     return "hello world"
-
-
-@dataclass
-class Field_Validator:
-    is_valid: str
-    message: str
 
 
 class DB_Response:
@@ -59,55 +51,13 @@ class DB_Item:
     REQUIRED_FIELDS = []
     ITEM_TYPES = {}
     TABLE_NAME = ""
-    FIELD_VALIDATION = {}
 
     def __init__(self, db_client: "botocore.client.DynamoDB"):
         self.db_client = db_client
         pass
 
-    def add_item(self, conditional_expression=None) -> DB_Response:
-        """
-        adds item to database
-            Parameters:
-                conditional_expression (str): conditional expression for boto3 function put_item
-
-            Returns:
-                db_response (DB_Response): returns a DB_Response
-        """
-        field_validation = self.validate_fields()
-        if not field_validation.is_valid:
-            return DB_Response(
-                message=field_validation.message, status_code=400, success=False
-            )
-        item = self.format_dynamodb_item_v2()
-        try:
-            self.db_client.put_item(
-                TableName=self.TABLE_NAME,
-                Item=item,
-                ConditionExpression=conditional_expression,
-            )
-        except self.db_client.exceptions.ConditionalCheckFailedException as e:
-            return DB_Response(
-                message=f"{self.TABLE_NAME} already exists, pick a different Name",
-                status_code=409,
-                success=False,
-            )
-        except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = f"Cannot do operations on a non-existent table: {self.TABLE_NAME}"
-            logging.error(message)
-            return DB_Response(message=message, status_code=500, success=False)
-        except ClientError as e:
-            logging.error(e)
-            return DB_Response(
-                message="Unexpected AWS service exception",
-                status_code=500,
-                success=False,
-            )
-        return DB_Response(
-            message=f"{self.TABLE_NAME} was succesfully added",
-            status_code=200,
-            success=True,
-        )
+    def add_item(self):
+        pass
 
     def update_item(self):
         pass
@@ -138,192 +88,60 @@ class DB_Item:
                 fridge_item[key] = {self.ITEM_TYPES[key]: val}
         return fridge_item
 
-    def get_class_field_value(self, key: str):
-        """
-        Gets the class field value based on a key.
-        The parameter key can be the class field name or in the case of a dictionary can contain "/"
-        "/" is used when a class field is a dictionary and the client wants to get the value of a child field
-        Example: location: {geoLng: 23.4323}
-                 key = "location/geoLng"
-        In order to get the value of geoLng the client would use the key "location/geoLng"
-            Parameters:
-                key (str): the name of the class field the client wants to obtain the value of
-
-            Returns:
-                object_dict (dict): the class field value
-        """
-        class_field_value = None
-        if "/" in key:
-            key_split = key.split("/")
-            parent_key = key_split[0]
-            class_field_value = getattr(self, parent_key)
-            for i in range(1, len(key_split)):
-                if class_field_value is None:
-                    break
-                child_key = key_split[i]
-                class_field_value = class_field_value.get(child_key, None)
-        else:
-            class_field_value = getattr(self, key)
-        return class_field_value
-
-    # TODO: deprecate format_dynamodb_item in favor of format_dynamodb_item_v2
-    def format_dynamodb_item_v2(self):
-        """
-        Creates a dictionary in the syntax that dynamodb expects
-        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
-        """
-        fridge_item = {}
-        for key in self.FIELD_VALIDATION:
-            if "/" in key:
-                continue
-            val = getattr(self, key)
-            if val is not None:
-                if isinstance(val, dict):
-                    val = json.dumps(val)
-                fridge_item[key] = {self.FIELD_VALIDATION[key]["type"]: val}
-        return fridge_item
-
-    @staticmethod
-    def process_fields(object_dict: dict) -> dict:
-        """
-        Removes extra white spaces, trailing spaces, leading spaces from object_dict values
-        If the length of the field is ZERO after removing the white spaces, sets the value to None
-            Parameters:
-                object_dict (dict): a dictinary
-
-            Returns:
-                object_dict (dict):
-        """
-        for key, value in object_dict.items():
-            if isinstance(value, str):
-                object_dict[key] = DB_Item.remove_extra_whitespace(value)
-            if isinstance(value, dict):
-                object_dict[key] = DB_Item.process_fields(value)
-            if isinstance(value, list):
-                for index, val in enumerate(value):
-                    if isinstance(val, str):
-                        value[index] = DB_Item.remove_extra_whitespace(val)
-        return object_dict
-
-    @staticmethod
-    def remove_extra_whitespace(value: str):
-        """
-        Removes extra white spaces, trailing spaces, and leading spaces
-        Example: Input: " hi    there " Output: "hi there"
-            Parameters:
-                value (str): a string
-            Returns:
-                value (str): the value parameter without extra white spaces,
-                             trailing spaces, and leading spaces
-        """
-        value = re.sub(" +", " ", value).strip()
-        if len(value) == 0:
-            value = None
-        return value
-
-    def validate_fields(self) -> Field_Validator:
-        """
-        Validates that all the fields are valid.
-        All fields are valid if they pass all the constraints set in FIELD_VALIDATION
-        """
-        for key, field_validation in self.FIELD_VALIDATION.items():
-            class_field_value = self.get_class_field_value(key)
-            is_not_none = class_field_value is not None
-            required = field_validation.get("required", None)
-            min_length = field_validation.get("min_length", None)
-            max_length = field_validation.get("max_length", None)
-            if required:
-                if class_field_value is None:
-                    return Field_Validator(
-                        is_valid=False, message=f"Missing Required Field: {key}"
-                    )
-            if min_length and is_not_none:
-                if len(str(class_field_value)) < min_length:
-                    return Field_Validator(
-                        is_valid=False,
-                        message=f"{key} character length must be >= {min_length}",
-                    )
-            if max_length and is_not_none:
-                if len(str(class_field_value)) > max_length:
-                    return Field_Validator(
-                        is_valid=False,
-                        message=f"{key} character length must be <= {max_length}",
-                    )
-        return Field_Validator(
-            is_valid=True, message="All Fields Were Successfully Validated"
-        )
-
 
 class Fridge(DB_Item):
-    MIN_ID_LENGTH = 3
-    MAX_ID_LENGTH = 32
-    FIELD_VALIDATION = {
-        "id": {
-            "required": True,
-            "min_length": MIN_ID_LENGTH,
-            "max_length": MAX_ID_LENGTH,
-            "type": "S",
-        },
-        "name": {
-            "required": True,
-            "min_length": MIN_ID_LENGTH,
-            "max_length": 50,
-            "type": "S",
-        },
-        "tags": {"required": False, "type": "L"},
-        "location": {"required": True, "type": "S"},
-        "location/street": {"required": False, "max_length": 256},
-        "location/city": {"required": False, "max_length": 256},
-        "location/state": {"required": False, "max_length": 256},
-        "location/zip": {"required": False, "max_length": 10},
-        "location/geoLat": {"required": True, "max_length": 20},
-        "location/geoLng": {"required": True, "max_length": 20},
-        "maintainer": {"required": False, "type": "S"},
-        "maintainer/name": {"required": False, "max_length": 256},
-        "maintainer/organization": {"required": False, "max_length": 256},
-        "maintainer/phone": {"required": False, "min_length": 10, "max_length": 12},
-        "maintainer/email": {"required": False, "max_length": 320},
-        "maintainer/website": {"required": False, "max_length": 2048},
-        "maintainer/instagram": {"required": False, "max_length": 64},
-        "notes": {"required": False, "max_length": 280, "type": "S"},
-        "food_accepts": {"required": False, "type": "L"},
-        "food_restrictions": {"required": False, "type": "L"},
-        "photoURL": {
-            "required": False,
-            "max_length": 2048,
-            "type": "S",
-        },
-        "last_edited": {"required": False, "type": "N", "max_length": 20},
-        "verified": {"required": False, "type": "B"},
-        "latest_report": {"required": False, "type": "S"},
-        "latest_report/timestamp": {"required": False},
-        "latest_report/condition": {"required": False},
-        "latest_report/foodPercentage": {"required": False},
-        "latest_report/foodPhotoURL": {"required": False},
-        "latest_report/notes": {"required": False},
-    }
+    MIN_USERNAME_LENGTH = 3
+    MAX_USERNAME_LENGTH = 32
+    REQUIRED_FIELDS = ["display_name", "address", "lat", "long"]
     TABLE_NAME = "fridge"
     FOOD_ACCEPTS = []  # TODO: Fill this in
     FOOD_RESTRICTIONS = []  # TODO: fill this in
+    ITEM_TYPES = {
+        "display_name": "S",
+        "username": "S",
+        "address": "S",
+        "instagram": "S",
+        "info": "S",
+        "url": "S",
+        "neighborhood": "S",
+        "organizer_email": "S",
+        "tags": "L",
+        "food_accepts": "L",
+        "food_restrictions": "L",
+        "lat": "S",
+        "long": "S",
+        "last_edited": "N",
+        "profile_image": "S",
+        "report_timestamp": "S",
+        "report_notes": "S",
+        "report_status": "S",
+        "report_image": "S",
+    }
 
     def __init__(self, db_client: "botocore.client.DynamoDB", fridge: dict = None):
         super().__init__(db_client=db_client)
         if fridge is not None:
-            fridge = DB_Item.process_fields(fridge)
-            self.id: str = fridge.get("id", None)
-            self.name: str = fridge.get(
-                "name", None
-            )  # name must be alphanumeric and can contain spaces
+            self.display_name: str = fridge.get(
+                "display_name", None
+            )  # display_name must be alphanumeric (spaces are fine)
+            self.username: str = fridge.get("username", None)
+            self.address: str = fridge.get("address", None)
+            self.instagram: str = fridge.get("instagram", None)
+            self.info: str = fridge.get("info", None)
+            self.url: str = fridge.get("url", None)
+            self.neighborhood: str = fridge.get("neighborhood", None)
+            self.organizer_email: str = fridge.get("organizer_email", None)
             self.tags: list = fridge.get("tags", None)
-            self.location: dict = fridge.get("location", None)
-            self.maintainer: dict = fridge.get("maintainer", None)
-            self.notes: str = fridge.get("notes", None)
             self.food_accepts: list = fridge.get("food_accepts", None)
             self.food_restrictions: list = fridge.get("food_restrictions", None)
-            self.photoURL: str = fridge.get("photoURL", None)
+            self.lat: str = fridge.get("lat", None)
+            self.long: str = fridge.get("long", None)
+            self.profile_image: str = fridge.get("profile_image", None)
             self.last_edited: str = fridge.get("last_edited", None)
-            self.latest_report: dict = fridge.get("latest_report", None)
-            self.verified: bool = fridge.get("verified", None)
+            self.report_timestamp: int = fridge.get("report_timestamp", None)
+            self.report_notes: str = fridge.get("report_notes", None)
+            self.report_status: str = fridge.get("report_status", None)
+            self.report_image: str = fridge.get("report_image", None)
 
     def get_item(self):
         pass
@@ -334,70 +152,83 @@ class Fridge(DB_Item):
     def add_items(self):
         pass
 
-    def set_id(self):
-        """
-        Sets the Fridge id. Fridge id is the Fridge name with no spaces and all lower cased
-        """
-        id = self.name.lower().replace(" ", "")
-        self.id = id
+    def set_username(self):
+        # Fridge username is the display_name with no spaces and all lower cased
+        username = self.display_name.lower().replace(" ", "")
+        self.username = username
 
-    def is_valid_name(self) -> bool:
-        """
-        Checks if a Fridge name is valid. A valid name is alphanumric and can contain spaces
-            Returns:
-                bool (bool):
-        """
-        id = self.name.lower().replace(" ", "")
-        return id.isalnum()
-
-    def validate_fields(self) -> Field_Validator:
-        """
-        Validates that all the fields are valid.
-        All fields are valid if they pass all the constraints set in FIELD_VALIDATION
-        """
-        field_validator = super().validate_fields()
-        if not field_validator.is_valid:
-            return field_validator
-        if not self.is_valid_name():
-            return Field_Validator(
-                message="Name Can Only Contain Letters, Numbers, and Spaces",
-                is_valid=False,
-            )
-        return field_validator
+    def is_valid_display_name(self) -> bool:
+        # A valid display_name is alphanumric and can contain spaces
+        username = self.display_name.lower().replace(" ", "")
+        return username.isalnum()
 
     @staticmethod
-    def is_valid_id(fridge_id: str) -> tuple[bool, str]:
-        """
-        Checks if the fridge is id valid. A valid fridge id is alphanumeric and
-        must have character length >= 3 and <= 32
-        """
-        if fridge_id is None:
-            return False, "Missing Required Field: id"
-        if not fridge_id.isalnum():
-            return False, "id Must Be Alphanumeric"
-        id_length = len(fridge_id)
-        is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
-        if not is_valid_id_length:
+    def is_valid_username(fridge_username) -> tuple[bool, str]:
+        if fridge_username is None:
+            return False, "Missing Required Field: username"
+        if not fridge_username.isalnum():
+            return False, "Username Must Be Alphanumeric"
+        username_length = len(fridge_username)
+        is_valid_username_length = (
+            username_length >= Fridge.MIN_USERNAME_LENGTH
+            and username_length <= Fridge.MAX_USERNAME_LENGTH
+        )
+        if not is_valid_username_length:
             return (
                 False,
-                f"id Must Have A Character Length >= {Fridge.MIN_ID_LENGTH} and <= {Fridge.MAX_ID_LENGTH}",
+                f"Username Must Have A Character Length >= {Fridge.MIN_USERNAME_LENGTH} and <= {Fridge.MAX_USERNAME_LENGTH}",
             )
         return True, "success"
 
     def set_last_edited(self):
-        """
-        Sets last_edited to the current epoch time. Timezone defaults to UTC
-        """
         self.last_edited = str(int(time.time()))
 
-    def add_item(self, conditional_expression=None) -> DB_Response:
-        """
-        Adds a fridge item to the database
-        """
-        self.set_id()
+    def add_item(self) -> DB_Response:
+        has_required_fields, field = self.has_required_fields()
+        if not has_required_fields:
+            return DB_Response(
+                message="Missing Required Field: %s" % field,
+                status_code=400,
+                success=False,
+            )
+        if not self.is_valid_display_name():
+            return DB_Response(
+                message="Display Name Can Only Contain Letters, Numbers, and Spaces",
+                status_code=400,
+                success=False,
+            )
+        self.set_username()
         self.set_last_edited()
-        conditional_expression = "attribute_not_exists(id)"
-        return super().add_item(conditional_expression=conditional_expression)
+        item = self.format_dynamodb_item()
+        conditional_expression = "attribute_not_exists(username)"
+        try:
+            self.db_client.put_item(
+                TableName=self.TABLE_NAME,
+                Item=item,
+                ConditionExpression=conditional_expression,
+            )
+        except self.db_client.exceptions.ConditionalCheckFailedException as e:
+            return DB_Response(
+                message="Fridge already exists, pick a different name",
+                status_code=409,
+                success=False,
+            )
+        except self.db_client.exceptions.ResourceNotFoundException as e:
+            message = (
+                "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
+            )
+            logging.error(message)
+            return DB_Response(message=message, status_code=500, success=False)
+        except ClientError as e:
+            logging.error(e)
+            return DB_Response(
+                message="Unexpected AWS service exception",
+                status_code=500,
+                success=False,
+            )
+        return DB_Response(
+            message="Fridge was succesfully added", status_code=200, success=True
+        )
 
     def get_fridge_locations(self):
         pass
@@ -405,10 +236,10 @@ class Fridge(DB_Item):
 
 class FridgeReport(DB_Item):
 
-    REQUIRED_FIELDS = ["fridge_id", "status", "fridge_percentage"]
+    REQUIRED_FIELDS = ["fridge_username", "status", "fridge_percentage"]
     ITEM_TYPES = {
         "notes": "S",
-        "fridge_id": "S",
+        "fridge_username": "S",
         "image_url": "S",
         "timestamp": "N",
         "status": "S",
@@ -427,7 +258,7 @@ class FridgeReport(DB_Item):
             self.set_notes(fridge_report.get("notes", None))
             self.status: str = fridge_report.get("status", None)
             self.image_url: str = fridge_report.get("image_url", None)
-            self.fridge_id: str = fridge_report.get("fridge_id", None)
+            self.fridge_username: str = fridge_report.get("fridge_username", None)
             self.fridge_percentage: int = fridge_report.get("fridge_percentage", None)
 
     def set_timestamp(self):
@@ -465,10 +296,12 @@ class FridgeReport(DB_Item):
                 status_code=400,
                 success=False,
             )
-        is_valid_id, is_valid_id_message = Fridge.is_valid_id(self.fridge_id)
-        if not is_valid_id:
+        is_valid_username, is_valid_username_message = Fridge.is_valid_username(
+            self.fridge_username
+        )
+        if not is_valid_username:
             return DB_Response(
-                message=is_valid_id_message, status_code=400, success=False
+                message=is_valid_username_message, status_code=400, success=False
             )
         if not FridgeReport.is_valid_status(self.status):
             return DB_Response(
@@ -494,7 +327,7 @@ class FridgeReport(DB_Item):
             self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
             message = (
-                f"Cannot do operations on a non-existent table:  {self.TABLE_NAME}"
+                "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
             )
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
@@ -558,14 +391,15 @@ class Tag(DB_Item):
         has_required_fields, field = self.has_required_fields()
         if not has_required_fields:
             return DB_Response(
-                message=f"Missing Required Field: {field}",
+                message="Missing Required Field: %s" % field,
                 status_code=400,
                 success=False,
             )
         is_valid_field = self.is_valid_tag_name(self.tag_name)
         if not is_valid_field:
             return DB_Response(
-                message=f"Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: {self.tag_name}",
+                message="Tag Name Can Only Contain Letters, Numbers, Hyphens and Underscore: %s"
+                % self.tag_name,
                 status_code=400,
                 success=False,
             )
@@ -574,7 +408,9 @@ class Tag(DB_Item):
         try:
             self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = f"Cannot do operations on a non-existent table: {Tag.TABLE_NAME}"
+            message = (
+                "Cannot do operations on a non-existent table:  %s" % Tag.TABLE_NAME
+            )
             logging.error(message)
             return DB_Response(message=message, status_code=500, success=False)
         except ClientError as e:

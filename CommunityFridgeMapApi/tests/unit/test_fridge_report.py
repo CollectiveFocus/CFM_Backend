@@ -1,3 +1,4 @@
+from CommunityFridgeMapApi.dependencies.python.db import DB_Response, Fridge
 import unittest
 from dependencies.python.db import FridgeReport
 
@@ -14,7 +15,7 @@ class FrdgeReportTest(unittest.TestCase):
     def test_required_fields(self):
         fridge_report = FridgeReport(
             fridge_report={
-                "fridge_id": "test",
+                "fridge_username": "test",
                 "status": "working",
                 "notes": "all good out here",
             },
@@ -26,7 +27,7 @@ class FrdgeReportTest(unittest.TestCase):
 
         fridge_report = FridgeReport(
             fridge_report={
-                "fridge_id": "test",
+                "fridge_username": "test",
                 "status": "working",
                 "notes": "all good out here",
                 "fridge_percentage": "33",
@@ -39,7 +40,7 @@ class FrdgeReportTest(unittest.TestCase):
     def test_set_timestamp(self):
         fridge_report = FridgeReport(
             fridge_report={
-                "fridge_id": "test",
+                "fridge_username": "test",
                 "status": "working",
                 "notes": "all good out here",
                 "fridge_percentage": "33",
@@ -76,30 +77,30 @@ class FrdgeReportTest(unittest.TestCase):
         test_data = [
             {
                 "fridge_report": {},
-                "message": "Missing Required Field: fridge_id",
+                "message": "Missing Required Field: fridge_username",
                 "success": False,
             },
             {
                 "fridge_report": {
-                    "fridge_id": "hi",
+                    "fridge_username": "hi",
                     "status": "working",
                     "fridge_percentage": "33",
                 },
-                "message": "id Must Have A Character Length >= 3 and <= 32",
+                "message": "Username Must Have A Character Length >= 3 and <= 32",
                 "success": False,
             },
             {
                 "fridge_report": {
-                    "fridge_id": "hi-",
+                    "fridge_username": "hi-",
                     "status": "working",
                     "fridge_percentage": "33",
                 },
-                "message": "id Must Be Alphanumeric",
+                "message": "Username Must Be Alphanumeric",
                 "success": False,
             },
             {
                 "fridge_report": {
-                    "fridge_id": "valid",
+                    "fridge_username": "valid",
                     "status": "hacking",
                     "fridge_percentage": "33",
                 },
@@ -108,7 +109,7 @@ class FrdgeReportTest(unittest.TestCase):
             },
             {
                 "fridge_report": {
-                    "fridge_id": "valid",
+                    "fridge_username": "valid",
                     "status": "working",
                     "fridge_percentage": "50",
                 },
@@ -117,7 +118,7 @@ class FrdgeReportTest(unittest.TestCase):
             },
             {
                 "fridge_report": {
-                    "fridge_id": "test",
+                    "fridge_username": "test",
                     "status": "working",
                     "fridge_percentage": "33",
                     "notes": "t" * 257,
@@ -127,7 +128,7 @@ class FrdgeReportTest(unittest.TestCase):
             },
             {
                 "fridge_report": {
-                    "fridge_id": "test",
+                    "fridge_username": "test",
                     "status": "working",
                     "fridge_percentage": "33",
                 },

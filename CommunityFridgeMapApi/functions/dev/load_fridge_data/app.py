@@ -10,28 +10,18 @@ logger.setLevel(logging.INFO)
 
 FRIDGE_DATA = [
     {
-        "name": "The Friendly Fridge",
-        "location": {
-            "geoLat": 124242,
-            "geoLng": 2345235,
-            "street": "1046 Broadway",
-            "zip": "11221",
-            "state": "NY",
-            "city": "Brooklyn",
-        },
-        "maintainer": {"instagram": "https://www.instagram.com/thefriendlyfridge/"},
+        "display_name": "The Friendly Fridge",
+        "address": "1046 Broadway Brooklyn, NY 11221",
+        "instagram": "https://www.instagram.com/thefriendlyfridge/",
+        "lat": "40.695190",
+        "long": "-73.932180",
     },
     {
-        "name": "2 Fish 5 Loaves Fridge",
-        "location": {
-            "geoLat": 40.701730,
-            "geoLng": -73.944530,
-            "street": "63 Whipple St",
-            "zip": "11206",
-            "state": "NY",
-            "city": "Brooklyn",
-        },
-        "maintainer": {"instagram": "https://www.instagram.com/2fish5loavesfridge/"},
+        "display_name": "2 Fish 5 Loaves Fridge",
+        "address": "63 Whipple St, Brooklyn, NY 11206",
+        "instagram": "https://www.instagram.com/2fish5loavesfridge/",
+        "lat": "40.701730",
+        "long": "-73.944530",
     },
 ]
 

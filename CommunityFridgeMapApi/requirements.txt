@@ -2,4 +2,3 @@ pytest
 pytest-mock
 boto3
 pre-commit
-coverage
