@@ -194,10 +194,10 @@ Resources:
           AttributeType: "S"
       KeySchema: 
         - #State#FridgeName
-          AttributeName: "pk"
+          AttributeName: "PK"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "Timestamp"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
 
@@ -265,10 +265,10 @@ Resources:
           AttributeType: "S"
       KeySchema: 
         - #State#FridgeName
-          AttributeName: "pk"
+          AttributeName: "PK"
           KeyType: "HASH"
         -
-          AttributeName: "timestamp"
+          AttributeName: "Timestamp"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
 
