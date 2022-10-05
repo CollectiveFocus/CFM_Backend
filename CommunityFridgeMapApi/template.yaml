@@ -63,7 +63,7 @@ Resources:
       CodeUri: functions/fridge_reports
       Handler: app.lambda_handler
       Runtime: python3.9
-      FunctionName: !Sub FridgeReportFunction${Stage}
+      FunctionName: FridgeReportFunction
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -104,7 +104,6 @@ Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      FunctionName: !Sub HelloWorldFunction${Stage}
       CodeUri: functions/dev/hello_world/
       Handler: app.lambda_handler
       Runtime: python3.9
@@ -126,7 +125,7 @@ Resources:
       CodeUri: functions/fridges/v1
       Handler: app.lambda_handler
       Runtime: python3.9
-      FunctionName: !Sub FridgesFunction${Stage}
+      FunctionName: FridgesFunction
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -184,7 +183,7 @@ Resources:
       CodeUri: functions/image/v1
       Handler: app.lambda_handler
       Runtime: python3.9
-      FunctionName: !Sub ImageFunction${Stage}
+      FunctionName: ImageFunction
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -223,7 +222,7 @@ Resources:
       CodeUri: ./functions/dev/load_fridge_data
       Handler: app.lambda_handler
       Runtime: python3.9
-      FunctionName: !Sub LoadFridgeDataFunction${Stage}
+      FunctionName: LoadFridgeDataFunction
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -249,7 +248,7 @@ Resources:
   CommonLayer:
         Type: AWS::Serverless::LayerVersion
         Properties:
-            LayerName: !Sub CommunityFridgeMapApiLayer${Stage}
+            LayerName: CommunityFridgeMapApiLayer
             Description: Dependencies for CommunityFridgeMapApi project
             ContentUri: dependencies/
             CompatibleRuntimes:
