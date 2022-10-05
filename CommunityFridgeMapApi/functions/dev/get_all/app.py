@@ -4,12 +4,11 @@ from botocore.exceptions import ClientError
 import json
 import sys
 try:
-    from db import get_ddb_connection, Fridge
+    from db import get_ddb_connection
 except:
-    #If it gets here it's because we are performing a unit test. It's a common error when using lambda layers
-    #Here is an example of someone having a similar issue:
+    #If it gets here it's because we are performing a unit test. Here is an example of someone having a similar issue
     #https://stackoverflow.com/questions/69592094/pytest-failing-in-aws-sam-project-due-to-modulenotfounderror
-    from dependencies.python.db import get_ddb_connection, Fridge
+    from dependencies.python.db import get_ddb_connection
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -24,7 +23,7 @@ class GetAllFridgesHandler:
     
     def lambda_handler(self, event: dict, context: 'awslambdaric.lambda_context.LambdaContext') -> dict:
         try:
-            db_response = Fridge.get_all_fridges(db_client=self.ddbclient)
+            db_response = self.ddbclient.scan(TableName=self.table_name)
             return self.format_api_response(db_response=db_response, response_type='Items')
 
         except self.ddbclient.exceptions.ResourceNotFoundException as e:

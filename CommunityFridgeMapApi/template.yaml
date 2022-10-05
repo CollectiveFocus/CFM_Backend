@@ -131,7 +131,7 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'username'
+          AttributeName: 'name'
           AttributeType: 'S'
         - 
           AttributeName: 'display_name'
@@ -170,6 +170,9 @@ Resources:
           AttributeName: "lat"
           AttributeType: "S"
         - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
           AttributeName: "long"
           AttributeType: "S"
         - 
@@ -187,15 +190,14 @@ Resources:
         - 
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - 
-          AttributeName: "fridge_state"
+        - AttributeName: "state"
           KeyType: "S"
       KeySchema: 
         -
-          AttributeName: "fridge_state"
+          AttributeName: "state"
           KeyType: "HASH"
         -
-          AttributeName: "username"
+          AttributeName: "name"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
   
@@ -214,14 +216,14 @@ Resources:
           AttributeName: "image"
           AttributeType: "S"
         - 
-          AttributeName: "#fridge_state#fridge_username"
+          AttributeName: "pk"
           KeyType: "S"
         - 
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema: 
         - #State#FridgeName
-          AttributeName: "#fridge_state#fridge_username"
+          AttributeName: "pk"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
@@ -234,11 +236,11 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: 'tag_name'
+          AttributeName: 'name'
           AttributeType: 'S'
       KeySchema: 
         -
-          AttributeName: "tag_name"
+          AttributeName: "name"
           KeyType: "HASH"                       
       BillingMode: 'PAY_PER_REQUEST'
 
@@ -248,7 +250,7 @@ Resources:
     Properties:
       AttributeDefinitions:
         - 
-          AttributeName: '#fridge_state#fridge_username'
+          AttributeName: 'name'
           AttributeType: 'S'
         - 
           AttributeName: "address"
@@ -284,6 +286,9 @@ Resources:
           AttributeName: "lat"
           AttributeType: "S"
         - 
+          AttributeName: "lat"
+          AttributeType: "S"
+        - 
           AttributeName: "long"
           AttributeType: "S"
         - 
@@ -308,8 +313,8 @@ Resources:
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema: 
-        -
-          AttributeName: "#fridge_state#fridge_username"
+        - #State#FridgeName
+          AttributeName: "pk"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
