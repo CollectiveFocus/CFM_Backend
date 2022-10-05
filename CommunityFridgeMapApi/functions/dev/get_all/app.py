@@ -24,7 +24,7 @@ class GetAllFridgesHandler:
     
     def lambda_handler(self, event: dict, context: 'awslambdaric.lambda_context.LambdaContext') -> dict:
         try:
-            db_response = Fridge(db_client=self.ddbclient).get_all_items()
+            db_response = Fridge.get_all_fridges(db_client=self.ddbclient)
             return self.format_api_response(db_response=db_response, response_type='Items')
 
         except self.ddbclient.exceptions.ResourceNotFoundException as e:
