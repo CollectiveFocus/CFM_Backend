@@ -22,16 +22,14 @@ class FridgeHandler:
         to the event httpMethod
         """
         httpMethod = event.get("httpMethod", None)
-        pathParameters = event["pathParameters"] or {}
-        queryStringParameters = event["queryStringParameters"] or {}
-        tag = queryStringParameters.get("tag", None)
-        fridge_id = pathParameters.get("fridge_id", None)
+        path_parameters = event["pathParameters"] or {}
+        fridge_id = path_parameters.get("fridge_id")
         db_response = None
         if httpMethod == "GET":
             if fridge_id:
                 db_response = Fridge(db_client=ddbclient).get_item(fridge_id)
             else:
-                db_response = Fridge(db_client=ddbclient).get_items(tag=tag)
+                raise ValueError(f"Query Fridges API Not Yet Developed")
         elif httpMethod == "POST":
             pass
         else:

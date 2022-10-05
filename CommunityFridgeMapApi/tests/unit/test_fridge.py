@@ -29,18 +29,12 @@ class DynamoDbMockPutItem:
         pass
 
 
-class DynamoDbMockScan:
+class DynamoDbMockGetItem:
     def __init__(self):
         pass
 
-    def scan(
-        self,
-        TableName=None,
-        FilterExpression=None,
-        ExpressionAttributeValues=None,
-        ProjectionExpression=None,
-    ):
-        return {"Items": [{"json_data": {"S": '{"id": {"S": "test"}}'}}]}
+    def get_item(self, TableName=None, Key=None):
+        return {"Item": {"json_data": {"S": '{"id": {"S": "test"}}'}}}
 
 
 class FridgeTest(unittest.TestCase):
@@ -124,33 +118,34 @@ class FridgeTest(unittest.TestCase):
         fridge = {
             "id": "test",
             "name": "test",
-            "tags": ["tag3"],
+            "tags": [],
             "location": {},
             "maintainer": {},
             "notes": "test",
-            "food_accepts": ["dairy"],
-            "food_restrictions": ["meat"],
+            "food_accepts": [],
+            "food_restrictions": [],
             "photoURL": "test",
             "last_edited": 2342353,
             "verified": True,
             "latest_report": {},
+            # "fake_field": {},
         }
         fridge_item = Fridge(fridge=fridge, db_client=None).format_dynamodb_item_v2()
         expected_response = {
             "id": {"S": "test"},
             "name": {"S": "test"},
-            "tags": {"L": [{"S": "tag3"}]},
+            "tags": {"L": []},
             "location": {"S": "{}"},
             "maintainer": {"S": "{}"},
             "notes": {"S": "test"},
-            "food_accepts": {"L": [{"S": "dairy"}]},
-            "food_restrictions": {"L": [{"S": "meat"}]},
+            "food_accepts": {"L": []},
+            "food_restrictions": {"L": []},
             "photoURL": {"S": "test"},
             "last_edited": {"N": 2342353},
             "verified": {"B": True},
             "latest_report": {"S": "{}"},
-            "json_data": {"S": json.dumps(fridge)},
         }
+        expected_response["json_data"] = {"S": json.dumps(fridge)}
         self.assertEqual(fridge_item, expected_response)
         fridge_item = Fridge(
             fridge={"id": ""}, db_client=None
@@ -203,16 +198,22 @@ class FridgeTest(unittest.TestCase):
             field_validator.message, "All Fields Were Successfully Validated"
         )
 
-    def test_get_items(self):
-        response = Fridge(db_client=DynamoDbMockScan()).get_items()
-        expected_response = '[{"id": {"S": "test"}}]'
-        self.assertTrue(response.is_successful())
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json_data, expected_response)
+    def test_get_item_success(self):
+        json_data = '{"id": {"S": "test"}}'
+        response = FridgeHandler.lambda_handler(
+            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "test"}},
+            ddbclient=DynamoDbMockGetItem(),
+        )
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(response["body"], json_data)
 
-    def test_get_items_tag(self):
-        response = Fridge(db_client=DynamoDbMockScan()).get_items(tag="tag_test")
-        expected_response = '[{"id": {"S": "test"}}]'
-        self.assertTrue(response.is_successful())
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json_data, expected_response)
+    def test_get_item_failure(self):
+        response = FridgeHandler.lambda_handler(
+            event={"httpMethod": "GET", "pathParameters": {"fridge_id": "hi"}},
+            ddbclient=DynamoDbMockGetItem(),
+        )
+        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(
+            response["body"],
+            '{"message": "id Must Have A Character Length >= 3 and <= 32"}',
+        )

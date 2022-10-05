@@ -204,12 +204,6 @@ class DB_Item:
                 fridge_json[key] = val
                 if isinstance(val, dict):
                     val = json.dumps(val)
-                elif isinstance(val, list):
-                    fridge_json[key] = val.copy()
-                    list_type = self.FIELD_VALIDATION[key]["list_type"]
-                    val = val.copy()
-                    for index, v in enumerate(val):
-                        val[index] = {list_type: v}
                 fridge_item[key] = {self.FIELD_VALIDATION[key]["type"]: val}
         fridge_item["json_data"] = {"S": json.dumps(fridge_json)}
         return fridge_item
@@ -301,7 +295,7 @@ class Fridge(DB_Item):
             "max_length": 50,
             "type": "S",
         },
-        "tags": {"required": False, "type": "L", "list_type": "S"},
+        "tags": {"required": False, "type": "L"},
         "location": {"required": True, "type": "S"},
         "location/street": {"required": False, "max_length": 256},
         "location/city": {"required": False, "max_length": 256},
@@ -317,8 +311,8 @@ class Fridge(DB_Item):
         "maintainer/website": {"required": False, "max_length": 2048},
         "maintainer/instagram": {"required": False, "max_length": 64},
         "notes": {"required": False, "max_length": 280, "type": "S"},
-        "food_accepts": {"required": False, "type": "L", "list_type": "S"},
-        "food_restrictions": {"required": False, "type": "L", "list_type": "S"},
+        "food_accepts": {"required": False, "type": "L"},
+        "food_restrictions": {"required": False, "type": "L"},
         "photoURL": {
             "required": False,
             "max_length": 2048,
@@ -376,29 +370,8 @@ class Fridge(DB_Item):
                 json_data=json_data,
             )
 
-    def get_items(self, tag=None):
-        # scan/query doc: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/dynamodb.html#querying-and-scanning
-        response = None
-        if tag:
-            response = self.db_client.scan(
-                TableName=self.TABLE_NAME,
-                FilterExpression="contains (tags, :tag)",
-                ExpressionAttributeValues={":tag": {"S": tag}},
-                ProjectionExpression="json_data",
-            )
-        else:
-            response = self.db_client.scan(
-                TableName=self.TABLE_NAME, ProjectionExpression="json_data"
-            )
-        json_data_list = [item["json_data"]["S"] for item in response["Items"]]
-        # Converts list of json to json.
-        json_response = f"[{','.join(json_data_list)}]"
-        return DB_Response(
-            success=True,
-            status_code=200,
-            message="Query Successfully Completed",
-            json_data=json_response,
-        )
+    def get_items(self):
+        pass
 
     def add_items(self):
         pass
