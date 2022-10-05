@@ -39,26 +39,11 @@ Follow these steps to get Dynamodb running locally
 4. **Build the functions inside a Docker container**
     1. `sam build --use-container`
 5. **Load data into your local Dynamodb tables**
-    1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+    1. `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 6. **Get data from your local Dynamodb tables**
     1. **Generate sample payload:** `sam local generate-event apigateway aws-proxy --method GET --path document --body "" > local-event.json`
     2. `sam local invoke GetAllFunction --event local-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     3. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
-
-## API
-
-### Fridge Report
-
-#### One Time Use
-1. API Request: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
-        * Add `"fridge_id": "2fish5loavesfridge"` to pathParameter in generated file
-2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
-
-#### Local Server
-1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridge_id}/reports`
-    * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
 
 ## Tests
 
@@ -90,12 +75,9 @@ CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
 
 ## Useful AWS SAM commands
 1. `sam validate -t template.yaml`
-2. `sam build --use-container`
-    * Use this command before running the backend if you updated the code
 
 ## Useful Dynamodb Commands
 1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
-2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 ## Useful formatting Command
 ```bash

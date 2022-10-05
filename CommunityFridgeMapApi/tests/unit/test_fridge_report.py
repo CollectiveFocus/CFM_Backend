@@ -29,7 +29,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_id": "test",
                 "status": "working",
                 "notes": "all good out here",
-                "fridge_percentage": 33,
+                "fridge_percentage": "33",
             },
             db_client=None,
         )
@@ -42,7 +42,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_id": "test",
                 "status": "working",
                 "notes": "all good out here",
-                "fridge_percentage": 33,
+                "fridge_percentage": "33",
             },
             db_client=None,
         )
@@ -61,10 +61,10 @@ class FrdgeReportTest(unittest.TestCase):
             self.assertTrue(status)
 
     def test_is_valid_fridge_percentage(self):
-        self.assertFalse(FridgeReport.is_valid_fridge_percentage(50))
-        valid_fridge_percentages = [0, 33, 67, 100]
+        self.assertFalse(FridgeReport.is_valid_fridge_percentage("50"))
+        valid_fridge_percentages = ["0", "33", "67", "100"]
         for fridge_percentage in valid_fridge_percentages:
-            self.assertTrue(FridgeReport.is_valid_fridge_percentage(fridge_percentage))
+            self.assertTrue(fridge_percentage)
 
     def test_is_valid_notes(self):
         valid_notes = [None, "", "t" * 256]
@@ -83,7 +83,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "hi",
                     "status": "working",
-                    "fridge_percentage": 33,
+                    "fridge_percentage": "33",
                 },
                 "message": "id Must Have A Character Length >= 3 and <= 32",
                 "success": False,
@@ -92,7 +92,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "hi-",
                     "status": "working",
-                    "fridge_percentage": 33,
+                    "fridge_percentage": "33",
                 },
                 "message": "id Must Be Alphanumeric",
                 "success": False,
@@ -101,7 +101,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "valid",
                     "status": "hacking",
-                    "fridge_percentage": 33,
+                    "fridge_percentage": "33",
                 },
                 "message": "Invalid Status, must to be one of",
                 "success": False,
@@ -110,7 +110,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "valid",
                     "status": "working",
-                    "fridge_percentage": 50,
+                    "fridge_percentage": "50",
                 },
                 "message": "Invalid Fridge percentage, must to be one of",
                 "success": False,
@@ -119,7 +119,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "test",
                     "status": "working",
-                    "fridge_percentage": 33,
+                    "fridge_percentage": "33",
                     "notes": "t" * 257,
                 },
                 "message": "Notes character length must be <= 256",
@@ -129,7 +129,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridge_id": "test",
                     "status": "working",
-                    "fridge_percentage": 33,
+                    "fridge_percentage": "33",
                 },
                 "message": "Fridge Report was succesfully added",
                 "success": True,

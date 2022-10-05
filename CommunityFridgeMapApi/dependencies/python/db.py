@@ -53,20 +53,6 @@ class DB_Response:
             "db_item": self.db_items,
         }
 
-    def api_format(self) -> dict:
-        return {
-            "statusCode": self.status_code,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": json.dumps(
-                {
-                    "message": self.message,
-                }
-            ),
-        }
-
 
 class DB_Item:
 
@@ -119,7 +105,7 @@ class DB_Item:
             )
         return DB_Response(
             message=f"{self.TABLE_NAME} was succesfully added",
-            status_code=201,
+            status_code=200,
             success=True,
         )
 
@@ -149,7 +135,7 @@ class DB_Item:
         for key in self.ITEM_TYPES:
             val = getattr(self, key)
             if val is not None:
-                fridge_item[key] = {self.ITEM_TYPES[key]: str(val)}
+                fridge_item[key] = {self.ITEM_TYPES[key]: val}
         return fridge_item
 
     def get_class_field_value(self, key: str):
@@ -426,11 +412,11 @@ class FridgeReport(DB_Item):
         "image_url": "S",
         "timestamp": "N",
         "status": "S",
-        "fridge_percentage": "N",
+        "fridge_percentage": "S",
     }
     TABLE_NAME = "fridge_report"
     VALID_STATUS = {"working", "needs cleaning", "needs servicing", "not at location"}
-    VALID_FRIDGE_PERCENTAGE = {0, 33, 67, 100}
+    VALID_FRIDGE_PERCENTAGE = {"0", "33", "67", "100"}
     MAX_NOTES_LENGTH = 256
 
     def __init__(
@@ -468,7 +454,7 @@ class FridgeReport(DB_Item):
         return status in FridgeReport.VALID_STATUS
 
     @staticmethod
-    def is_valid_fridge_percentage(fridge_percentage: int) -> bool:
+    def is_valid_fridge_percentage(fridge_percentage: str) -> bool:
         return fridge_percentage in FridgeReport.VALID_FRIDGE_PERCENTAGE
 
     def add_item(self) -> DB_Response:
@@ -520,7 +506,7 @@ class FridgeReport(DB_Item):
                 success=False,
             )
         return DB_Response(
-            message="Fridge Report was succesfully added", status_code=201, success=True
+            message="Fridge Report was succesfully added", status_code=200, success=True
         )
 
 
