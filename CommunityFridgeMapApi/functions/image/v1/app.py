@@ -92,7 +92,7 @@ class ImageHandler:
             },
             "body": json.dumps(
                 {
-                    "photoUrl": url,
+                    "photoURL": url,
                 }
             ),
         }

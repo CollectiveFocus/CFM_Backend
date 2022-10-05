@@ -305,7 +305,6 @@ class Fridge(DB_Item):
         },
         "tags": {"required": False, "type": "L", "list_type": "S"},
         "location": {"required": True, "type": "S"},
-        "location/name": {"required": False, "max_length": 256},
         "location/street": {"required": False, "max_length": 256},
         "location/city": {"required": False, "max_length": 256},
         "location/state": {"required": False, "max_length": 256},
@@ -322,7 +321,7 @@ class Fridge(DB_Item):
         "notes": {"required": False, "max_length": 280, "type": "S"},
         "food_accepts": {"required": False, "type": "L", "list_type": "S"},
         "food_restrictions": {"required": False, "type": "L", "list_type": "S"},
-        "photoUrl": {
+        "photoURL": {
             "required": False,
             "max_length": 2048,
             "type": "S",
@@ -334,7 +333,7 @@ class Fridge(DB_Item):
         "latestFridgeReport/timestamp": {"required": False},
         "latestFridgeReport/condition": {"required": False},
         "latestFridgeReport/foodPercentage": {"required": False},
-        "latestFridgeReport/photoUrl": {"required": False},
+        "latestFridgeReport/photoURL": {"required": False},
         "latestFridgeReport/notes": {"required": False},
     }
 
@@ -356,7 +355,7 @@ class Fridge(DB_Item):
             self.notes: str = fridge.get("notes", None)
             self.food_accepts: list = fridge.get("food_accepts", None)
             self.food_restrictions: list = fridge.get("food_restrictions", None)
-            self.photoUrl: str = fridge.get("photoUrl", None)
+            self.photoURL: str = fridge.get("photoURL", None)
             self.last_edited: str = fridge.get("last_edited", None)
             self.latestFridgeReport: dict = fridge.get("latestFridgeReport", None)
             self.verified: bool = fridge.get("verified", None)
@@ -525,7 +524,7 @@ class FridgeReport(DB_Item):
             "max_length": Fridge.MAX_ID_LENGTH,
             "type": "S",
         },
-        "photoUrl": {
+        "photoURL": {
             "required": False,
             "max_length": 2048,
             "type": "S",
@@ -548,7 +547,7 @@ class FridgeReport(DB_Item):
             fridge_report = self.process_fields(fridge_report)
             self.notes: str = fridge_report.get("notes", None)
             self.condition: str = fridge_report.get("condition", None)
-            self.photoUrl: str = fridge_report.get("photoUrl", None)
+            self.photoURL: str = fridge_report.get("photoURL", None)
             self.fridgeId: str = fridge_report.get("fridgeId", None)
             self.foodPercentage: int = fridge_report.get("foodPercentage", None)
             # timestamp and epochTimestamp have the same time but in different formats
