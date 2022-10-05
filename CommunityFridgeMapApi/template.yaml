@@ -13,7 +13,7 @@ Globals:
       Variables:
         TABLE_NAME: my-table
         FRIDGE_TABLE_NAME: fridge
-        FRIDGE_REPORT_TABLE_NAME: fridge_report
+        FRIDGE_CHECKIN_TABLE_NAME: fridge_check_in
         FRIDGE_HISTORY_TABLE_NAME: fridge_history
         TAG_TABLE_NAME: tag
 
@@ -126,6 +126,7 @@ Resources:
   ##########################
 
   FridgeTable:
+    TableName: !Ref FRIDGE_TABLE_NAME
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
@@ -175,28 +176,33 @@ Resources:
           AttributeName: "profile_image"
           AttributeType: "S"
         -
-          AttributeName: "report_timestamp"
+          AttributeName: "check_in_time"
           AttributeType: "S"
         -
-          AttributeName: "report_notes"
+          AttributeName: "check_in_notes"
           AttributeType: "S"
         -
-          AttributeName: "report_status"
+          AttributeName: "check_in_status"
           AttributeType: "S"
         -
-          AttributeName: "report_image"
+          AttributeName: "check_in_image"
           AttributeType: "S"
+        -
+          AttributeName: "fridge_state"
+          KeyType: "S"
       KeySchema:
         -
-          AttributeName: "username"
+          AttributeName: "fridge_state"
           KeyType: "HASH"
-      TableName: !Ref FRIDGE_TABLE_NAME
+        -
+          AttributeName: "username"
+          KeyType: "RANGE"
       BillingMode: 'PAY_PER_REQUEST'
 
-  FridgeReportTable:
+  FridgeCheckInTable:
+    TableName: !Ref FRIDGE_CHECKIN_TABLE_NAME
     Type: AWS::DynamoDB::Table
     Properties:
-
       AttributeDefinitions:
         -
           AttributeName: 'notes'
@@ -205,32 +211,27 @@ Resources:
           AttributeName: "status"
           AttributeType: "N"
         -
-          AttributeName: "fridge_percentage"
-          AttributeType: "N"
-        -
-          AttributeName: "image_url"
+          AttributeName: "image"
           AttributeType: "S"
         -
-          AttributeName: "fridge_username"
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "S"
         -
           AttributeName: "timestamp"
           KeyType: "N"
       KeySchema:
         - #State#FridgeName
-          AttributeName: "fridge_username"
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
           KeyType: "RANGE"
-      TableName: !Ref FRIDGE_REPORT_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
-      ScanIndexForward: true
 
   TagTable:
+    TableName: !Ref TAG_TABLE_NAME
     Type: AWS::DynamoDB::Table
     Properties:
-
       AttributeDefinitions:
         -
           AttributeName: 'tag_name'
@@ -239,16 +240,15 @@ Resources:
         -
           AttributeName: "tag_name"
           KeyType: "HASH"
-      TableName: !Ref TAG_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
 
   FridgeHistoryTable:
+    TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
     Type: AWS::DynamoDB::Table
     Properties:
-
       AttributeDefinitions:
         -
-          AttributeName: 'fridge_username'
+          AttributeName: '#fridge_state#fridge_username'
           AttributeType: 'S'
         -
           AttributeName: "address"
@@ -290,16 +290,16 @@ Resources:
           AttributeName: "profile_image"
           AttributeType: "S"
         -
-          AttributeName: "report_time"
+          AttributeName: "check_in_time"
           AttributeType: "S"
         -
-          AttributeName: "report_notes"
+          AttributeName: "check_in_notes"
           AttributeType: "S"
         -
-          AttributeName: "report_status"
+          AttributeName: "check_in_status"
           AttributeType: "S"
         -
-          AttributeName: "report_image"
+          AttributeName: "check_in_image"
           AttributeType: "S"
         -
           AttributeName: "pk"
@@ -309,12 +309,11 @@ Resources:
           KeyType: "N"
       KeySchema:
         -
-          AttributeName: "fridge_username"
+          AttributeName: "#fridge_state#fridge_username"
           KeyType: "HASH"
         -
           AttributeName: "timestamp"
           KeyType: "RANGE"
-      TableName: !Ref FRIDGE_HISTORY_TABLE_NAME
       BillingMode: 'PAY_PER_REQUEST'
 
 
