@@ -29,7 +29,7 @@ Follow these steps to get Dynamodb running locally
 2. **Create a Docker bridge network**
     1. `docker network create cfm-network`
     2. `docker run --network cfm-network --name dynamodb -d -p 8000:8000 amazon/dynamodb-local`
-3. **Create Dynamodb tables locally**
+3. **Create Dynamodb tables locally** 
     1. **fridge:** `aws dynamodb create-table --table-name fridge --attribute-definitions AttributeName=fridge_state,AttributeType=S AttributeName=username,AttributeType=S --key-schema AttributeName=fridge_state,KeyType=HASH AttributeName=username,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
     2. **fridge_check_in:** `aws dynamodb create-table --table-name fridge_check_in --attribute-definitions AttributeName=#fridge_state#fridge_username,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=#fridge_state#fridge_username,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
     3. **fridge_history:** `aws dynamodb create-table --table-name fridge_history --attribute-definitions AttributeName=#fridge_state#fridge_username,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=#fridge_state#fridge_username,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`

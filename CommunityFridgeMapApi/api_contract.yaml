@@ -93,7 +93,7 @@ paths:
           name: body
           description: Fridge Information
           required: true
-          schema:
+          schema: 
             $ref: '#/definitions/FridgeItemRequest'
       responses:
         200:
@@ -130,7 +130,7 @@ paths:
         500:
           description: Unexpected Error
 
-
+          
   /v1/fridges/checkin:
     post:
       tags:
@@ -182,7 +182,7 @@ paths:
           description: Bad Request
         500:
           description: Unexpected Error
-
+      
   /v1/fridges/tag:
     post:
       tags:
@@ -223,7 +223,7 @@ paths:
           description: success
         500:
           description: Unexpected Error
-
+        
 
 
 definitions:
@@ -287,7 +287,7 @@ definitions:
       name:
         type: string
         example: thefriendlyfridge
-      display_name:
+      display_name: 
         type: string
         example: The Friendly Fridge
       address:
@@ -347,7 +347,7 @@ definitions:
       check_in_image:
         type: string
         example: https://s3.amazonaws.com/bucket/path/image.png
-
+  
   FridgeCheckInRequest:
     type: object
     required:
@@ -417,7 +417,7 @@ definitions:
       name:
         type: string
         example: thefriendlyfridge
-      display_name:
+      display_name: 
         type: string
         example: The Friendly Fridge
       address:
@@ -462,7 +462,7 @@ definitions:
       profile_image:
         type: string
         example: https://s3.amazonaws.com/bucket/path/image.png
-
+  
 # Added by API Auto Mocking Plugin
 host: virtserver.swaggerhub.com
 basePath: /collectivefo/CommunityFridgeMap/1.0.0

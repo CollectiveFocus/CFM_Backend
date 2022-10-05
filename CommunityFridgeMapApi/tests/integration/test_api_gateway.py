@@ -5,7 +5,7 @@ import boto3
 import requests
 
 """
-Make sure env variable AWS_SAM_STACK_NAME exists with the name of the stack we are going to test.
+Make sure env variable AWS_SAM_STACK_NAME exists with the name of the stack we are going to test. 
 """
 
 
@@ -36,19 +36,14 @@ class TestApiGateway(TestCase):
             response = client.describe_stacks(StackName=stack_name)
         except Exception as e:
             raise Exception(
-                f"Cannot find stack {stack_name}. \n"
-                f'Please make sure stack with the name "{stack_name}" exists.'
+                f"Cannot find stack {stack_name}. \n" f'Please make sure stack with the name "{stack_name}" exists.'
             ) from e
 
         stacks = response["Stacks"]
 
         stack_outputs = stacks[0]["Outputs"]
-        api_outputs = [
-            output for output in stack_outputs if output["OutputKey"] == "HelloWorldApi"
-        ]
-        self.assertTrue(
-            api_outputs, f"Cannot find output HelloWorldApi in stack {stack_name}"
-        )
+        api_outputs = [output for output in stack_outputs if output["OutputKey"] == "HelloWorldApi"]
+        self.assertTrue(api_outputs, f"Cannot find output HelloWorldApi in stack {stack_name}")
 
         self.api_endpoint = api_outputs[0]["OutputValue"]
 
