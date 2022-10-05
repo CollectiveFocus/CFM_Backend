@@ -39,7 +39,9 @@ Follow these steps to get Dynamodb running locally
 1. **Load data into your local Dynamodb tables**
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 1. **Get data from your local Dynamodb tables**
-    1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
+    1. **Generate sample payload:** `sam local generate-event apigateway aws-proxy --method GET --path document --body "" > local-event.json`
+    2. `sam local invoke GetAllFunction --event local-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+    3. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
 
 ## API
 
@@ -107,8 +109,6 @@ CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
 1. `sam validate -t template.yaml`
 2. `sam build --use-container`
     * Use this command before running the backend if you updated the code
-3. `sam local generate-event apigateway aws-proxy --method GET --path document --body "" > local-event.json`
-    * Use this command to generate a REST API event
 
 ## Useful Dynamodb Commands
 1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
@@ -127,4 +127,3 @@ Project Documentation
   - [Architecture](https://docs.google.com/document/d/1yZVGAxVn4CEZyyce_Zuha3oYOOU8ey7ArBvLbm7l4bw/edit)
   - [Database Tables] (https://docs.google.com/document/d/16hjNHxm_ebZv8u_VolT1bdlJEDccqb7V67-Y6ljjUdY/edit?usp=sharing)
   - [Development Workflow](https://docs.google.com/document/d/1m9Xqo4QUVEBjMD7sMjxSHa3CxxjvrHppwc0nrdWCAAc/edit)
-  - [Database Table Design](https://docs.google.com/document/d/16hjNHxm_ebZv8u_VolT1bdlJEDccqb7V67-Y6ljjUdY/edit?usp=sharing)
