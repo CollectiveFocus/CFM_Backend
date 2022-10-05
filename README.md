@@ -39,7 +39,7 @@ Follow these steps to get Dynamodb running locally
 1. **Load data into your local Dynamodb tables**
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 1. **Get data from your local Dynamodb tables**
-    1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
+    1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
 
 ## API
 
@@ -68,23 +68,12 @@ Recommend: https://www.postman.com/
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridge_id": "{FRIDGE_ID}"` to pathParameter in generated file
-2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
+2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 #### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
 2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridge_id}/reports`
     * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
-
-### Image
-
-1. Start local SAM API `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-1. Upload image (replace `<file-path>` with your actual image path like `"@/home/user/Downloads/sample.webp"`)
-    ```
-    curl --request POST \
-      --url http://localhost:3000/v1/image \
-      --header 'Content-Type: image/webp' \
-      --data-binary "@<file-path>"
-    ```
 
 ## Tests
 
@@ -122,8 +111,8 @@ CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
     * Use this command to generate a REST API event
 
 ## Useful Dynamodb Commands
-1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
-2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
+1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:8000`
+2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 ## Useful formatting Command
 ```bash

@@ -1,22 +1,12 @@
 version: "3.9"
 
 services:
-  localstack:
-    image: localstack/localstack:latest
+  dynamodb:
+    image: amazon/dynamodb-local:latest
     ports:
-      - "4566:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # external services port range
-    environment:
-      - DEBUG=${DEBUG-}
-      - PERSISTENCE=${PERSISTENCE-}
-      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
-      - DOCKER_HOST=unix:///var/run/docker.sock
-    volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "8000:8000"
 
 networks:
   default:
     name: cfm-network
     driver: bridge
-

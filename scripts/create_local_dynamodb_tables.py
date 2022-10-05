@@ -3,7 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
-ENDPOINT_URL = "http://localhost:4566"
+ENDPOINT_URL = "http://localhost:8000"
 
 scripts_dir = os.path.dirname(__file__)
 schema_dir = os.path.join(scripts_dir, "../schema")

@@ -7,9 +7,6 @@ Description: >
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
-  Api:
-    BinaryMediaTypes:
-      - image/webp
   Function:
     Timeout: 60
 
@@ -121,41 +118,6 @@ Resources:
             RequestParameters:
               - method.request.querystring.tag:
                   Required: false
-  ImageFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: functions/image/v1
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      FunctionName: ImageFunction
-      Environment:
-        Variables:
-          Environment: !Ref Environment
-      Layers:
-        - !Ref CommonLayer
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            Resource: arn:aws:logs:*:*:*
-          Statement:
-          - Effect: Allow
-            Action:
-            - s3:PutObject
-            - s3:GetObject
-            Resource:
-            - !Sub "arn:aws:s3:::${CommunityFridgeMapImages}/*"
-            - !Sub "arn:aws:s3:::${CommunityFridgeMapImages}"
-      Events:
-        UploadImage:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /v1/image
-            Method: post
 
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function
@@ -196,41 +158,6 @@ Resources:
               - python3.8
               - python3.9
             RetentionPolicy: Delete
-  ##########################
-  ##   Bucket Policies    ##
-  ##########################
-  ImageFunctionBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref CommunityFridgeMapImages
-      PolicyDocument:
-        Statement:
-          - Action:
-              - s3:*
-            Effect: Allow
-            Resource:
-              - !Sub arn:aws:s3:::${CommunityFridgeMapImages}
-              - !Sub arn:aws:s3:::${CommunityFridgeMapImages}/*
-            Principal:
-              AWS:
-                - '*'
-  ##########################
-  ##      S3 Buckets      ##
-  ##########################
-  CommunityFridgeMapImages:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: community-fridge-map-images
-      CorsConfiguration:
-        CorsRules:
-        - AllowedHeaders:
-          - "*"
-          AllowedMethods:
-          - GET
-          - PUT
-          - HEAD
-          AllowedOrigins:
-          - "*"
   ##########################
   ##    DynamoDB Tables    ##
   ##########################
