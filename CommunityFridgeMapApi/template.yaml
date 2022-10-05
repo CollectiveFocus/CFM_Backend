@@ -34,8 +34,6 @@ Resources:
       CodeUri: functions/dev/hello_world/
       Handler: app.lambda_handler
       Runtime: python3.9
-      Layers:
-        - !Ref CommonLayer
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api

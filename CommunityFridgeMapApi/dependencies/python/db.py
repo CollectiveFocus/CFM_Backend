@@ -11,4 +11,4 @@ def get_ddb_connection(env:str=os.getenv('Environment', '')) -> 'botocore.client
     return ddbclient
 
 def layer_test() -> str:
-    return "hello world"
+    return "layer test"
