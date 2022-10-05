@@ -22,12 +22,10 @@ class FridgeHandler:
         to the event httpMethod
         """
         httpMethod = event.get("httpMethod", None)
-        body = event.get("body", None)
         pathParameters = event["pathParameters"] or {}
         queryStringParameters = event["queryStringParameters"] or {}
         tag = queryStringParameters.get("tag", None)
         fridge_id = pathParameters.get("fridge_id", None)
-
         db_response = None
         if httpMethod == "GET":
             if fridge_id:
@@ -35,9 +33,7 @@ class FridgeHandler:
             else:
                 db_response = Fridge(db_client=ddbclient).get_items(tag=tag)
         elif httpMethod == "POST":
-            if body is not None:
-                body = json.loads(body)
-                db_response= Fridge(db_client=ddbclient, fridge=body).add_item()
+            pass
         else:
             raise ValueError(f'Invalid httpMethod "{httpMethod}"')
         return db_response.api_format()
