@@ -1,0 +1,19 @@
+{
+  "TableName": "tag_dev",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "tag_name",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "tag_name",
+      "KeyType": "HASH"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 5,
+    "WriteCapacityUnits": 5
+  }
+}

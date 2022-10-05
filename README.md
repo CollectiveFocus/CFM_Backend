@@ -2,19 +2,168 @@
 
 ## Setup
 
-1. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-2. Python 3 - [Install Python 3](https://www.python.org/downloads/)
-3. Docker - [Install Docker](https://docs.docker.com/get-docker/)
+1. AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+2. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+    * **You do not need to create an aws account to use SAM CLI, creating an aws account is OPTIONAL**
+3. Python 3 - [Install Python 3](https://www.python.org/downloads/)
+4. Docker - [Install Docker](https://docs.docker.com/get-docker/)
 
 ## Build and Test Locally
 
 Confirm that the following requests work for you
 
 1. `cd CommunityFridgeMapApi/`
-2. `sam local invoke HelloWorldFunction --event events/event.json`
+2. `sam build --use-container`
+3. `sam local invoke HelloWorldFunction --event events/event.json`
     * response: ```{"statusCode": 200, "body": "{\"message\": \"hello world\"}"}```
-3. `sam local start-api`
-4. `curl http://localhost:3000/hello`
+4. `sam local start-api`
+5. `curl http://localhost:3000/hello`
     * response: ```{"message": "hello world"}```
 
+## Setup Local Database Connection
 
+**Guide that was used:** https://betterprogramming.pub/how-to-deploy-a-local-serverless-application-with-aws-sam-b7b314c3048c
+
+Follow these steps to get Dynamodb running locally
+
+1. **Start a local DynamoDB service**
+    ```sh
+    docker compose up
+    # OR if you want to run it in the background:
+    docker compose up -d
+    ```
+2. **Create tables**
+    ```sh
+    ./scripts/create_local_dynamodb_tables.py
+    ```
+3. `cd CommunityFridgeMapApi/`
+4. `sam build --use-container`
+5. **Load data into your local Dynamodb tables**
+    1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+6. **Get data from your local Dynamodb tables**
+    1. `aws dynamodb scan --table-name fridge_dev --endpoint-url http://localhost:4566`
+
+## API
+
+Choose your favorite API platform for using APIs.
+Recommend: https://www.postman.com/
+
+
+### Fridge
+
+### One Time Use
+1. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+3. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+4. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+
+### Local Server
+1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
+    * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
+3. GET Fridges: Go to http://localhost:3000/v1/fridges
+4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
+    * Example: http://localhost:3000/v1/fridges?tag=tag1
+5. POST Fridge Example:
+```
+curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
+    "name": "LES Community Fridge #2",
+    "verified": false,
+    "location": {
+        "name": "testing",
+        "street": "466 Grand Street",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10002",
+        "geoLat": 40.715207,
+        "geoLng": -73.983748
+    },
+    "maintainer": {
+        "name": "name",
+        "organization": "org",
+        "phone": "1234567890",
+        "email": "test@test.com",
+        "instagram": "https://www.instagram.com/les_communityfridge",
+        "website": "https://linktr.ee/lescommunityfridge"
+    },
+    "notes": "notes",
+    "photoUrl": "url.com"
+}'
+```
+### Fridge Report
+
+#### One Time Use
+1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
+        * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
+2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
+
+#### Local Server
+1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridgeId}/reports`
+    * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
+
+### Image
+
+1. Start local SAM API `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+1. Upload image (replace `<file-path>` with your actual image path like `"@/home/user/Downloads/sample.webp"`)
+    ```
+    curl --request POST \
+      --url http://localhost:3000/v1/photo \
+      --header 'Content-Type: image/webp' \
+      --data-binary "@<file-path>"
+    ```
+
+## Tests
+
+Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
+
+```bash
+CFM_BACKEND$ cd CommunityFridgeMapApi
+CommunityFridgeMapApi$ pip install -r tests/requirements.txt --user
+# unit test
+CommunityFridgeMapApi$ python -m pytest tests/unit -v
+```
+
+To test with coverage
+```bash
+CommunityFridgeMapApi$ coverage run -m pytest tests/unit -v
+CommunityFridgeMapApi$ coverage report
+CommunityFridgeMapApi$ coverage html
+```
+
+MacOS:
+```bash
+CommunityFridgeMapApi$ open -a "Google Chrome" htmlcov/index.html
+```
+
+Windows:
+```bash
+CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
+```
+
+## Useful AWS SAM commands
+1. `sam validate -t template.yaml`
+2. `sam build --use-container`
+    * Use this command before running the backend if you updated the code
+3. `sam local generate-event apigateway aws-proxy --method GET --path document --body "" > local-event.json`
+    * Use this command to generate a REST API event
+
+## Useful Dynamodb Commands
+1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
+2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
+
+## Useful formatting Command
+```bash
+CFM_BACKEND$ bash .git/hooks/pre-commit
+```
+
+## Resources
+
+Project Documentation
+
+  - [Architecture Brainstorming](https://docs.google.com/document/d/1FYClUD16KUY42_p93rZFHN-iyp94RU0Rtw517vj2jXs/edit)
+  - [Architecture](https://docs.google.com/document/d/1yZVGAxVn4CEZyyce_Zuha3oYOOU8ey7ArBvLbm7l4bw/edit)
+  - [Database Tables] (https://docs.google.com/document/d/16hjNHxm_ebZv8u_VolT1bdlJEDccqb7V67-Y6ljjUdY/edit?usp=sharing)
+  - [Development Workflow](https://docs.google.com/document/d/1m9Xqo4QUVEBjMD7sMjxSHa3CxxjvrHppwc0nrdWCAAc/edit)
+  - [Database Table Design](https://docs.google.com/document/d/16hjNHxm_ebZv8u_VolT1bdlJEDccqb7V67-Y6ljjUdY/edit?usp=sharing)

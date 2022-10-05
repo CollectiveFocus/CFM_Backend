@@ -1,0 +1,27 @@
+{
+  "TableName": "fridge_history_dev",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "fridgeId",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "epochTimestamp",
+      "AttributeType": "N"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "fridgeId",
+      "KeyType": "HASH"
+    },
+    {
+      "AttributeName": "epochTimestamp",
+      "KeyType": "RANGE"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 5,
+    "WriteCapacityUnits": 5
+  }
+}
