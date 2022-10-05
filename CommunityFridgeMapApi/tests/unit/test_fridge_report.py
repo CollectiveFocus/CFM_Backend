@@ -47,7 +47,6 @@ class FrdgeReportTest(unittest.TestCase):
             db_client=None,
         )
         fridge_report.set_timestamp()
-        self.assertIsNotNone(fridge_report.epochTimestamp)
         self.assertIsNotNone(fridge_report.timestamp)
 
     def test_is_valid_status(self):

@@ -33,8 +33,8 @@ Follow these steps to get Dynamodb running locally
             * ```docker start dynamodb```
 3. **Create Dynamodb tables locally**
     1. **fridge:** `aws dynamodb create-table --table-name fridge --attribute-definitions AttributeName=id,AttributeType=S --key-schema AttributeName=id,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
-    2. **fridge_report:** `aws dynamodb create-table --table-name fridge_report --attribute-definitions AttributeName=fridge_id,AttributeType=S AttributeName=epochTimestamp,AttributeType=N --key-schema AttributeName=fridge_id,KeyType=HASH AttributeName=epochTimestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
-    3. **fridge_history:** `aws dynamodb create-table --table-name fridge_history --attribute-definitions AttributeName=fridge_id,AttributeType=S AttributeName=epochTimestamp,AttributeType=N --key-schema AttributeName=fridge_id,KeyType=HASH AttributeName=epochTimestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    2. **fridge_report:** `aws dynamodb create-table --table-name fridge_report --attribute-definitions AttributeName=fridge_id,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=fridge_id,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
+    3. **fridge_history:** `aws dynamodb create-table --table-name fridge_history --attribute-definitions AttributeName=fridge_id,AttributeType=S AttributeName=timestamp,AttributeType=N --key-schema AttributeName=fridge_id,KeyType=HASH AttributeName=timestamp,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
     4. **tag**: `aws dynamodb create-table --table-name tag --attribute-definitions AttributeName=tag_name,AttributeType=S --key-schema AttributeName=tag_name,KeyType=HASH  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://localhost:8000`
 4. **Build the functions inside a Docker container**
     1. `sam build --use-container`
@@ -47,26 +47,12 @@ Follow these steps to get Dynamodb running locally
 
 ## API
 
-Choose your favorite API platform for using APIs.
-Recommend: https://www.postman.com/
-
-
-### Fridge
-
-### One Time Use
-1. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-
-### Local Server
-1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. Go to http://localhost:3000/v1/fridges/{fridge_id}
-    * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
-
 ### Fridge Report
 
 #### One Time Use
-1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
+1. API Request: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
-        * Add `"fridge_id": "{FRIDGE_ID}"` to pathParameter in generated file
+        * Add `"fridge_id": "2fish5loavesfridge"` to pathParameter in generated file
 2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
 #### Local Server

@@ -7,7 +7,6 @@ from typing import Tuple
 import re
 import json
 from dataclasses import dataclass
-import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -36,12 +35,12 @@ class Field_Validator:
 
 class DB_Response:
     def __init__(
-        self, success: bool, status_code: int, message: str, json_data: str = None
+        self, success: bool, status_code: int, message: str, db_items: list = None
     ):
         self.message = message
         self.status_code = status_code
         self.success = success
-        self.json_data = json_data
+        self.db_items = db_items
 
     def is_successful(self) -> bool:
         return self.success
@@ -51,21 +50,21 @@ class DB_Response:
             "messsage": self.message,
             "success": self.success,
             "status_code": self.status_code,
-            "json_data": self.json_data,
+            "db_item": self.db_items,
         }
 
     def api_format(self) -> dict:
-        if self.json_data:
-            body = self.json_data
-        else:
-            body = json.dumps({"message": self.message})
         return {
             "statusCode": self.status_code,
             "headers": {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
             },
-            "body": (body),
+            "body": json.dumps(
+                {
+                    "message": self.message,
+                }
+            ),
         }
 
 
@@ -127,20 +126,13 @@ class DB_Item:
     def update_item(self):
         pass
 
-    def get_item(self, primary_key):
+    def get_item(self):
         pass
 
     def delete_item(self):
         pass
 
     def get_all_items(self):
-        """
-        Gets all the Fridge Items
-        NOTE: This function is probably fine for the fridges in NYC. But as more fridges
-        are added to the database, this will be a bottleneck. Ideally we would be querying
-        based on proximity. Here is an option for if we ever need to transition:
-        https://hometechtime.com/how-to-build-a-dynamodb-geo-database-to-store-and-query-geospatial-data/
-        """
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.scan
         return self.db_client.scan(TableName=self.TABLE_NAME)
 
@@ -195,17 +187,14 @@ class DB_Item:
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.put_item
         """
         fridge_item = {}
-        fridge_json = {}
         for key in self.FIELD_VALIDATION:
             if "/" in key:
                 continue
             val = getattr(self, key)
             if val is not None:
-                fridge_json[key] = val
                 if isinstance(val, dict):
                     val = json.dumps(val)
                 fridge_item[key] = {self.FIELD_VALIDATION[key]["type"]: val}
-        fridge_item["json_data"] = {"S": json.dumps(fridge_json)}
         return fridge_item
 
     @staticmethod
@@ -321,7 +310,6 @@ class Fridge(DB_Item):
         "last_edited": {"required": False, "type": "N", "max_length": 20},
         "verified": {"required": False, "type": "B"},
         "latest_report": {"required": False, "type": "S"},
-        "latest_report/epochTimestamp": {"required": False},
         "latest_report/timestamp": {"required": False},
         "latest_report/condition": {"required": False},
         "latest_report/foodPercentage": {"required": False},
@@ -351,24 +339,8 @@ class Fridge(DB_Item):
             self.latest_report: dict = fridge.get("latest_report", None)
             self.verified: bool = fridge.get("verified", None)
 
-    def get_item(self, fridge_id):
-        is_valid, message = Fridge.is_valid_id(fridge_id=fridge_id)
-        if not is_valid:
-            return DB_Response(success=False, status_code=400, message=message)
-        key = {"id": {"S": fridge_id}}
-        result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
-        if "Item" not in result:
-            return DB_Response(
-                success=False, status_code=404, message="Fridge was not found"
-            )
-        else:
-            json_data = result["Item"]["json_data"]["S"]
-            return DB_Response(
-                success=True,
-                status_code=200,
-                message="Successfully Found Fridge",
-                json_data=json_data,
-            )
+    def get_item(self):
+        pass
 
     def get_items(self):
         pass
@@ -448,13 +420,11 @@ class Fridge(DB_Item):
 class FridgeReport(DB_Item):
 
     REQUIRED_FIELDS = ["fridge_id", "status", "fridge_percentage"]
-    # timestamp and epochTimestamp have the same time but in different formats
     ITEM_TYPES = {
         "notes": "S",
         "fridge_id": "S",
         "image_url": "S",
-        "epochTimestamp": "N",
-        "timestamp": "S",
+        "timestamp": "N",
         "status": "S",
         "fridge_percentage": "N",
     }
@@ -475,14 +445,7 @@ class FridgeReport(DB_Item):
             self.fridge_percentage: int = fridge_report.get("fridge_percentage", None)
 
     def set_timestamp(self):
-        """
-        Sets epochTimestamp and timestamp fields
-        timestamp is ISO formatted date/time and is what the API user will use
-        epochTimestamp will be what is used to query the database
-        """
-        self.epochTimestamp = str(int(time.time()))
-        utc_time = datetime.datetime.utcnow()
-        self.timestamp = utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        self.timestamp = str(int(time.time()))
 
     def set_notes(self, notes: str):
         """
