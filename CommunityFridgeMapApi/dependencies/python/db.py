@@ -2,11 +2,6 @@ from email import message
 import os
 import boto3
 import time
-from botocore.exceptions import ClientError
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 def get_ddb_connection(env:str=os.getenv('Environment', '')) -> 'botocore.client.DynamoDB':
     ddbclient=''
@@ -177,15 +172,8 @@ class Fridge(DB_Item):
                 Item=item,
                 ConditionExpression=conditional_expression
             )
-        except self.db_client.exceptions.ConditionalCheckFailedException as e:
+        except self.db_client.exceptions.ConditionalCheckFailedException:
             return DB_Response(message="Fridge already exists, pick a different name", status_code=409, success=False)
-        except self.db_client.exceptions.ResourceNotFoundException as e:
-            message = "Cannot do operations on a non-existent table:  %s" % Fridge.TABLE_NAME
-            logging.error(message)
-            return DB_Response(message=message, status_code=500, success=False)
-        except ClientError as e:
-            logging.error(e)
-            return DB_Response(message="Unexpected AWS service exception" , status_code=500, success=False)
         return DB_Response(message="Fridge was succesfully added", status_code=200, success=True)
 
     def get_fridge_locations(self):
