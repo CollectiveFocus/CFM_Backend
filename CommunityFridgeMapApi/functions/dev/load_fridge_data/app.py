@@ -11,8 +11,7 @@ FRIDGE_DATA = [
                     'PutRequest': {
                         'Item': {
                             'state': {'S': 'NY'},
-                            'name': {'S': 'thefriendlyfridge'},
-                            'display_name': {'S': 'The Friendly Fridge'},
+                            'fridge_name': {'S': 'The Friendly Fridge'},
                             'address': {'S': '1046 Broadway Brooklyn, NY 11221'},
                             'instagram': {'S': 'https://www.instagram.com/thefriendlyfridge/'}
                         }
@@ -22,8 +21,7 @@ FRIDGE_DATA = [
                     'PutRequest': {
                         'Item': {
                             'state': {'S': 'NY'},
-                            'name': {'S': '2fish5loavesfridge'},
-                            'display_name': {'S': '2 Fish 5 Loaves Fridge'},
+                            'fridge_name': {'S': '2 Fish 5 Loaves Fridge'},
                             'address': {'S': '63 Whipple St, Brooklyn, NY 11206'},
                             'instagram': {'S': 'https://www.instagram.com/2fish5loavesfridge/'}
                         }

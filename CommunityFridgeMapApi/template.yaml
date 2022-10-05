@@ -15,7 +15,6 @@ Globals:
         FRIDGE_TABLE_NAME: fridge
         FRIDGE_CHECKIN_TABLE_NAME: fridge_check_in
         FRIDGE_HISTORY_TABLE_NAME: fridge_history
-        TAG_TABLE_NAME: tag
 
 Parameters:
   Environment:
@@ -134,9 +133,6 @@ Resources:
           AttributeName: 'name'
           AttributeType: 'S'
         - 
-          AttributeName: 'display_name'
-          AttributeType: 'S'
-        - 
           AttributeName: "address"
           AttributeType: "S"
         - 
@@ -190,14 +186,12 @@ Resources:
         - 
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - AttributeName: "state"
-          KeyType: "S"
       KeySchema: 
         -
           AttributeName: "state"
           KeyType: "HASH"
         -
-          AttributeName: "name"
+          AttributeName: "fridge_name"
           KeyType: "RANGE"                           
       BillingMode: 'PAY_PER_REQUEST'
   
@@ -215,12 +209,6 @@ Resources:
         - 
           AttributeName: "image"
           AttributeType: "S"
-        - 
-          AttributeName: "pk"
-          KeyType: "S"
-        - 
-          AttributeName: "timestamp"
-          KeyType: "N"
       KeySchema: 
         - #State#FridgeName
           AttributeName: "pk"
@@ -228,20 +216,6 @@ Resources:
         -
           AttributeName: "timestamp"
           KeyType: "RANGE"                           
-      BillingMode: 'PAY_PER_REQUEST'
-
-  TagTable:
-    TableName: !Ref TAG_TABLE_NAME
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - 
-          AttributeName: 'name'
-          AttributeType: 'S'
-      KeySchema: 
-        -
-          AttributeName: "name"
-          KeyType: "HASH"                       
       BillingMode: 'PAY_PER_REQUEST'
 
   FridgeHistoryTable:
@@ -306,12 +280,6 @@ Resources:
         - 
           AttributeName: "check_in_image"
           AttributeType: "S"
-        - 
-          AttributeName: "pk"
-          KeyType: "S"
-        - 
-          AttributeName: "timestamp"
-          KeyType: "N"
       KeySchema: 
         - #State#FridgeName
           AttributeName: "pk"
