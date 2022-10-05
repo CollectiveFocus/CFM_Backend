@@ -54,10 +54,10 @@ Resources:
         FridgeReport:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /v1/fridges/{fridgeId}/reports
+            Path: /v1/fridges/{fridge_id}/reports
             Method: post
             RequestParameters:
-              - method.request.path.fridgeId:
+              - method.request.path.fridge_id:
                   Required: true
                   Caching: false
 
@@ -107,10 +107,10 @@ Resources:
         GetFridge:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /v1/fridges/{fridgeId}
+            Path: /v1/fridges/{fridge_id}
             Method: get
             RequestParameters:
-              - method.request.path.fridgeId:
+              - method.request.path.fridge_id:
                   Required: false
                   Caching: false
         GetFridges:
@@ -251,12 +251,12 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: "fridgeId"
+        - AttributeName: "fridge_id"
           AttributeType: "S"
         - AttributeName: "epochTimestamp" #epoch time used for querying data
           AttributeType: "N"
       KeySchema:
-        - AttributeName: "fridgeId"
+        - AttributeName: "fridge_id"
           KeyType: "HASH"
         - AttributeName: "epochTimestamp"
           KeyType: "RANGE"
@@ -280,12 +280,12 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: "fridgeId"
+        - AttributeName: "fridge_id"
           AttributeType: "S"
         - AttributeName: "epochTimestamp" #epoch time used for querying data
           AttributeType: "N"
       KeySchema:
-        - AttributeName: "fridgeId"
+        - AttributeName: "fridge_id"
           KeyType: "HASH"
         - AttributeName: "epochTimestamp"
           KeyType: "RANGE"

@@ -26,7 +26,7 @@ class FridgReportHandler:
         """
         body = json.loads(event["body"])
         httpMethod = event.get("httpMethod", None)
-        body["fridgeId"] = event.get("pathParameters", {}).get("fridgeId", None)
+        body["fridge_id"] = event.get("pathParameters", {}).get("fridge_id", None)
         db_response = None
         if httpMethod == "POST":
             db_response = FridgeReport(

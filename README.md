@@ -31,15 +31,14 @@ Follow these steps to get Dynamodb running locally
     # OR if you want to run it in the background:
     docker compose up -d
     ```
-2. **Create tables**
+1. **Create tables**
     ```sh
     ./scripts/create_local_dynamodb_tables.py
     ```
-3. `cd CommunityFridgeMapApi/`
-4. `sam build --use-container`
-5. **Load data into your local Dynamodb tables**
+1. `cd CommunityFridgeMapApi/`
+1. **Load data into your local Dynamodb tables**
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-6. **Get data from your local Dynamodb tables**
+1. **Get data from your local Dynamodb tables**
     1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
 
 ## API
@@ -58,7 +57,7 @@ Recommend: https://www.postman.com/
 
 ### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
+2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridge_id}
     * Example: http://localhost:3000/v1/fridges/thefriendlyfridge
 3. GET Fridges: Go to http://localhost:3000/v1/fridges
 4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
@@ -69,12 +68,12 @@ Recommend: https://www.postman.com/
 #### One Time Use
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
-        * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
-2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
+        * Add `"fridge_id": "{FRIDGE_ID}"` to pathParameter in generated file
+2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
 
 #### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local --docker-network cfm-network`
-2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridgeId}/reports`
+2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridge_id}/reports`
     * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
 
 ### Image
