@@ -1,5 +1,5 @@
 {
-  "TableName": "fridge_report_dev",
+  "TableName": "fridge_report",
   "AttributeDefinitions": [
     {
       "AttributeName": "fridgeId",
