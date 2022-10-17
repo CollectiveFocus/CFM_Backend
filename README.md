@@ -2,10 +2,11 @@
 
 ## Setup
 
-1. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+1. AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+2. SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
     * **You do not need to create an aws account to use SAM CLI, creating an aws account is OPTIONAL**
-2. Python 3 - [Install Python 3](https://www.python.org/downloads/)
-3. Docker - [Install Docker](https://docs.docker.com/get-docker/)
+3. Python 3 - [Install Python 3](https://www.python.org/downloads/)
+4. Docker - [Install Docker](https://docs.docker.com/get-docker/)
 
 ## Build and Test Locally
 
@@ -63,7 +64,32 @@ Recommend: https://www.postman.com/
 3. GET Fridges: Go to http://localhost:3000/v1/fridges
 4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
     * Example: http://localhost:3000/v1/fridges?tag=tag1
-
+5. POST Fridge Example:
+```
+curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
+    "name": "LES Community Fridge #2",
+    "verified": false,
+    "location": {
+        "name": "testing",
+        "street": "466 Grand Street",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10002",
+        "geoLat": 40.715207,
+        "geoLng": -73.983748
+    },
+    "maintainer": {
+        "name": "name",
+        "organization": "org",
+        "phone": "1234567890",
+        "email": "test@test.com",
+        "instagram": "https://www.instagram.com/les_communityfridge",
+        "website": "https://linktr.ee/lescommunityfridge"
+    },
+    "notes": "notes",
+    "photoUrl": "url.com"
+}'
+```
 ### Fridge Report
 
 #### One Time Use
