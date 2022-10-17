@@ -216,12 +216,12 @@ Resources:
             RestApiId:
               Ref: ApiGatewayApi
 
-  SendSESFunction:
+  ContactFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: functions/email_service/v1
       Handler: app.lambda_handler
-      FunctionName: SendSESFunction
+      FunctionName: ContactFunction
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -229,11 +229,22 @@ Resources:
       Runtime: python3.9
       Layers:
         - !Ref CommonLayer
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+        - SESCrudPolicy: { IdentityName: info@collectivefocus.site }
+
       Events:
         SendSESFunction:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /v1/contact_us
+            Path: /v1/contact
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
