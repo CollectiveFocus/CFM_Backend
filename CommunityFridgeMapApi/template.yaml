@@ -47,9 +47,14 @@ Resources:
       Type: AWS::Serverless::Api
       Properties:
         StageName: !Ref Stage
-        # Allows www.YOUR_DOMAIN.com to call these APIs
-        # SAM will automatically add AllowMethods with a list of methods for this API
-        Cors: "'www.communityfridgefinder.com'"
+        # CORS preflight settings from https://vercel.com/guides/how-to-enable-cors
+        Cors:
+          AllowMethods: "'GET,OPTIONS,PATCH,DELETE,POST,PUT'"
+          AllowHeaders: "'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length,
+            Content-MD5, Content-Type, Date, X-Api-Version'"
+          AllowOrigin: "'fridgefinder.app'"
+          MaxAge: "'86400'"
+        AllowCredentials: true
         EndpointConfiguration: REGIONAL
         Domain:
           DomainName: !Sub api-${Stage}.communityfridgefinder.com
