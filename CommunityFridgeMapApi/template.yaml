@@ -52,9 +52,9 @@ Resources:
           AllowMethods: "'GET,OPTIONS,PATCH,DELETE,POST,PUT'"
           AllowHeaders: "'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length,
             Content-MD5, Content-Type, Date, X-Api-Version'"
-          AllowOrigin: "'fridgefinder.app'"
+          AllowOrigin: "'*'"
           MaxAge: "'86400'"
-        AllowCredentials: true
+          AllowCredentials: false
         EndpointConfiguration: REGIONAL
         Domain:
           DomainName: !Sub api-${Stage}.communityfridgefinder.com
