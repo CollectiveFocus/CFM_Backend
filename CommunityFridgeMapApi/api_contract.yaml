@@ -26,21 +26,21 @@ paths:
       tags:
         - fridge
       responses:
-        '200':
+        "200":
           description: Array of Fridge objects as JSON
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Fridge'
-        '400':
+                  $ref: "#/components/schemas/Fridge"
+        "400":
           description: Request could not be understood due to incorrect syntax.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Fridge table not found in database.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
     post:
@@ -52,9 +52,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Fridge'
+              $ref: "#/components/schemas/Fridge"
       responses:
-        '201':
+        "201":
           description: Fridge object was created successfully.
           content:
             application/json:
@@ -63,18 +63,18 @@ paths:
                 properties:
                   id:
                     type: string
-                    pattern: '^[a-z0-9]{2,}$'
+                    pattern: "^[a-z0-9]{2,}$"
                     description: ID of the Fridge object (fridgeId).
                     example: greenpointfridge
-        '400':
+        "400":
           description: Request could not be understood due to incorrect syntax.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Fridge table not found in database.
-        '409':
+        "409":
           description: There is an existing Fridge object with the same fridge name.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
   /v1/fridges/{id}:
@@ -83,7 +83,7 @@ paths:
         name: id
         schema:
           type: string
-          pattern: '^[a-z0-9]{2,}$'
+          pattern: "^[a-z0-9]{2,}$"
         required: true
         description: ID of the Fridge object (fridgeId).
         example: greenpointfridge
@@ -93,19 +93,19 @@ paths:
       tags:
         - fridge
       responses:
-        '200':
+        "200":
           description: A Fridge object as JSON
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Fridge'
-        '400':
+                $ref: "#/components/schemas/Fridge"
+        "400":
           description: Invalid Fridge ID.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Fridge object not found.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
     put:
@@ -120,9 +120,9 @@ paths:
               type: object
               properties:
                 fridge:
-                  $ref: '#/components/schemas/Fridge'
+                  $ref: "#/components/schemas/Fridge"
       responses:
-        '201':
+        "201":
           description: Fridge object was updated successfully.
           content:
             application/json:
@@ -131,16 +131,16 @@ paths:
                 properties:
                   id:
                     type: string
-                    pattern: '^[a-z0-9]{2,}$'
+                    pattern: "^[a-z0-9]{2,}$"
                     description: ID of the Fridge object (fridgeId).
                     example: greenpointfridge
-        '400':
+        "400":
           description: Invalid Fridge ID.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Fridge object not found.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
     delete:
@@ -148,15 +148,15 @@ paths:
       tags:
         - fridge
       responses:
-        '204':
+        "204":
           description: The Fridge object was deleted successfully.
-        '400':
+        "400":
           description: Invalid Fridge ID.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Fridge object not found.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
   /v1/fridges/{id}/reports:
@@ -165,7 +165,7 @@ paths:
         name: id
         schema:
           type: string
-          pattern: '^[a-z0-9]{2,}$'
+          pattern: "^[a-z0-9]{2,}$"
         required: true
         description: ID of the Fridge object (fridgeId).
         example: greenpointfridge
@@ -175,21 +175,21 @@ paths:
       tags:
         - report
       responses:
-        '200':
+        "200":
           description: Array of Report objects
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Report'
-        '400':
+                  $ref: "#/components/schemas/Report"
+        "400":
           description: Invalid Fridge ID.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Report objects not found for specified Fridge ID.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
     post:
@@ -201,9 +201,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Report'
+              $ref: "#/components/schemas/Report"
       responses:
-        '201':
+        "201":
           description: Report object was created successfully.
           content:
             application/json:
@@ -213,18 +213,18 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-                    example: '2022-03-29T18:10:38.547Z'
+                    example: "2022-03-29T18:10:38.547Z"
                   fridgeId:
                     type: string
-                    pattern: '^[a-z0-9]{2,}$'
+                    pattern: "^[a-z0-9]{2,}$"
                     example: greenpointfridge
-        '400':
+        "400":
           description: Invalid Fridge ID.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '404':
+        "404":
           description: Report objects not found for specified Fridge ID.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
   /v1/photo:
@@ -243,7 +243,7 @@ paths:
               format: binary
 
       responses:
-        '201':
+        "201":
           description: Image was created successfully.
           content:
             application/json:
@@ -254,11 +254,11 @@ paths:
                     description: Fully qualified URL path to the image.
                     format: uri
                     example: https://s3.amazonaws.com/bucket/path/fridge.webp
-        '400':
+        "400":
           description: Request could not be understood due to incorrect syntax.
-        '401':
+        "401":
           description: Request requires user authentication.
-        '500':
+        "500":
           description: Unexpected error prevented server from fulfilling request.
 
   /v1/contact:
@@ -452,7 +452,7 @@ components:
           type: string
           format: date-time
           readOnly: true
-          example: '2022-03-29T18:10:38.547Z'
+          example: "2022-03-29T18:10:38.547Z"
 
         condition:
           description: The condition of the fridge. Fridge is ...

@@ -47,9 +47,14 @@ Resources:
       Type: AWS::Serverless::Api
       Properties:
         StageName: !Ref Stage
-        # Allows www.YOUR_DOMAIN.com to call these APIs
-        # SAM will automatically add AllowMethods with a list of methods for this API
-        Cors: "'www.communityfridgefinder.com'"
+        # CORS preflight settings from https://vercel.com/guides/how-to-enable-cors
+        Cors:
+          AllowMethods: "'GET,OPTIONS,PATCH,DELETE,POST,PUT'"
+          AllowHeaders: "'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length,
+            Content-MD5, Content-Type, Date, X-Api-Version'"
+          AllowOrigin: "'*'"
+          MaxAge: "'86400'"
+          AllowCredentials: false
         EndpointConfiguration: REGIONAL
         Domain:
           DomainName: !Sub api-${Stage}.communityfridgefinder.com
@@ -213,6 +218,39 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /v1/photo
+            Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
+
+  ContactFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: functions/email_service/v1
+      Handler: app.lambda_handler
+      FunctionName: ContactFunction
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          Stage: !Ref Stage
+      Runtime: python3.9
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+        - SESCrudPolicy: { IdentityName: info@collectivefocus.site }
+
+      Events:
+        SendSESFunction:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/contact
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
