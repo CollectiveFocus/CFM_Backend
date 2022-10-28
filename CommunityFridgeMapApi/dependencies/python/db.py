@@ -506,14 +506,10 @@ class Fridge(DB_Item):
         )
 
 
+# good, dirty, out of order, not at location
 class FridgeReport(DB_Item):
     TABLE_NAME = f"fridge_report_{DB_Item.STAGE}"
-    VALID_CONDITIONS = {
-        "working",
-        "needs cleaning",
-        "needs servicing",
-        "not at location",
-    }
+    VALID_CONDITIONS = {"good", "dirty", "out of order", "not at location", "ghost"}
     VALID_FOOD_PERCENTAGE = {0, 33, 67, 100}
     FIELD_VALIDATION = {
         "notes": {"required": False, "max_length": 256, "type": "S"},

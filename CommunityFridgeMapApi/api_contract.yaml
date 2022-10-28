@@ -14,6 +14,8 @@ tags:
     description: Fridge root record
   - name: report
     description: Fridge status reports
+  - name: contact
+    description: Website contact form data
   - name: tag
     description: Hash tag for filtering and searching
 
@@ -225,7 +227,7 @@ paths:
         '500':
           description: Unexpected error prevented server from fulfilling request.
 
-  /v1/image:
+  /v1/photo:
     post:
       summary: Create a new image file in the S3 bucket.
       tags:
@@ -248,7 +250,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  photoURL:
+                  photoUrl:
                     description: Fully qualified URL path to the image.
                     format: uri
                     example: https://s3.amazonaws.com/bucket/path/fridge.webp
@@ -256,6 +258,25 @@ paths:
           description: Request could not be understood due to incorrect syntax.
         '401':
           description: Request requires user authentication.
+        '500':
+          description: Unexpected error prevented server from fulfilling request.
+
+  /v1/contact:
+    post:
+      summary: Store website user message
+      tags:
+        - contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '201':
+          description: Message was successfully received.
+        '400':
+          description: Request could not be understood due to incorrect syntax.
         '500':
           description: Unexpected error prevented server from fulfilling request.
 
@@ -273,7 +294,9 @@ components:
         id:
           description: The database key for this fridge record.
           type: string
-          pattern: '^[a-z0-9]{2,}$'
+          pattern: '^[a-z0-9]{4,60}$'
+          minLength: 4
+          maxLength: 60
           readOnly: true
           nullable: false
           example: greenpointfridge
@@ -281,37 +304,46 @@ components:
         name:
           description: A descriptive title for this fridge location.
           type: string
+          minLength: 4
+          maxLength: 60
           example: Greenpoint Fridge
+
+        location:
+          $ref: '#/components/schemas/Location'
 
         tags:
           description: Arbitrary words to associate with this fridge.
           type: array
           items:
             type: string
+            maxLength: 140
+          nullable: true
           example: [harlem, halal, kashrut]
-
-        location:
-          $ref: '#/components/schemas/Location'
 
         maintainer:
           $ref: '#/components/schemas/Maintainer'
+          nullable: true
 
-        notes:
-          description: Notes about the fridge.
-          type: string
-          example: Next to Lot Radio.
-
-        photoURL:
+        photoUrl:
           description: Fully qualified URL path to a picture of the fridge.
           type: string
           format: uri
           nullable: true
           example: https://s3.amazonaws.com/bucket/path/fridge.webp
 
+        notes:
+          description: Notes about the fridge.
+          type: string
+          minLength: 1
+          maxLength: 300
+          nullable: true
+          example: Next to Lot Radio.
+
         verified:
           description: Signifies that the fridge data has been verified by the fridge maintainer.
           type: boolean
           default: false
+          readOnly: true
           example: false
 
     Location:
@@ -319,38 +351,51 @@ components:
 
       required:
         - street
+        - city
+        - state
         - zip
         - geoLat
         - geoLng
 
       properties:
+        name:
+          type: string
+          maxLength: 70
+          example: Ralph and Nash Deli
+
         street:
           type: string
-          example: 17 Nassau Ave
+          maxLength: 55
+          example: 352 West 116th Street
 
         city:
           type: string
-          example: Brooklyn
+          maxLength: 35
+          example: New York
 
         state:
           type: string
+          pattern: '^[A-Z]{2}$'
+          minLength: 2
+          maxLength: 2
           example: NY
 
         zip:
           type: string
-          example: 11222
+          pattern: '(^\d{5}$)|(^\d{5}-\d{4}$)'
+          example: 10026
 
         geoLat:
           description: Geographic latitude.
           type: number
           readOnly: true
-          example: 40.722814
+          example: 40.8049571
 
         geoLng:
           description: Geographic longitude.
           type: number
           readOnly: true
-          example: -73.95405
+          example: -73.9570766
 
     Maintainer:
       type: object
@@ -359,26 +404,27 @@ components:
         name:
           description: Name of the contact person.
           type: string
-          nullable: true
+          maxLength: 70
           example: Emily Ward
+
+        email:
+          type: string
+          format: email
+          example: eward@example.net
 
         organization:
           description: Name of the organization.
           type: string
+          maxLength: 80
           nullable: true
           example: Food For People
 
         phone:
           type: string
           format: phone
+          pattern: '^\(\d{3}\) \d{3}-\d{4}$'
           nullable: true
-          example: 782-654-4748
-
-        email:
-          type: string
-          format: email
-          nullable: true
-          example: eward@example.net
+          example: (782) 654-4748
 
         website:
           type: string
@@ -388,15 +434,17 @@ components:
 
         instagram:
           type: string
+          format: uri
           nullable: true
-          example: foodforpeople
+          example: https://www.instagram.com/greenpointfridge/?hl=en
 
     Report:
       type: object
 
       required:
         - timestamp
-        - operation
+        - condition
+        - foodPercentage
 
       properties:
         timestamp:
@@ -409,29 +457,60 @@ components:
         condition:
           description: The condition of the fridge. Fridge is ...
           type: string
-          enum: [dirty, out of order, not at location]
+          enum: [good, dirty, out of order, not at location]
 
         foodPercentage:
           description: The percentage of food in the fridge.
           type: integer
-          enum: [100, 75, 50, 25, 0]
+          enum: [0, 33, 67, 100]
 
-        foodPhotoURL:
+        photoUrl:
           description: Fully qualified URL path to a picture of the food.
           type: string
           format: uri
           nullable: true
-          readOnly: true
           example: https://s3.amazonaws.com/bucket/path/food.webp
-
-        foodPhotoBinary:
-          description: Binary data for photo upload.
-          type: string
-          format: binary
-          nullable: true
-          writeOnly: true
 
         notes:
           description: Notes to be included with this report.
           type: string
+          maxLength: 300
+          nullable: true
           example: Filled with Mars bars and M&M candy.
+
+    Contact:
+      type: object
+
+      required:
+        - name
+        - email
+        - subject
+        - message
+
+      properties:
+        name:
+          description: Senders name.
+          type: string
+          minLength: 1
+          maxLength: 70
+          example: Emily Ward
+
+        email:
+          description: Senders email.
+          type: string
+          format: email
+          example: eward@example.net
+
+        subject:
+          description: Title of the message.
+          type: string
+          minLength: 1
+          maxLength: 70
+          example: Questions About Press Opportunity
+
+        message:
+          description: Body of the message.
+          type: string
+          minLength: 1
+          maxLength: 2048
+          example: We are looking to write a piece about this website.
