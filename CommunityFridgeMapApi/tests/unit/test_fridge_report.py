@@ -28,9 +28,9 @@ class FrdgeReportTest(unittest.TestCase):
         fridge_report = FridgeReport(
             fridge_report={
                 "fridgeId": "test",
-                "condition": "working",
+                "condition": "good",
                 "notes": "all good out here",
-                "foodPercentage": 33,
+                "foodPercentage": 2,
             },
             db_client=None,
         )
@@ -47,8 +47,8 @@ class FrdgeReportTest(unittest.TestCase):
                     "photoUrl": "s3.url",
                     "epochTimestamp": 34234,
                     "timestamp": "good",
-                    "condition": "working",
-                    "foodPercentage": 100,
+                    "condition": "good",
+                    "foodPercentage": 3,
                 },
                 "valid": True,
                 "message": "All Fields Were Successfully Validated",
@@ -71,7 +71,7 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "thefriendlyfridge",
-                    "condition": "working",
+                    "condition": "good",
                 },
                 "valid": False,
                 "message": "Missing Required Field: foodPercentage",
@@ -79,7 +79,7 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "thefriendlyfridge",
-                    "condition": "working",
+                    "condition": "good",
                     "foodPercentage": 99,
                 },
                 "valid": False,
@@ -88,8 +88,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "thefriendlyfridge",
-                    "condition": "working",
-                    "foodPercentage": 100,
+                    "condition": "good",
+                    "foodPercentage": 3,
                 },
                 "valid": True,
                 "message": "All Fields Were Successfully Validated",
@@ -97,8 +97,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "thefriendlyfridge",
-                    "condition": "working",
-                    "foodPercentage": 100,
+                    "condition": "good",
+                    "foodPercentage": 3,
                     "notes": "x" * 257,
                 },
                 "valid": False,
@@ -107,8 +107,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "thefriendlyfridge",
-                    "condition": "working",
-                    "foodPercentage": 100,
+                    "condition": "good",
+                    "foodPercentage": 3,
                     "photoUrl": "x" * 2049,
                 },
                 "valid": False,
@@ -133,8 +133,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "hi",
-                    "condition": "working",
-                    "foodPercentage": 33,
+                    "condition": "good",
+                    "foodPercentage": 2,
                 },
                 "message": "fridgeId character length must be >= 3",
                 "success": False,
@@ -143,7 +143,7 @@ class FrdgeReportTest(unittest.TestCase):
                 "fridge_report": {
                     "fridgeId": "valid",
                     "condition": "hacking",
-                    "foodPercentage": 33,
+                    "foodPercentage": 2,
                 },
                 "message": "condition must to be one of",
                 "success": False,
@@ -151,7 +151,7 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "valid",
-                    "condition": "working",
+                    "condition": "good",
                     "foodPercentage": 50,
                 },
                 "message": "foodPercentage must to be one of",
@@ -160,8 +160,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "test",
-                    "condition": "working",
-                    "foodPercentage": 33,
+                    "condition": "good",
+                    "foodPercentage": 2,
                     "notes": "t" * 257,
                 },
                 "message": "notes character length must be <= 256",
@@ -170,8 +170,8 @@ class FrdgeReportTest(unittest.TestCase):
             {
                 "fridge_report": {
                     "fridgeId": "test",
-                    "condition": "working",
-                    "foodPercentage": 33,
+                    "condition": "good",
+                    "foodPercentage": 2,
                 },
                 "message": "fridge_report was succesfully added",
                 "success": True,

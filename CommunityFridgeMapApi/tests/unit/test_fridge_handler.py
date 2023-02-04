@@ -52,7 +52,7 @@ class FridgeHandlerTest(unittest.TestCase):
         self.assertEqual(response["statusCode"], 400)
         self.assertEqual(
             response["body"],
-            '{"message": "id Must Have A Character Length >= 3 and <= 32"}',
+            '{"message": "id Must Have A Character Length >= 3 and <= 50"}',
         )
 
     def test_get_items(self):

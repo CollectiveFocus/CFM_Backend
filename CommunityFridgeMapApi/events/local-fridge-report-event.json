@@ -1,5 +1,5 @@
 {
-  "body": "{\"condition\": \"working\", \"foodPercentage\": 33}",
+  "body": "{\"condition\": \"working\", \"foodPercentage\": 2}",
   "resource": "/{proxy+}",
   "path": "/document",
   "httpMethod": "POST",

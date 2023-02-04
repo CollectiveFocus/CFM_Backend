@@ -3,12 +3,12 @@ import logging
 import json
 
 try:
-    from db import get_ddb_connection, Fridge
+    from db import get_ddb_connection, Fridge, DB_Response
 except:
     # If it gets here it's because we are performing a unit test. It's a common error when using lambda layers
     # Here is an example of someone having a similar issue:
     # https://stackoverflow.com/questions/69592094/pytest-failing-in-aws-sam-project-due-to-modulenotfounderror
-    from dependencies.python.db import get_ddb_connection, Fridge
+    from dependencies.python.db import get_ddb_connection, Fridge, DB_Response
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -23,8 +23,8 @@ class FridgeHandler:
         """
         httpMethod = event.get("httpMethod", None)
         body = event.get("body", None)
-        pathParameters = event["pathParameters"] or {}
-        queryStringParameters = event["queryStringParameters"] or {}
+        pathParameters = event.get("pathParameters", None) or {}
+        queryStringParameters = event.get("queryStringParameters", None) or {}
         tag = queryStringParameters.get("tag", None)
         fridgeId = pathParameters.get("fridgeId", None)
         db_response = None
@@ -38,7 +38,8 @@ class FridgeHandler:
                 body = json.loads(body)
                 db_response = Fridge(db_client=ddbclient, fridge=body).add_item()
         else:
-            raise ValueError(f'Invalid httpMethod "{httpMethod}"')
+            Fridge(db_client=ddbclient).warm_lambda()
+            db_response = DB_Response(False, 400, "httpMethod missing")
         return db_response.api_format()
 
 

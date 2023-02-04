@@ -167,7 +167,7 @@ class FridgeTest(unittest.TestCase):
         self.assertFalse(is_valid)
 
         is_valid, message = Fridge.is_valid_id("hi")
-        self.assertEqual(message, "id Must Have A Character Length >= 3 and <= 32")
+        self.assertEqual(message, "id Must Have A Character Length >= 3 and <= 50")
         self.assertFalse(is_valid)
 
     def test_validate_fields_required_fields(self):
@@ -183,10 +183,17 @@ class FridgeTest(unittest.TestCase):
         self.assertEqual(field_validator.message, "id character length must be >= 3")
 
     def test_validate_fields_max_length(self):
-        fridge = Fridge(fridge={"id": "x" * 33}, db_client=None)
+        fridge = Fridge(
+            fridge={
+                "id": "x" * 51,
+                "name": "x" * 51,
+                "location": {"geoLat": "3", "geoLng": "3"},
+            },
+            db_client=None,
+        )
         field_validator = fridge.validate_fields()
         self.assertFalse(field_validator.is_valid)
-        self.assertEqual(field_validator.message, "id character length must be <= 32")
+        self.assertEqual(field_validator.message, "id character length must be <= 50")
 
     def test_validate_fields_success(self):
         fridge = Fridge(

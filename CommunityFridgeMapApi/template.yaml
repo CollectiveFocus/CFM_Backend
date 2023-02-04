@@ -94,7 +94,7 @@ Resources:
             - dynamodb:UpdateItem
             Resource: !GetAtt FridgeTable.Arn
       Events:
-        FridgeReport:
+        PostFridgeReport:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /v1/fridges/{fridgeId}/reports
@@ -105,6 +105,24 @@ Resources:
               - method.request.path.fridgeId:
                   Required: true
                   Caching: false
+        GetFridgeReport:
+          Type: Api
+          Properties:
+            Path: /v1/fridges/{fridgeId}/reports
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+            RequestParameters:
+              - method.request.path.fridgeId:
+                  Required: true
+                  Caching: false
+        FridgeReportWarmUp:
+          Type: Schedule
+          Properties:
+            # Read more about schedule expressions here:
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
+            # This event runs every 10 minutes
+            Schedule: rate(1 minute)
 
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -182,6 +200,13 @@ Resources:
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
+        FridgeWarmUp:
+          Type: Schedule
+          Properties:
+            # Read more about schedule expressions here:
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
+            # This event runs every 10 minutes
+            Schedule: rate(1 minute)
 
   ImageFunction:
     Type: AWS::Serverless::Function
@@ -221,13 +246,20 @@ Resources:
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
+        ImageWarmUp:
+          Type: Schedule
+          Properties:
+            # Read more about schedule expressions here:
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
+            # This event runs every 10 minutes
+            Schedule: rate(10 minutes)
 
   ContactFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: functions/email_service/v1
       Handler: app.lambda_handler
-      FunctionName: ContactFunction
+      FunctionName: !Sub ContactFunction${Stage}
       Environment:
         Variables:
           Environment: !Ref Environment
@@ -254,6 +286,13 @@ Resources:
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
+        ContactWarmUp:
+          Type: Schedule
+          Properties:
+            # Read more about schedule expressions here:
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
+            # This event runs every 10 minutes
+            Schedule: rate(10 minutes)
 
   LoadFridgeDataFunction: #FOR DEV TESTING PURPOSES ONLY. TODO: DELETE THIS FUNCTION
     Type: AWS::Serverless::Function

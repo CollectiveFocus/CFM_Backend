@@ -286,10 +286,14 @@ class DB_Item:
             is_valid=True, message="All Fields Were Successfully Validated"
         )
 
+    def warm_lambda(self):
+        key = {"id": {"S": "collectivefocusresourcehub"}}
+        self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
+
 
 class Fridge(DB_Item):
     MIN_ID_LENGTH = 3
-    MAX_ID_LENGTH = 32
+    MAX_ID_LENGTH = 50
     FIELD_VALIDATION = {
         "id": {
             "required": True,
@@ -315,7 +319,7 @@ class Fridge(DB_Item):
         "maintainer": {"required": False, "type": "S"},
         "maintainer/name": {"required": False, "max_length": 256},
         "maintainer/organization": {"required": False, "max_length": 256},
-        "maintainer/phone": {"required": False, "min_length": 10, "max_length": 12},
+        "maintainer/phone": {"required": False, "min_length": 10, "max_length": 20},
         "maintainer/email": {"required": False, "max_length": 320},
         "maintainer/website": {"required": False, "max_length": 2048},
         "maintainer/instagram": {"required": False, "max_length": 64},
@@ -378,6 +382,30 @@ class Fridge(DB_Item):
                 json_data=json_data,
             )
 
+    def get_latest_report(self, fridgeId):
+        is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
+        if not is_valid:
+            return DB_Response(success=False, status_code=400, message=message)
+        key = {"id": {"S": fridgeId}}
+        result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
+        if "Item" not in result:
+            return DB_Response(
+                success=False, status_code=404, message="Fridge was not found"
+            )
+        else:
+            json_data = result["Item"]["json_data"]["S"]
+            dict_data = json.loads(json_data)
+            latestFridgeReport = dict_data.get("latestFridgeReport", None)
+            response = []
+            if latestFridgeReport is not None:
+                response.append(latestFridgeReport)
+            return DB_Response(
+                success=True,
+                status_code=200,
+                message="Successfully Found Fridge",
+                json_data=json.dumps(response),
+            )
+
     def get_items(self, tag=None):
         # scan/query doc: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/dynamodb.html#querying-and-scanning
         response = None
@@ -419,7 +447,7 @@ class Fridge(DB_Item):
             Returns:
                 bool (bool):
         """
-        return re.match(r"^[A-Za-z0-9_#\-‘'. ]+$", self.name) is not None
+        return re.match(r"^[A-Za-z0-9_#\-‘'.@& ]+$", self.name) is not None
 
     def validate_fields(self) -> Field_Validator:
         """
@@ -444,7 +472,7 @@ class Fridge(DB_Item):
         """
         if fridgeId is None:
             return False, "Missing Required Field: id"
-        if re.match(r"^[A-Za-z0-9_#\-‘'.]+$", fridgeId) is None:
+        if re.match(r"^[A-Za-z0-9_#\-‘'.@&]+$", fridgeId) is None:
             return False, "id has invalid characters"
         id_length = len(fridgeId)
         is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
@@ -510,7 +538,7 @@ class Fridge(DB_Item):
 class FridgeReport(DB_Item):
     TABLE_NAME = f"fridge_report_{DB_Item.STAGE}"
     VALID_CONDITIONS = {"good", "dirty", "out of order", "not at location", "ghost"}
-    VALID_FOOD_PERCENTAGE = {0, 33, 67, 100}
+    VALID_FOOD_PERCENTAGE = {0, 1, 2, 3}
     FIELD_VALIDATION = {
         "notes": {"required": False, "max_length": 256, "type": "S"},
         "fridgeId": {

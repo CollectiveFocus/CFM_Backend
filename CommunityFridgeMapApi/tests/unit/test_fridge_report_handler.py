@@ -30,7 +30,7 @@ class DynamoDbMockPutItem:
 class FrdgeReportHandlerTest(unittest.TestCase):
     def test_lambda_handler_success(self):
         event = {
-            "body": '{"condition": "working", "foodPercentage": 33}',
+            "body": '{"condition": "good", "foodPercentage": 2}',
             "pathParameters": {"fridgeId": "thefriendlyfridge"},
             "httpMethod": "POST",
         }
@@ -43,7 +43,7 @@ class FrdgeReportHandlerTest(unittest.TestCase):
 
     def test_lambda_handler_fail(self):
         event = {
-            "body": '{"condition": "working"}',
+            "body": '{"condition": "good"}',
             "pathParameters": {"fridgeId": "thefriendlyfridge"},
             "httpMethod": "POST",
         }
@@ -56,10 +56,12 @@ class FrdgeReportHandlerTest(unittest.TestCase):
 
     def test_lambda_handler_exception(self):
         event = {
-            "body": '{"condition": "working", "foodPercentage": 33}',
+            "body": '{"condition": "good", "foodPercentage": 2}',
             "pathParameters": {"fridgeId": "thefriendlyfridge"},
         }
-        with pytest.raises(ValueError):
-            FridgReportHandler.lambda_handler(
-                event=event, ddbclient=DynamoDbMockPutItem()
-            )
+        response = FridgReportHandler.lambda_handler(
+            event=event, ddbclient=DynamoDbMockPutItem()
+        )
+        self.assertEqual(response["statusCode"], 400)
+        message = json.loads(response["body"])["message"]
+        self.assertEqual(message, "httpMethod missing")

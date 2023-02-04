@@ -49,5 +49,9 @@ class PostFridgeHandlerTest(unittest.TestCase):
             "pathParameters": {},
             "queryStringParameters": {},
         }
-        with pytest.raises(ValueError):
-            FridgeHandler.lambda_handler(event=event, ddbclient=DynamoDbMockPutItem())
+        response = FridgeHandler.lambda_handler(
+            event=event, ddbclient=DynamoDbMockPutItem()
+        )
+        self.assertEqual(response["statusCode"], 400)
+        message = json.loads(response["body"])["message"]
+        self.assertEqual(message, "httpMethod missing")
