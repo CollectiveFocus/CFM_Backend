@@ -602,6 +602,32 @@ class FridgeReport(DB_Item):
                 object_dict[key] = val
         return object_dict
 
+    def get_all_reports(self, fridgeId):
+        is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
+        if not is_valid:
+            return DB_Response(success=False, status_code=400, message=message)      
+        key = {"id": {"S": fridgeId}}
+        result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
+        if "Item" not in result:
+            return DB_Response(
+                success=False, status_code=404, message="Fridge was not found"
+            )
+        else:
+            ## start by returning 'Item', then we can convert to JSON, we didn't build JSON for this yet
+            json_data = result["Item"]["json_data"]["S"]
+            ## field validation dictionary for key/type
+            dict_data = json.loads(json_data)
+            reports = dict_data.get("reports", None)
+            response = []
+            if reports is not None:
+                response.append(reports)
+            return DB_Response(
+                success=True,
+                status_code=200,
+                message="Successfully Found Fridge",
+                json_data=json.dumps(response),
+            )
+
     def add_item(self) -> DB_Response:
         self.set_timestamp()
         fridge_report_dict = self.object_to_dict()
