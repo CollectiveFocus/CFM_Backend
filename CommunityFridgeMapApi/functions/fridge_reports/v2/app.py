@@ -43,7 +43,7 @@ class FridgeReportsHandler:
                 db_client=ddbclient, fridge_report=body
             ).add_item()
         elif httpMethod == "GET":
-            db_response = Fridge(db_client=ddbclient).get_all_reports(
+            db_response = FridgeReport(db_client=ddbclient).get_all_reports(
                 fridgeId=fridge_id
                 ## Add index arguement for paginated reply
                 ## As user scrolls, this API will get called again and pass the next series of data

@@ -606,26 +606,32 @@ class FridgeReport(DB_Item):
         is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
         if not is_valid:
             return DB_Response(success=False, status_code=400, message=message)      
-        key = {"id": {"S": fridgeId}}
-        result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
-        if "Item" not in result:
-            return DB_Response(
-                success=False, status_code=404, message="Fridge was not found"
-            )
-        else:
-            ## start by returning 'Item', then we can convert to JSON, we didn't build JSON for this yet
-            json_data = result["Item"]["json_data"]["S"]
-            ## field validation dictionary for key/type
-            dict_data = json.loads(json_data)
-            reports = dict_data.get("reports", None)
+        key = {"S": fridgeId}
+        result = self.db_client.query(TableName=self.TABLE_NAME,
+        KeyConditionExpression='fridgeId = :fridgeId', 
+        ExpressionAttributeValues={':fridgeId':key},
+        ProjectionExpression='json_data',
+        )
+        if 'Items' in result and len(result['Items']) > 0:
             response = []
-            if reports is not None:
-                response.append(reports)
+            for item in result['Items']:
+                json_data = item["json_data"]["S"]
+                data = json.loads(json_data)
+                if data is not None:
+                    response.append(data)
+
+            if result is not None:
+                return DB_Response(
+                    success=True,
+                    status_code=200,
+                    message="Successfully Found Reports",
+                    json_data=(json.dumps(response)),
+                )
+        else:
             return DB_Response(
-                success=True,
-                status_code=200,
-                message="Successfully Found Fridge",
-                json_data=json.dumps(response),
+                success=False, 
+                status_code=404, 
+                message="No Reports Found"
             )
 
     def add_item(self) -> DB_Response:
