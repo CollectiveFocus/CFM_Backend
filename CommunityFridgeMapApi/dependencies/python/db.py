@@ -602,36 +602,50 @@ class FridgeReport(DB_Item):
                 object_dict[key] = val
         return object_dict
 
-    def get_all_reports(self, fridgeId):
+    def get_all_reports(self, fridgeId,last_evaluated_key = None):
         is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
         if not is_valid:
             return DB_Response(success=False, status_code=400, message=message)      
         key = {"S": fridgeId}
-        result = self.db_client.query(TableName=self.TABLE_NAME,
-        KeyConditionExpression='fridgeId = :fridgeId', 
-        ExpressionAttributeValues={':fridgeId':key},
-        ProjectionExpression='json_data',
+        table = self.TABLE_NAME
+        query_params = {
+            'TableName':table,
+            'KeyConditionExpression':'fridgeId = :fridgeId', 
+            'ExpressionAttributeValues':{':fridgeId':key},
+            'ProjectionExpression':'json_data',
+            'Limit':2
+        }
+        result = self.db_client.query(
+            **query_params,
+            # ExclusiveStartKey=last_evaluated_key
         )
-        if 'Items' in result and len(result['Items']) > 0:
-            response = []
-            for item in result['Items']:
-                json_data = item["json_data"]["S"]
-                data = json.loads(json_data)
-                if data is not None:
-                    response.append(data)
+        while 'LastEvaluatedKey' in result:
+            last_key = result['LastEvaluatedKey']
+            if 'Items' in result and len(result['Items']) > 0:
+                response = []
+                for item in result['Items']:
+                    json_data = item["json_data"]["S"]
+                    data = json.loads(json_data)
+                    if data is not None:
+                        response.append(data)
 
-            if result is not None:
+                if result is not None:
+                    response_data={'Items':response, 'LastEvaluatedKey':last_key},
+                    return DB_Response(
+                        success=True,
+                        status_code=200,
+                        message="Successfully Found Reports",
+                        json_data=(json.dumps(response_data)),
+                    )
+            else:
                 return DB_Response(
-                    success=True,
-                    status_code=200,
-                    message="Successfully Found Reports",
-                    json_data=(json.dumps(response)),
+                    success=False, 
+                    status_code=404, 
+                    message="No Reports Found"
                 )
-        else:
-            return DB_Response(
-                success=False, 
-                status_code=404, 
-                message="No Reports Found"
+            result = self.db_client.query(
+                **query_params,
+                ExclusiveStartKey=last_key
             )
 
     def add_item(self) -> DB_Response:
