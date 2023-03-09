@@ -29,7 +29,7 @@ Fridge Finder is project sponsored by [Collective Focus](https://collectivefocus
 
 1. AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
     * **You DO NOT have to create an AWS account to use AWS CLI for this project, skip these steps if you don't want to create an AWS account**
-    * AWS CLI looks for credentials when using it, but doesn't validate. So will need to set some fake one. But the region name matters, use any valid region name. 
+    * AWS CLI looks for credentials when using it, but doesn't validate. So will need to set some fake one. But the region name matters, use any valid region name.
         ```sh
         $ aws configure
         $ AWS Access Key ID: [ANYTHING YOU WANT]
@@ -128,7 +128,7 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
 
 #### One Time Use
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
+    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"condition\": \"good\", \"foodPercentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
 2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
 
