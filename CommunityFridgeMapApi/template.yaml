@@ -167,6 +167,9 @@ Resources:
               - method.request.path.fridgeId:
                   Required: true
                   Caching: false
+              - method.request.querystring.lastEvaluatedKey:
+                  Required: false
+                  Caching: false
         FridgeReportWarmUp:
           Type: Schedule
           Properties:

@@ -31,22 +31,25 @@ class FridgeReportsHandler:
         Extracts the necessary data from events dict, and executes a function corresponding
         to the event httpMethod
         """
+        httpMethod = event.get("httpMethod", None)
         body = event.get("body", None)
         fridge_id = event.get("pathParameters", {}).get("fridgeId", None)
+        last_evaluated_key = None
+        if json.dumps(event['queryStringParameters']) != 'null':
+            ##Todo: Make sure last_evaluated_key is formatted correctly. Currently there are superfluous \\
+            last_evaluated_key = json.dumps(event['queryStringParameters']['lastEvaluatedKey']) if 'lastEvaluatedKey' in event['queryStringParameters'] else None
+        db_response = None
         if body is not None:
             body = json.loads(body)
             body["fridgeId"] = fridge_id
-        httpMethod = event.get("httpMethod", None)
-        db_response = None
         if httpMethod == "POST":
             db_response = FridgeReport(
                 db_client=ddbclient, fridge_report=body
             ).add_item()
         elif httpMethod == "GET":
             db_response = FridgeReport(db_client=ddbclient).get_all_reports(
-                fridgeId=fridge_id
-                ## Add index arguement for paginated reply
-                ## As user scrolls, this API will get called again and pass the next series of data
+                fridgeId=fridge_id,
+                lastEvaluatedKey=last_evaluated_key
             )
         else:
             FridgeReport(db_client=ddbclient).warm_lambda()
