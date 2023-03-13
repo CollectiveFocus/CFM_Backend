@@ -10,6 +10,13 @@ class DynamoDbMockGetItem:
 
     def get_item(self, TableName=None, Key=None):
         return {"Item": {"json_data": {"S": '{"id": {"S": "test"}}'}}}
+    
+class DynamoDbMockGetItemFail:
+    def __init__(self):
+        pass
+
+    def get_item(self, TableName=None, Key=None):
+        return {} 
 
 
 class DynamoDbMockScan:
@@ -47,12 +54,12 @@ class FridgeHandlerTest(unittest.TestCase):
                 "pathParameters": {"fridgeId": "hi"},
                 "queryStringParameters": None,
             },
-            ddbclient=DynamoDbMockGetItem(),
+            ddbclient=DynamoDbMockGetItemFail(),
         )
-        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(response["statusCode"], 404)
         self.assertEqual(
             response["body"],
-            '{"message": "id Must Have A Character Length >= 3 and <= 50"}',
+            '{"message": "Fridge was not found"}',
         )
 
     def test_get_items(self):

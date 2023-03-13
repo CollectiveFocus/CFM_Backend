@@ -25,7 +25,8 @@ A community fridge is a decentralized resource where businesses and individuals 
 
 Fridge Finder is project sponsored by [Collective Focus](https://collectivefocus.site/), a community organization in Brooklyn, New York. Our goal is to make it easy for people to find fridge locations and get involved with food donation programs in their community. We are building a responsive, mobile first, multi-lingual web application with administrative controls for fridge maintainers. To join the project read our [contributing guidelines](https://github.com/CollectiveFocus/CFM_Frontend/blob/dev/docs/CONTRIBUTING.md) and [code of conduct](https://github.com/CollectiveFocus/CFM_Frontend/blob/dev/docs/CODE_OF_CONDUCT.md). The application will be deployed to https://www.fridgefinder.app/
 
-## Setup
+---
+## Pre-Requisites
 
 1. AWS CLI - [Install the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
     * **You DO NOT have to create an AWS account to use AWS CLI for this project, skip these steps if you don't want to create an AWS account**
@@ -42,17 +43,7 @@ Fridge Finder is project sponsored by [Collective Focus](https://collectivefocus
 3. Python 3 - [Install Python 3](https://www.python.org/downloads/)
 4. Docker - [Install Docker](https://docs.docker.com/get-docker/)
 
-## Build and Test Locally
-
-Confirm that the following requests work for you
-
-1. `cd CommunityFridgeMapApi/`
-2. ` sam build --use-container`
-3. `sam local invoke HelloWorldFunction --event events/event.json`
-    * response: ```{"statusCode": 200, "body": "{\"message\": \"hello world\"}"}```
-4. `sam local start-api`
-5. `curl http://localhost:3000/hello`
-    * response: ```{"message": "hello world"}```
+---
 
 ## Setup Local Database Connection
 
@@ -76,7 +67,19 @@ Follow these steps to get Dynamodb running locally
     1. Fridge Data: `sam local invoke LoadFridgeDataFunction --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 6. **Get data from your local Dynamodb tables**
     1. `aws dynamodb scan --table-name fridge_dev --endpoint-url http://localhost:4566`
+---
+## Build and Test Locally
 
+Confirm that the following requests work for you
+
+1. `cd CommunityFridgeMapApi/`
+2. ` sam build --use-container`
+3. `sam local invoke HelloWorldFunction --event events/event.json`
+    * response: ```{"statusCode": 200, "body": "{\"message\": \"hello world\"}"}```
+4. `sam local start-api`
+5. `curl http://localhost:3000/hello`
+    * response: ```{"message": "hello world"}```
+---
 ## API
 
 Choose your favorite API platform for using APIs.
@@ -130,7 +133,7 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
     * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
-2. Query Data: `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:8000`
+2. Query Data: `aws dynamodb scan --table-name fridge_report_dev --endpoint-url http://localhost:8000`
 
 #### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
@@ -147,7 +150,7 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
       --header 'Content-Type: image/webp' \
       --data-binary "@<file-path>"
     ```
-
+---
 ## Tests
 
 Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
@@ -175,7 +178,7 @@ Windows:
 ```bash
 CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
 ```
-
+---
 ## Useful AWS SAM commands
 1. `sam validate -t template.yaml`
 2. `sam build --use-container`
@@ -184,8 +187,8 @@ CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
     * Use this command to generate a REST API event
 
 ## Useful Dynamodb Commands
-1. `aws dynamodb scan --table-name fridge --endpoint-url http://localhost:4566`
-2. `aws dynamodb scan --table-name fridge_report --endpoint-url http://localhost:4566`
+1. `aws dynamodb scan --table-name fridge_{stage} --endpoint-url http://localhost:4566`
+2. `aws dynamodb scan --table-name fridge_report_{stage} --endpoint-url http://localhost:4566`
 
 ## Useful formatting Command
 ```bash
