@@ -616,7 +616,6 @@ class FridgeReport(DB_Item):
             'Limit':2
         }
 
-        lastEvaluatedKey_str = lastEvaluatedKey.replace('\\','')
         lastEvaluatedKeyDummy = {
             "fridgeId": {
                 "S": "greenpointfridge"
@@ -628,7 +627,6 @@ class FridgeReport(DB_Item):
 
         print(f"{lastEvaluatedKey=}")
         print(f"{lastEvaluatedKeyDummy=}")
-        print(f"{lastEvaluatedKey_str=}")
         print(f"{lastEvaluatedKeyDummy == lastEvaluatedKey =}")
 
         if lastEvaluatedKey is not None:
