@@ -26,6 +26,11 @@ class FridgeReportsHandler:
         pass
 
     @staticmethod
+    def decode_url_encoded_json(encoded_str):
+        decoded_str = urllib.parse.unquote(encoded_str)
+        return json.loads(decoded_str)
+
+    @staticmethod
     def lambda_handler(event: dict, ddbclient: "botocore.client.DynamoDB") -> dict:
         """
         Extracts the necessary data from events dict, and executes a function corresponding
@@ -36,8 +41,8 @@ class FridgeReportsHandler:
         fridge_id = event.get("pathParameters", {}).get("fridgeId", None)
         last_evaluated_key = None
         if json.dumps(event['queryStringParameters']) != 'null':
-            ##Todo: Make sure last_evaluated_key is formatted correctly. Currently there are superfluous \\
-            last_evaluated_key = json.dumps(event['queryStringParameters']['lastEvaluatedKey']) if 'lastEvaluatedKey' in event['queryStringParameters'] else None
+            last_evaluated_key = json.loads(event['queryStringParameters']['lastEvaluatedKey'])
+
         db_response = None
         if body is not None:
             body = json.loads(body)

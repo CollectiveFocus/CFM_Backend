@@ -616,21 +616,8 @@ class FridgeReport(DB_Item):
             'Limit':2
         }
 
-        lastEvaluatedKeyDummy = {
-            "fridgeId": {
-                "S": "greenpointfridge"
-            },
-            "epochTimestamp": {
-                "N": "1678601556"
-            }
-        }
-
-        print(f"{lastEvaluatedKey=}")
-        print(f"{lastEvaluatedKeyDummy=}")
-        print(f"{lastEvaluatedKeyDummy == lastEvaluatedKey =}")
-
         if lastEvaluatedKey is not None:
-            query_params['ExclusiveStartKey'] = lastEvaluatedKeyDummy
+            query_params['ExclusiveStartKey'] = lastEvaluatedKey
         result = self.db_client.query(
             **query_params,
         )
@@ -649,34 +636,6 @@ class FridgeReport(DB_Item):
                 status_code=200,
                 message="Successfully Found Reports",
                 json_data=(json.dumps(response_data)),
-            )
-        # while 'LastEvaluatedKey' in result:
-            last_key = result['LastEvaluatedKey']
-            if 'Items' in result and len(result['Items']) > 0:
-                response = []
-                for item in result['Items']:
-                    json_data = item["json_data"]["S"]
-                    data = json.loads(json_data)
-                    if data is not None:
-                        response.append(data)
-
-                if result is not None:
-                    response_data={'Items':response, 'LastEvaluatedKey':last_key},
-                    return DB_Response(
-                        success=True,
-                        status_code=200,
-                        message="Successfully Found Reports",
-                        json_data=(json.dumps(response_data)),
-                    )
-            else:
-                return DB_Response(
-                    success=False, 
-                    status_code=404, 
-                    message="No Reports Found"
-                )
-            result = self.db_client.query(
-                **query_params,
-                ExclusiveStartKey=last_key
             )
 
     def add_item(self) -> DB_Response:
