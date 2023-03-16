@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10"]
 
     steps:
       - uses: actions/checkout@v3
@@ -17,8 +17,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; pip install -r CommunityFridgeMapApi/tests/requirements.txt --user; fi
+          REQUIREMENTS="CommunityFridgeMapApi/tests/requirements.txt"
+          if [ -f $REQUIREMENTS ]; pip install -r $REQUIREMENTS --user; fi
       - name: Run tests
         run: |
           python -m pytest CommunityFridgeMapApi/tests/unit -v
