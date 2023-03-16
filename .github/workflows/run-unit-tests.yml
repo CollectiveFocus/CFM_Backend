@@ -21,4 +21,5 @@ jobs:
           if [ -f $REQUIREMENTS ]; then pip install -r $REQUIREMENTS --user; fi
       - name: Run tests
         run: |
-          python -m pytest CommunityFridgeMapApi/tests/unit -v
+          cd CommunityFridgeMapApi/
+          python -m pytest tests/unit -v
