@@ -8,13 +8,15 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10"]
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Set default region
+        run: |
+          export AWS_DEFAULT_REGION=us-west-2
       - name: Install dependencies
         run: |
           REQUIREMENTS="CommunityFridgeMapApi/tests/requirements.txt"
