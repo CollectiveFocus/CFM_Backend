@@ -113,7 +113,7 @@ class FridgeTest(unittest.TestCase):
         )
         response = fridge.add_item()
         self.assertTrue(response.success)
-        self.assertEqual(response.message, "Fridge was successfully added with id: testfridge")
+        self.assertEqual(response.json_data, json.dumps({"id": "testfridge"}))
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(fridge.last_edited)
 

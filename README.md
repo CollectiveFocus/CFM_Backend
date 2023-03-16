@@ -131,14 +131,14 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
 
 #### One Time Use
 1. POST FridgeReport: `sam local invoke FridgeReportFunction --event events/local-fridge-report-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"status\": \"working\", \"fridge_percentage\": 0}" > events/local-fridge-report-event-2.json`
+    * [OPTIONAL] Generate custom event Example: `sam local generate-event apigateway aws-proxy --method POST --path document --body "{\"condition\": \"working\", \"foodPercentage\": 0}" > events/local-fridge-report-event-2.json`
         * Add `"fridgeId": "{FRIDGEID}"` to pathParameter in generated file
 2. Query Data: `aws dynamodb scan --table-name fridge_report_dev --endpoint-url http://localhost:8000`
 
 #### Local Server
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 2. Make a POST Request to: `http://127.0.0.1:3000/v1/fridges/{fridgeId}/reports`
-    * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"status": "working", "fridge_percentage": 100}'`
+    * Example: `curl --location --request POST 'http://127.0.0.1:3000/v1/fridges/thefriendlyfridge/reports' --header 'Content-Type: application/json' --data-raw '{"condition": "good", "foodPercentage": 1}'`
 
 ### Image
 

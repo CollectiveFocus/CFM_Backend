@@ -36,8 +36,7 @@ class Field_Validator:
 
 class DB_Response:
     def __init__(
-        self, success: bool, status_code: int, message: str, json_data: str = None
-    ):
+        self, success: bool, status_code: int, message: str, json_data: str = None):
         self.message = message
         self.status_code = status_code
         self.success = success
@@ -53,6 +52,9 @@ class DB_Response:
             "status_code": self.status_code,
             "json_data": self.json_data,
         }
+
+    def set_json_data(self, json_data: str):
+        self.json_data = json_data
 
     def api_format(self) -> dict:
         if self.json_data:
@@ -472,7 +474,7 @@ class Fridge(DB_Item):
         conditional_expression = "attribute_not_exists(id)"
         db_response = super().add_item(conditional_expression=conditional_expression)
         if db_response.status_code == 201:
-            db_response.message = f"Fridge was successfully added with id: {self.id}"
+            db_response.set_json_data(json.dumps({"id": self.id}))
         return db_response
 
     def get_fridge_locations(self):
@@ -585,9 +587,10 @@ class FridgeReport(DB_Item):
         db_response = super().add_item()
         if not db_response.is_successful():
             return db_response
-        return Fridge(db_client=self.db_client).update_fridge_report(
-            fridgeId=self.fridgeId, fridge_report=fridge_report_dict
-        )
+        #updates the latestFridgeReport field in the Fridge table
+        Fridge(db_client=self.db_client).update_fridge_report(fridgeId=self.fridgeId, fridge_report=fridge_report_dict)
+        db_response.set_json_data(json.dumps({'fridgeId': self.fridgeId, 'timestamp': self.timestamp}))
+        return db_response
 
 
 class FridgeHistory(DB_Item):
