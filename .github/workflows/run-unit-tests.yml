@@ -17,6 +17,7 @@ jobs:
       - name: Set default region
         run: |
           export AWS_DEFAULT_REGION=us-west-2
+          export Environment=local
       - name: Install dependencies
         run: |
           REQUIREMENTS="CommunityFridgeMapApi/tests/requirements.txt"
