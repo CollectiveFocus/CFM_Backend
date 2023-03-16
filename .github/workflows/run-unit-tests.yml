@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           REQUIREMENTS="CommunityFridgeMapApi/tests/requirements.txt"
-          if [ -f $REQUIREMENTS ]; pip install -r $REQUIREMENTS --user; fi
+          if [ -f $REQUIREMENTS ]; then pip install -r $REQUIREMENTS --user; fi
       - name: Run tests
         run: |
           python -m pytest CommunityFridgeMapApi/tests/unit -v
