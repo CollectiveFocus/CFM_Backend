@@ -1,0 +1,24 @@
+name: Run Unit Tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          REQUIREMENTS="CommunityFridgeMapApi/tests/requirements.txt"
+          if [ -f $REQUIREMENTS ]; then pip install -r $REQUIREMENTS --user; fi
+      - name: Run tests
+        run: |
+          cd CommunityFridgeMapApi/
+          python -m pytest tests/unit -v

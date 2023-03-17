@@ -6,6 +6,7 @@ from dependencies.python.db import get_ddb_connection
 import unittest
 from dependencies.python.db import Fridge
 import json
+import os
 
 
 def test_layer_test():
@@ -15,6 +16,7 @@ def test_layer_test():
 
 
 def test_get_ddb_connection():
+    os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     connection = get_ddb_connection()
     assert str(type(connection)) == "<class 'botocore.client.DynamoDB'>"
     connection = get_ddb_connection(env="local")
