@@ -13,6 +13,9 @@ class DynamoDbMockPutItem:
     def put_item(self, TableName=None, Item=None, ConditionExpression=None):
         pass
 
+    def get_item(self, TableName=None, Key=None):
+        pass
+
 
 class PostFridgeHandlerTest(unittest.TestCase):
     def test_lambda_handler_success(self):
@@ -25,8 +28,8 @@ class PostFridgeHandlerTest(unittest.TestCase):
         response = FridgeHandler.lambda_handler(
             event=event, ddbclient=DynamoDbMockPutItem()
         )
-        message = json.loads(response["body"])["message"]
-        self.assertEqual(message, "fridge_ was succesfully added")
+        body = json.loads(response["body"])
+        self.assertEqual(body, {"id": "greenpointfridge"})
         self.assertEqual(response["statusCode"], 201)
 
     def test_lambda_handler_fail(self):

@@ -36,8 +36,7 @@ class Field_Validator:
 
 class DB_Response:
     def __init__(
-        self, success: bool, status_code: int, message: str, json_data: str = None
-    ):
+        self, success: bool, status_code: int, message: str, json_data: str = None):
         self.message = message
         self.status_code = status_code
         self.success = success
@@ -53,6 +52,9 @@ class DB_Response:
             "status_code": self.status_code,
             "json_data": self.json_data,
         }
+
+    def set_json_data(self, json_data: str):
+        self.json_data = json_data
 
     def api_format(self) -> dict:
         if self.json_data:
@@ -293,7 +295,8 @@ class DB_Item:
 
 class Fridge(DB_Item):
     MIN_ID_LENGTH = 3
-    MAX_ID_LENGTH = 50
+    MAX_ID_LENGTH = 100
+    MAX_NAME_LENGTH = MAX_ID_LENGTH + 10
     FIELD_VALIDATION = {
         "id": {
             "required": True,
@@ -304,7 +307,7 @@ class Fridge(DB_Item):
         "name": {
             "required": True,
             "min_length": MIN_ID_LENGTH,
-            "max_length": 50,
+            "max_length": MAX_NAME_LENGTH,
             "type": "S",
         },
         "tags": {"required": False, "type": "L", "list_type": "S"},
@@ -316,6 +319,7 @@ class Fridge(DB_Item):
         "location/zip": {"required": False, "max_length": 10},
         "location/geoLat": {"required": True, "max_length": 20},
         "location/geoLng": {"required": True, "max_length": 20},
+        "location/country": {"required": False, "max_length": 256},
         "maintainer": {"required": False, "type": "S"},
         "maintainer/name": {"required": False, "max_length": 256},
         "maintainer/organization": {"required": False, "max_length": 256},
@@ -323,7 +327,7 @@ class Fridge(DB_Item):
         "maintainer/email": {"required": False, "max_length": 320},
         "maintainer/website": {"required": False, "max_length": 2048},
         "maintainer/instagram": {"required": False, "max_length": 64},
-        "notes": {"required": False, "max_length": 280, "type": "S"},
+        "notes": {"required": False, "max_length": 700, "type": "S"},
         "food_accepts": {"required": False, "type": "L", "list_type": "S"},
         "food_restrictions": {"required": False, "type": "L", "list_type": "S"},
         "photoUrl": {
@@ -364,9 +368,6 @@ class Fridge(DB_Item):
             self.verified: bool = fridge.get("verified", None)
 
     def get_item(self, fridgeId):
-        is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
-        if not is_valid:
-            return DB_Response(success=False, status_code=400, message=message)
         key = {"id": {"S": fridgeId}}
         result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
         if "Item" not in result:
@@ -383,9 +384,6 @@ class Fridge(DB_Item):
             )
 
     def get_latest_report(self, fridgeId):
-        is_valid, message = Fridge.is_valid_id(fridgeId=fridgeId)
-        if not is_valid:
-            return DB_Response(success=False, status_code=400, message=message)
         key = {"id": {"S": fridgeId}}
         result = self.db_client.get_item(TableName=self.TABLE_NAME, Key=key)
         if "Item" not in result:
@@ -435,34 +433,12 @@ class Fridge(DB_Item):
 
     def set_id(self):
         """
-        Sets the Fridge id. Fridge id is the Fridge name with no spaces and all lower cased
+        Sets the Fridge id
+        Fridge id is the Fridge name with certain characters removed if not URL complient
         """
         if self.name is not None:
-            id = self.name.lower().replace(" ", "")
+            id = re.sub(r"[^a-zA-Z0-9\-_~]+", "", self.name.lower())
             self.id = id
-
-    def is_valid_name(self) -> bool:
-        """
-        Checks if a Fridge name is valid.
-            Returns:
-                bool (bool):
-        """
-        return re.match(r"^[A-Za-z0-9_#\-‘'.@& ]+$", self.name) is not None
-
-    def validate_fields(self) -> Field_Validator:
-        """
-        Validates that all the fields are valid.
-        All fields are valid if they pass all the constraints set in FIELD_VALIDATION
-        """
-        field_validator = super().validate_fields()
-        if not field_validator.is_valid:
-            return field_validator
-        if not self.is_valid_name():
-            return Field_Validator(
-                message="Name Can Only Contain Letters, Numbers, and Spaces",
-                is_valid=False,
-            )
-        return field_validator
 
     @staticmethod
     def is_valid_id(fridgeId: str) -> tuple[bool, str]:
@@ -472,7 +448,7 @@ class Fridge(DB_Item):
         """
         if fridgeId is None:
             return False, "Missing Required Field: id"
-        if re.match(r"^[A-Za-z0-9_#\-‘'.@&]+$", fridgeId) is None:
+        if re.search('[^A-Za-z0-9\-._~:/?#\[\]@!$&\'()*+,;=]', fridgeId):
             return False, "id has invalid characters"
         id_length = len(fridgeId)
         is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
@@ -496,7 +472,10 @@ class Fridge(DB_Item):
         self.set_id()
         self.set_last_edited()
         conditional_expression = "attribute_not_exists(id)"
-        return super().add_item(conditional_expression=conditional_expression)
+        db_response = super().add_item(conditional_expression=conditional_expression)
+        if db_response.status_code == 201:
+            db_response.set_json_data(json.dumps({"id": self.id}))
+        return db_response
 
     def get_fridge_locations(self):
         pass
@@ -644,9 +623,10 @@ class FridgeReport(DB_Item):
         db_response = super().add_item()
         if not db_response.is_successful():
             return db_response
-        return Fridge(db_client=self.db_client).update_fridge_report(
-            fridgeId=self.fridgeId, fridge_report=fridge_report_dict
-        )
+        #updates the latestFridgeReport field in the Fridge table
+        Fridge(db_client=self.db_client).update_fridge_report(fridgeId=self.fridgeId, fridge_report=fridge_report_dict)
+        db_response.set_json_data(json.dumps({'fridgeId': self.fridgeId, 'timestamp': self.timestamp}))
+        return db_response
 
 
 class FridgeHistory(DB_Item):

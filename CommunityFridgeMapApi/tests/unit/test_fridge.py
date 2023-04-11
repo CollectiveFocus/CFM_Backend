@@ -6,6 +6,7 @@ from dependencies.python.db import get_ddb_connection
 import unittest
 from dependencies.python.db import Fridge
 import json
+import os
 
 
 def test_layer_test():
@@ -15,6 +16,7 @@ def test_layer_test():
 
 
 def test_get_ddb_connection():
+    os.environ['AWS_DEFAULT_REGION'] = 'us-west-2'
     connection = get_ddb_connection()
     assert str(type(connection)) == "<class 'botocore.client.DynamoDB'>"
     connection = get_ddb_connection(env="local")
@@ -55,27 +57,24 @@ class FridgeTest(unittest.TestCase):
         fridge.set_last_edited()
         self.assertIsNotNone(fridge.last_edited)
 
-    def test_is_valid_name(self):
-        fridge = Fridge(fridge={"name": "The Friendly Fridge"}, db_client=None)
-        self.assertTrue(fridge.is_valid_name())
-        fridge = Fridge(fridge={"name": "The Friendly Fridge #%@/"}, db_client=None)
-        self.assertFalse(fridge.is_valid_name())
-
-    def test_add_item_invalid_name(self):
+    def test_add_item_with_invalid_id_characters(self):
+        """
+        This is testing to see if the special characters are removed
+        """
         db_client = DynamoDbMockPutItem()
         fridge = Fridge(
             fridge={
-                "name": "&^@(*#(&(*$",
+                "name": "fridgàe&^ñ@(*#(&.(*$<>.#%{}|\^~[]\";:/?@=&$+,",
                 "location": {"geoLat": 124242, "geoLng": 2345235},
             },
             db_client=db_client,
         )
         response = fridge.add_item()
-        self.assertFalse(response.success)
+        self.assertTrue(response.success)
         self.assertEqual(
-            response.message, "Name Can Only Contain Letters, Numbers, and Spaces"
+            fridge.id, "fridge~"
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
 
     def test_add_item_missing_required_field(self):
         db_client = DynamoDbMockPutItem()
@@ -116,7 +115,7 @@ class FridgeTest(unittest.TestCase):
         )
         response = fridge.add_item()
         self.assertTrue(response.success)
-        self.assertEqual(response.message, "fridge_ was succesfully added")
+        self.assertEqual(response.json_data, json.dumps({"id": "testfridge"}))
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(fridge.last_edited)
 
@@ -167,7 +166,7 @@ class FridgeTest(unittest.TestCase):
         self.assertFalse(is_valid)
 
         is_valid, message = Fridge.is_valid_id("hi")
-        self.assertEqual(message, "id Must Have A Character Length >= 3 and <= 50")
+        self.assertEqual(message, "id Must Have A Character Length >= 3 and <= 100")
         self.assertFalse(is_valid)
 
     def test_validate_fields_required_fields(self):
@@ -185,15 +184,15 @@ class FridgeTest(unittest.TestCase):
     def test_validate_fields_max_length(self):
         fridge = Fridge(
             fridge={
-                "id": "x" * 51,
-                "name": "x" * 51,
+                "id": "x" * 101,
+                "name": "x" * 101,
                 "location": {"geoLat": "3", "geoLng": "3"},
             },
             db_client=None,
         )
         field_validator = fridge.validate_fields()
         self.assertFalse(field_validator.is_valid)
-        self.assertEqual(field_validator.message, "id character length must be <= 50")
+        self.assertEqual(field_validator.message, "id character length must be <= 100")
 
     def test_validate_fields_success(self):
         fridge = Fridge(

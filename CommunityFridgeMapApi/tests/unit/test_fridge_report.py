@@ -1,6 +1,6 @@
 import unittest
 from dependencies.python.db import FridgeReport
-
+import json
 
 class DynamoDbMockPutItem:
     def __init__(self):
@@ -182,7 +182,7 @@ class FrdgeReportTest(unittest.TestCase):
                     "condition": "good",
                     "foodPercentage": 2,
                 },
-                "message": "fridge_report was succesfully added",
+                "fridgeId": "test",
                 "success": True,
             },
         ]
@@ -192,7 +192,12 @@ class FrdgeReportTest(unittest.TestCase):
                 fridge_report=data["fridge_report"], db_client=DynamoDbMockPutItem()
             ).add_item()
             self.assertEqual(response.success, data["success"])
-            self.assertTrue(data["message"] in response.message)
+            if "message" in data:
+                self.assertTrue(data["message"] in response.message)
+            else:
+                response_dict_data = json.loads(response.json_data)
+                self.assertEqual(response_dict_data['fridgeId'], data['fridgeId'])
+                self.assertTrue("timestamp" in response_dict_data)
 
     def test_get_all_reports(self):
         response = FridgeReport(fridge_report=None, db_client=DynamoDbMockPutItem()).get_all_reports(fridgeId='fakeFridge',lastEvaluatedKey=None)
