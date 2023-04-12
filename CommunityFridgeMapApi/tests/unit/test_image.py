@@ -28,7 +28,7 @@ def test_upload(s3_service_stub: S3ServiceStub):
             )
 
             write_spy.assert_called_once_with(
-                "community-fridge-map-images", "webp", blob
+                "community-fridge-map-images", "image/webp", blob
             )
             generate_file_url_spy.assert_called_once()
             assert_response(
@@ -61,6 +61,6 @@ def test_upload_invalid_binary(s3_service_stub: S3ServiceStub):
             "Access-Control-Allow-Origin": "*",
         },
         body={
-            "message": "Request could not be understood due to incorrect syntax. Image type must be webp."
+            "message": "Invalid Image Format"
         },
     )

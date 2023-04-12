@@ -60,7 +60,7 @@ class S3Service:
             logging.error(e)
             raise S3ServiceException(f"Failed to create a bucket {bucket}")
 
-    def write(self, bucket: str, extension: str, blob: bytes):
+    def write(self, bucket: str, content_type: str, blob: bytes):
         """
         writes a binary file to the storage.
             Parameters:
@@ -70,6 +70,7 @@ class S3Service:
             Returns:
                 The key of the newly created file
         """
+        extension = content_type.split("/")[1]
         key = f"{str(uuid.uuid4())}.{extension}"
         self.idempotent_create_bucket(bucket)
 
@@ -78,6 +79,7 @@ class S3Service:
                 Bucket=bucket,
                 Key=key,
                 Body=blob,
+                ContentType=content_type
             )
         except ClientError as e:
             logging.error(e)
