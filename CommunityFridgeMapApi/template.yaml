@@ -124,6 +124,60 @@ Resources:
             # This event runs every 10 minutes
             Schedule: rate(1 minute)
 
+  FridgeReportFunctionV2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridge_reports/v2
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: !Sub FridgeReportFunction${Stage}
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          Stage: !Ref Stage
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:PutItem
+            Resource: !GetAtt FridgeReportTable.Arn
+          - Effect: Allow
+            Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            Resource: !GetAtt FridgeTable.Arn
+      Events:
+        GetFridgeReport:
+          Type: Api
+          Properties:
+            Path: /v2/fridges_report/{fridgeId}
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+            RequestParameters:
+              - method.request.path.fridgeId:
+                  Required: true
+                  Caching: false
+              - method.request.querystring.lastEvaluatedKey:
+                  Required: false
+                  Caching: false
+        FridgeReportWarmUp:
+          Type: Schedule
+          Properties:
+            # Read more about schedule expressions here:
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html
+            # This event runs every 10 minutes
+            Schedule: rate(1 minute)
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:

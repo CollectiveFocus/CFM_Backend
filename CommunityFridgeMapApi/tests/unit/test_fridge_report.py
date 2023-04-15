@@ -11,7 +11,16 @@ class DynamoDbMockPutItem:
 
     def get_item(self, TableName=None, Key=None):
         return {"Item": {"json_data": {"S": '{"id": {"S": "test"}}'}}}
-
+    def query(TableName=None,
+            KeyConditionExpression=None,
+            ExpressionAttributeValues=None,
+            ProjectionExpression=None,
+            Limit=None,ExclusiveStartKey=None):
+        if ExclusiveStartKey is None:
+            return {'Items': [{'json_data': {'S': '{"notes": "Filled with Mars bars and M&M candy.", "fridgeId": "fakeData", "photoUrl": "https://s3.amazonaws.com/bucket/path/food.webp", "epochTimestamp": "1678749326", "timestamp": "2023-03-13T23:15:26Z", "condition": "dirty", "foodPercentage": 3}'}}, {'json_data': {'S': '{"notes": "Milk, so much milk", "fridgeId": "greenpointfridge", "photoUrl": "https://s3.amazonaws.com/bucket/path/food.webp", "epochTimestamp": "1678749354", "timestamp": "2023-03-13T23:15:54Z", "condition": "good", "foodPercentage": 2}'}}], 'Count': 2, 'ScannedCount': 2, 'LastEvaluatedKey': {'fridgeId': {'S': 'greenpointfridge'}, 'epochTimestamp': {'N': '1678749354'}}}
+        else :
+            return {'Items': [{'json_data': {'S': '{"notes": "6 dozen eggs", "fridgeId": "fakeData", "photoUrl": "https://s3.amazonaws.com/bucket/path/food.webp", "epochTimestamp": "1678749411", "timestamp": "2023-03-13T23:16:51Z", "condition": "good", "foodPercentage": 1}'}}, {'json_data': {'S': '{"notes": "Berries, peanut butter, bananas, and butter.", "fridgeId": "greenpointfridge", "photoUrl": "https://s3.amazonaws.com/bucket/path/food.webp", "epochTimestamp": "1678749609", "timestamp": "2023-03-13T23:20:09Z", "condition": "good", "foodPercentage": 3}'}}], 'Count': 2, 'ScannedCount': 2, 'LastEvaluatedKey': {'fridgeId': {'S': 'greenpointfridge'}, 'epochTimestamp': {'N': '1678749609'}}}
+        
     def update_item(
         self,
         TableName=None,
@@ -189,3 +198,7 @@ class FrdgeReportTest(unittest.TestCase):
                 response_dict_data = json.loads(response.json_data)
                 self.assertEqual(response_dict_data['fridgeId'], data['fridgeId'])
                 self.assertTrue("timestamp" in response_dict_data)
+
+    def test_get_all_reports(self):
+        response = FridgeReport(fridge_report=None, db_client=DynamoDbMockPutItem()).get_all_reports(fridgeId='fakeFridge',lastEvaluatedKey=None)
+        self.assertTrue(response.success)
