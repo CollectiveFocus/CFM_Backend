@@ -1,0 +1,27 @@
+{
+  "TableName": "subscription_dev",
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "fridgeId",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "statusType",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "fridgeId",
+      "KeyType": "HASH"
+    },
+    {
+      "AttributeName": "statusType",
+      "KeyType": "RANGE"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 5,
+    "WriteCapacityUnits": 5
+  }
+}
