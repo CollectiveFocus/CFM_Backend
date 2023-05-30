@@ -403,6 +403,26 @@ class Fridge(DB_Item):
                 message="Successfully Found Fridge",
                 json_data=json.dumps(response),
             )
+    
+    def get_latest_fridge_reports(self):
+        response = self.db_client.scan(TableName=self.TABLE_NAME)
+        all_reports = []
+        
+        if "Items" in response:
+            for item in response['Items']:
+                json_data = item.get("json_data", {}).get("S", "{}")
+                dict_data = json.loads(json_data)
+                latestFridgeReport = dict_data.get("latestFridgeReport", None)
+                if latestFridgeReport is not None:
+                    all_reports.append(latestFridgeReport)
+        
+        return DB_Response(
+            success=True,
+            status_code=200,
+            message="Successfully found fridge reports",
+            json_data=json.dumps(all_reports),
+        )
+        
 
     def get_items(self, tag=None):
         # scan/query doc: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/dynamodb.html#querying-and-scanning
