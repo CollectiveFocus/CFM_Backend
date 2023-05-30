@@ -124,6 +124,42 @@ Resources:
             # This event runs every 10 minutes
             Schedule: rate(1 minute)
 
+  GetLatestFridgeReportsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridge_reports/get_latest_fridge_reports
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      FunctionName: !Sub GetLatestFridgeReportsFunction${Stage}
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          Stage: !Ref Stage
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            Resource: !GetAtt FridgeTable.Arn
+      Events:
+        GetLatestFridgeReports:
+          Type: Api
+          Properties:
+            Path: /v1/reports/last
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
