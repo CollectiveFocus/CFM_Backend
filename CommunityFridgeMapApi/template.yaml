@@ -148,8 +148,7 @@ Resources:
             Resource: arn:aws:logs:*:*:*
           - Effect: Allow
             Action:
-            - dynamodb:GetItem
-            - dynamodb:UpdateItem
+            - dynamodb:Scan
             Resource: !GetAtt FridgeTable.Arn
       Events:
         GetLatestFridgeReports:
