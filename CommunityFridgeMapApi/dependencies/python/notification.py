@@ -1,25 +1,24 @@
 from db import DB_Response
+import re
 import boto3
 from botocore.exceptions import ClientError
 
-def send_notification(type= None, address=None):
-    #address is an email address for emails, phone number for sms
-    validTypes = ['email', 'sms']
 
-
-    if type not in validTypes:
-        typeErrorMsg =f'{type} is not a valid notification type'
-        return DB_Response(
-                message=typeErrorMsg, status_code=450, success=False
-            )
+def send_sms(phone_number=None, message=None):
     
+    sns = boto3.client(
+        "sns",
+        region_name="us-east-1"
+    )
+    if(not is_valid_phone_number(phone_number)):
+        return
 
-    
-    if type == 'email' and address is not None:
-        #send email
-        pass
-    if type == 'sms' and address is not None:
-        #send sms
-        pass
-    
+    response = sns.publish(
+        PhoneNumber=phone_number,
+        Message = message
+    )
+    return response
 
+def is_valid_phone_number(phone_number):
+    pattern = re.compile(r"^\+?[1-9]\d{1,14}$")
+    return bool(pattern.match(phone_number))
