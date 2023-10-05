@@ -8,11 +8,11 @@ from botocore.exceptions import ClientError
 # def sendNotification(message, userId, lastNotified, email, phoneNumber):
 
 
-def send_sms(phone_number=None, message=None):
+def send_sms(phone_number:str=None, message:str=None, region:str='us-east-1'):
     
     sns = boto3.client(
         "sns",
-        region_name="us-east-1"
+        region_name=region
     )
     if(not is_valid_phone_number(phone_number)):
         return
@@ -21,7 +21,8 @@ def send_sms(phone_number=None, message=None):
         PhoneNumber=phone_number,
         Message = message
     )
-    return response
+
+    return
 
 
 def send_email(
@@ -37,7 +38,7 @@ def send_email(
             'CcAddresses': cc_addresses,
             'BccAddresses': bcc_addresses
             }
-    
+
     Message= {
             'Subject:': {
                 'Data': subject,
@@ -57,13 +58,12 @@ def send_email(
             }
     ReplyToAddresses = reply_to_addresses
     ReturnPath = ''  #This is the email address that is addressed when emails fail
-    SourceArn = '' #Something about authorization, See docs at 
+    SourceArn = '' #Something about authorization, See docs  
     ReturnPathArn = '' #Same thing, something about authorization
 
     response = client.send_email(
         Source, Destination, Message, ReplyToAddresses, ReturnPath, SourceArn, ReturnPathArn)
-    
-    return response
+    return 
 
 
 def is_valid_phone_number(phone_number):
