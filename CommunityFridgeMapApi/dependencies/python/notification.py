@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 
 
 def send_sms(phone_number:str=None, message:str=None, region:str='us-east-1'):
-    
+
     sns = boto3.client(
         "sns",
         region_name=region
@@ -17,14 +17,14 @@ def send_sms(phone_number:str=None, message:str=None, region:str='us-east-1'):
     if(not is_valid_phone_number(phone_number)):
         return
 
-    try:
+    try: #Tries to send an sms, returns an error if unsuccessful
         [MessageId, SequenceNumber]  = sns.publish( #SNS.publish returns a unique message ID identifier and 
             PhoneNumber=phone_number,
             Message = message
         )
 
         if MessageId: response = {'Sent': True, 
-                                  'Error': 'None', 
+                                  'Error': None, 
                                   'MessageId': MessageId, 
                                   'SequenceNumber': SequenceNumber}
     except Exception as e:
@@ -72,9 +72,23 @@ def send_email(
     SourceArn = '' #Something about authorization, See docs  
     ReturnPathArn = '' #Same thing, something about authorization
 
-    response = client.send_email(
-        Source, Destination, Message, ReplyToAddresses, ReturnPath, SourceArn, ReturnPathArn)
-    return 
+    try:    #Tries to send an email, returns an error if unsuccessful
+
+        MessageId = client.send_email(
+                    Source, Destination, Message, ReplyToAddresses, ReturnPath, SourceArn, ReturnPathArn)
+        
+        response = {'Sent': True, 
+                    'Error': None, 
+                    'MessageId': MessageId, 
+                    'SequenceNumber': None}
+    
+    except Exception as e:
+        response = {'Sent': False, 
+                    'Error': e, 
+                    'MessageId': None, 
+                    'SequenceNumber': None}
+        
+    return response
 
 
 def is_valid_phone_number(phone_number):
