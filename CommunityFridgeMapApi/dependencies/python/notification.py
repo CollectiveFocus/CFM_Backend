@@ -17,12 +17,23 @@ def send_sms(phone_number:str=None, message:str=None, region:str='us-east-1'):
     if(not is_valid_phone_number(phone_number)):
         return
 
-    response = sns.publish(
-        PhoneNumber=phone_number,
-        Message = message
-    )
+    try:
+        [MessageId, SequenceNumber]  = sns.publish( #SNS.publish returns a unique message ID identifier and 
+            PhoneNumber=phone_number,
+            Message = message
+        )
 
-    return
+        if MessageId: response = {'Sent': True, 
+                                  'Error': 'None', 
+                                  'MessageId': MessageId, 
+                                  'SequenceNumber': SequenceNumber}
+    except Exception as e:
+        response = {'Sent': False, 
+                    'Error': e, 
+                    'MessageId': None, 
+                    'SequenceNumber': None}
+
+    return response
 
 
 def send_email(
