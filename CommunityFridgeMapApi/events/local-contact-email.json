@@ -1,5 +1,5 @@
 {
-  "body": "{\"name\": \"Test User\", \"email\": \"info@collectivefocus.site\", \"subject\": \"Test Subject\", \"message\": \"Test Message\"}",
+  "body": "{\"name\": \"Test User\", \"email\": \"fridgefinderapp@gmail.com\", \"subject\": \"Test Subject\", \"message\": \"Test Message\"}",
   "resource": "/{proxy+}",
   "path": "/document",
   "pathParameters":{},
