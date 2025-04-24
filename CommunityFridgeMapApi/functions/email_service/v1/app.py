@@ -9,8 +9,8 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-RECIPIENT = "info@collectivefocus.site"
-SENDER = "info@collectivefocus.site"
+RECIPIENT = "fridgefinderapp@gmail.com"
+SENDER = "fridgefinderapp@gmail.com"
 
 
 def api_response(status_code, body) -> dict:

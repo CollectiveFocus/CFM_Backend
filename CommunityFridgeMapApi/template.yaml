@@ -311,7 +311,7 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: arn:aws:logs:*:*:*
-        - SESCrudPolicy: { IdentityName: info@collectivefocus.site }
+        - SESCrudPolicy: { IdentityName: fridgefinderapp@gmail.com }
 
       Events:
         SendSESFunction:
