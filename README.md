@@ -1,7 +1,7 @@
 # CFM_Backend
 
 <p align="center">
-  <a href="https://www.fridgemap.com/">
+  <a href="https://www.fridgefinder.app/">
     <img src="https://raw.githubusercontent.com/CollectiveFocus/CFM_Frontend/dev/public/feedback/happyFridge.svg" height="128">
   </a>
     <h1 align="center">Community Fridge Map</h1>
@@ -11,11 +11,11 @@
   <a aria-label="Collective Focus logo" href="https://collectivefocus.site/">
     <img src="https://img.shields.io/badge/sponsor-Collective%20Focus-yellow?style=flat-square&labelColor=F6F6F6">
   </a>
-  <a aria-label="GitHub Repo stars" href="https://github.com/CollectiveFocus/CFM_Backend/">
-    <img alt="" src="https://img.shields.io/github/stars/CollectiveFocus/CFM_Backend?style=flat-square&labelColor=F6F6F6">
+  <a aria-label="GitHub Repo stars" href="https://github.com/FridgeFinder/CFM_Backend/">
+    <img alt="" src="https://img.shields.io/github/stars/FridgeFinder/CFM_Backend?style=flat-square&labelColor=F6F6F6">
   </a>
-  <img aria-label="GitHub contributors" alt="GitHub contributors" src="https://img.shields.io/github/contributors/CollectiveFocus/CFM_Backend?style=flat-square&labelColor=F6F6F6">
-  <img aria-label="GitHub commit activity (dev)" alt="GitHub commit activity (dev)" src="https://img.shields.io/github/commit-activity/m/CollectiveFocus/CFM_Backend/dev?style=flat-square&labelColor=F6F6F6">
+  <img aria-label="GitHub contributors" alt="GitHub contributors" src="https://img.shields.io/github/contributors/FridgeFinder/CFM_Backend?style=flat-square&labelColor=F6F6F6">
+  <img aria-label="GitHub commit activity (dev)" alt="GitHub commit activity (dev)" src="https://img.shields.io/github/commit-activity/m/FridgeFinder/CFM_Backend/dev?style=flat-square&labelColor=F6F6F6">
   <a aria-label="Join the community on Discord" href="https://discord.com/channels/955884900655972463/955886184159125534">
     <img alt="" src="https://img.shields.io/badge/Join%20the%20community-yellow.svg?style=flat-square&logo=Discord&labelColor=F6F6F6">
   </a>
@@ -23,7 +23,7 @@
 
 A community fridge is a decentralized resource where businesses and individuals can [donate perishable food](https://www.thrillist.com/lifestyle/new-york/nyc-community-fridges-how-to-support). There are dozens of fridges hosted by volunteers across the country.
 
-Fridge Finder is project sponsored by [Collective Focus](https://collectivefocus.site/), a community organization in Brooklyn, New York. Our goal is to make it easy for people to find fridge locations and get involved with food donation programs in their community. We are building a responsive, mobile first, multi-lingual web application with administrative controls for fridge maintainers. To join the project read our [contributing guidelines](https://github.com/CollectiveFocus/CFM_Frontend/blob/dev/docs/CONTRIBUTING.md) and [code of conduct](https://github.com/CollectiveFocus/CFM_Frontend/blob/dev/docs/CODE_OF_CONDUCT.md). The application will be deployed to https://www.fridgefinder.app/
+Fridge Finder is project sponsored by [Collective Focus](https://collectivefocus.site/), a community organization in Brooklyn, New York. Our goal is to make it easy for people to find fridge locations and get involved with food donation programs in their community. We are building a responsive, mobile first, multi-lingual web application with administrative controls for fridge maintainers. To join the project read our [contributing guidelines](https://github.com/CollectiveFocus/CFM_Frontend/blob/dev/docs/CONTRIBUTING.md) and [code of conduct](https://github.com/FridgeFinder/CFM_Backend/blob/dev/CODE_OF_CONDUCT.md). The application will be deployed to https://www.fridgefinder.app/
 
 ---
 ## Pre-Requisites
