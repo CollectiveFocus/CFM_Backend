@@ -690,3 +690,40 @@ class Tag(DB_Item):
         return DB_Response(
             message="Tag was succesfully added", status_code=200, success=True
         )
+
+    def get_fridge_stats(self):
+        
+        response = self.db_client.scan(TableName = self.TABLE_NAME)
+        stats = {
+            "good": 0, 
+            "dirty": 0, 
+            "out of order": 0, 
+            "total": 0, 
+            "ghost": 0
+        }
+        if "Items" in response:
+            for item in response['Items']: 
+                stats["total"]+=1
+                # get data from value under key S as string from the 
+                # db table
+                json_data = item.get("json_data", {}).get("S", "{}")
+                #convert json string to object 
+                dict_data = json.loads(json_data)
+                # get fridge report 
+                latestFridgeReport = dict_data.get("latestFridgeReport", None)
+
+                if (latestFridgeReport and "condition" in latestFridgeReport): 
+                    condition = latestFridgeReport["condition"].lower(); 
+                    if (condition in stats): 
+
+                        stats[condition]+=1
+                    else: 
+                        stats[condition] = 1
+        return DB_Response(
+            success=True, 
+            status_code=200, 
+            message="Fetched the most recent fridge stats", 
+            #back in string format 
+            json_data=json.dumps(stats)
+        )   
+        
