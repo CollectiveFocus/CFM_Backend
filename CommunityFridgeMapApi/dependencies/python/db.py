@@ -727,3 +727,12 @@ class Tag(DB_Item):
             json_data=json.dumps(stats)
         )   
         
+    def write_stats_toS3(self, bucket = "cfm-cache", key = "stats/fridge_stats.json"): 
+        stats_response = self.get_fridge_stats()
+        # if there is an error
+        if not stats_response.is_successful(): 
+            return stats_response
+        s3 = boto3.client("s3")
+        # put object in s3
+        s3.put_object(Bucket = bucket, Key = key, Body = stats_response.json_data, ContentType = "application/json")
+        return DB_Response(success = True,message=f"Fridge stats written to s3://{bucket}/{key}", status_code= 200)
