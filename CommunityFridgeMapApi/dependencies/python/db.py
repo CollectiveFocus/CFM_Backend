@@ -694,13 +694,12 @@ class Tag(DB_Item):
     def get_fridge_stats(self):
         
         response = self.db_client.scan(TableName = self.TABLE_NAME)
-        stats = {
-            "good": 0, 
-            "dirty": 0, 
-            "out of order": 0, 
-            "total": 0, 
-            "ghost": 0
-        }
+        # edit: using fridgereport.valid conditions for stat map
+        stats = {condition: 0 for condition in FridgeReport.VALID_CONDITIONS}
+        stats["total"] = 0
+        stats["no report"] = 0
+
+     
         if "Items" in response:
             for item in response['Items']: 
                 stats["total"]+=1
@@ -711,14 +710,17 @@ class Tag(DB_Item):
                 dict_data = json.loads(json_data)
                 # get fridge report 
                 latestFridgeReport = dict_data.get("latestFridgeReport", None)
-
+                # edit: added no report for admin knowledge
+                if not latestFridgeReport: 
+                    stats["no report"] += 1
+                    continue
                 if (latestFridgeReport and "condition" in latestFridgeReport): 
                     condition = latestFridgeReport["condition"].lower(); 
                     if (condition in stats): 
-
                         stats[condition]+=1
-                    else: 
-                        stats[condition] = 1
+                    elif condition: # edit: if new condition, then we want to set to 1.
+                        stats[condition] = 1  # include it in response but with warning 
+                        logger.warning(f"Unknown condition encountered: '{condition}'")
         return DB_Response(
             success=True, 
             status_code=200, 
