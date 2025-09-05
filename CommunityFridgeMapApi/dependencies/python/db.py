@@ -532,6 +532,46 @@ class Fridge(DB_Item):
             success=True, status_code=201, message="fridge_report was succesfully added"
         )
 
+    def get_fridge_stats(self):
+        
+        response = self.db_client.scan(TableName = self.TABLE_NAME)
+        # edit: using fridgereport.valid conditions for stat map
+        stats = {condition: 0 for condition in FridgeReport.VALID_CONDITIONS}
+        stats["total"] = 0
+        stats["no_report"] = 0
+        stats["unknown"] = 0
+
+     
+        if "Items" in response:
+            for item in response['Items']: 
+                stats["total"]+=1
+                # get data from value under key S as string from the 
+                # db table
+                json_data = item.get("json_data", {}).get("S", "{}")
+                #convert json string to object 
+                dict_data = json.loads(json_data)
+                # get fridge report 
+                latestFridgeReport = dict_data.get("latestFridgeReport", None)
+                # edit: added no report for admin knowledge
+                if not latestFridgeReport: 
+                    stats["no_report"] += 1
+                    continue
+                
+                if (latestFridgeReport and "condition" in latestFridgeReport): 
+                    condition = latestFridgeReport["condition"].lower(); 
+                    if (condition in stats): 
+                        stats[condition]+=1
+                    elif condition: # edit: if new condition, then we want to set to 1.
+                        stats["unknown"] += 1  # include it in response but with warning 
+                        logger.error(f"Unknown condition encountered: '{condition}'")
+        return DB_Response(
+            success=True, 
+            status_code=200, 
+            message="Fetched the most recent fridge stats", 
+            #back in string format 
+            json_data=json.dumps(stats)
+        )   
+        
 
 # good, dirty, out of order, not at location
 class FridgeReport(DB_Item):
@@ -691,44 +731,7 @@ class Tag(DB_Item):
             message="Tag was succesfully added", status_code=200, success=True
         )
 
-    def get_fridge_stats(self):
-        
-        response = self.db_client.scan(TableName = self.TABLE_NAME)
-        # edit: using fridgereport.valid conditions for stat map
-        stats = {condition: 0 for condition in FridgeReport.VALID_CONDITIONS}
-        stats["total"] = 0
-        stats["no report"] = 0
-
-     
-        if "Items" in response:
-            for item in response['Items']: 
-                stats["total"]+=1
-                # get data from value under key S as string from the 
-                # db table
-                json_data = item.get("json_data", {}).get("S", "{}")
-                #convert json string to object 
-                dict_data = json.loads(json_data)
-                # get fridge report 
-                latestFridgeReport = dict_data.get("latestFridgeReport", None)
-                # edit: added no report for admin knowledge
-                if not latestFridgeReport: 
-                    stats["no report"] += 1
-                    continue
-                if (latestFridgeReport and "condition" in latestFridgeReport): 
-                    condition = latestFridgeReport["condition"].lower(); 
-                    if (condition in stats): 
-                        stats[condition]+=1
-                    elif condition: # edit: if new condition, then we want to set to 1.
-                        stats[condition] = 1  # include it in response but with warning 
-                        logger.warning(f"Unknown condition encountered: '{condition}'")
-        return DB_Response(
-            success=True, 
-            status_code=200, 
-            message="Fetched the most recent fridge stats", 
-            #back in string format 
-            json_data=json.dumps(stats)
-        )   
-        
+ 
     def write_stats_toS3(self, bucket = "cfm-cache", key = "stats/fridge_stats.json"): 
         stats_response = self.get_fridge_stats()
         # if there is an error

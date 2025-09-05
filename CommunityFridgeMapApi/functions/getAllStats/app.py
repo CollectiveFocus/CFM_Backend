@@ -10,7 +10,6 @@ except:
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
 class FridgeStatsHandler:
     @staticmethod
     def lambda_handler(event: dict) -> dict:
