@@ -165,33 +165,37 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
 
 ## Tests
 
-Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
+Tests are defined in the `tests` folder in this project. Create Virtual Environment, use PIP to install the test dependencies, and run tests.
+
+
 
 ```bash
 CFM_BACKEND$ cd CommunityFridgeMapApi
-CommunityFridgeMapApi$ pip install -r tests/requirements.txt --user
-# unit test
-CommunityFridgeMapApi$ python -m pytest tests/unit -v
-```
 
-To test with coverage
+# Create and activate virtual environment
+CommunityFridgeMapApi$ python3 -m venv myenv
+CommunityFridgeMapApi$ source myenv/bin/activate
 
-```bash
-CommunityFridgeMapApi$ coverage run -m pytest tests/unit -v
-CommunityFridgeMapApi$ coverage report
-CommunityFridgeMapApi$ coverage html
-```
+# Install dependencies (note: virtual environment is now active)
+(myenv) CommunityFridgeMapApi$ pip install -r tests/requirements.txt
 
-MacOS:
+# Run unit tests
+(myenv) CommunityFridgeMapApi$ python -m pytest tests/unit -v
 
-```bash
-CommunityFridgeMapApi$ open -a "Google Chrome" htmlcov/index.html
-```
+# To test with coverage
+(myenv) coverage run -m pytest tests/unit -v
+(myenv) coverage report
+(myenv) coverage html
 
-Windows:
+#MacOs:
+(myenv) open -a "Google Chrome" htmlcov/index.html
 
-```bash
-CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
+#Windows:
+(myenv) start "Google Chrome" htmlcov/index.html
+
+# When finished, deactivate virtual environment
+(myenv) CommunityFridgeMapApi$ deactivate
+CommunityFridgeMapApi$
 ```
 
 ---

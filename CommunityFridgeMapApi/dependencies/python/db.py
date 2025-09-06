@@ -1,13 +1,15 @@
 import os
 import boto3
 import time
-from botocore.exceptions import ClientError
-import logging
-from typing import Tuple
 import re
 import json
-from dataclasses import dataclass
+import logging
 import datetime
+import secrets
+import string
+from typing import Tuple
+from dataclasses import dataclass
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -109,7 +111,7 @@ class DB_Item:
                 self.db_client.put_item(TableName=self.TABLE_NAME, Item=item)
         except self.db_client.exceptions.ConditionalCheckFailedException as e:
             return DB_Response(
-                message=f"{self.TABLE_NAME} already exists, pick a different Name",
+                message=f"Conditional check failed for table: {self.TABLE_NAME}, condition: {conditional_expression}",
                 status_code=409,
                 success=False,
             )
@@ -146,6 +148,7 @@ class DB_Item:
         are added to the database, this will be a bottleneck. Ideally we would be querying
         based on proximity. Here is an option for if we ever need to transition:
         https://hometechtime.com/how-to-build-a-dynamodb-geo-database-to-store-and-query-geospatial-data/
+        TODO: paginate? 
         """
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.scan
         return self.db_client.scan(TableName=self.TABLE_NAME)
@@ -297,6 +300,8 @@ class Fridge(DB_Item):
     MIN_ID_LENGTH = 3
     MAX_ID_LENGTH = 100
     MAX_NAME_LENGTH = MAX_ID_LENGTH + 10
+    HASH_COLLISION_RETRIES = 3
+    HASH_ID_LENGTH = 6
     FIELD_VALIDATION = {
         "id": {
             "required": True,
@@ -305,7 +310,7 @@ class Fridge(DB_Item):
             "type": "S",
         },
         "name": {
-            "required": True,
+            "required": False,
             "min_length": MIN_ID_LENGTH,
             "max_length": MAX_NAME_LENGTH,
             "type": "S",
@@ -451,33 +456,22 @@ class Fridge(DB_Item):
     def add_items(self):
         pass
 
+
     def set_id(self):
         """
-        Sets the Fridge id
-        Fridge id is the Fridge name with certain characters removed if not URL complient
+        Generate a unique 6-character URL-safe ID for the fridge.
+        
+        Uses Python's secrets module for cryptographically secure random generation.
+        
+        Generated IDs:
+        - 6 characters long
+        - URL-safe: A-Z, a-z, 0-9 only
+        
+        Examples: 'kB8mQ2', 'X7nP9s', 'A3mK8L'
         """
-        if self.name is not None:
-            id = re.sub(r"[^a-zA-Z0-9\-_~]+", "", self.name.lower())
-            self.id = id
-
-    @staticmethod
-    def is_valid_id(fridgeId: str) -> tuple[bool, str]:
-        """
-        Checks if the fridge is id valid. A valid fridge id is alphanumeric and
-        must have character length >= 3 and <= 32
-        """
-        if fridgeId is None:
-            return False, "Missing Required Field: id"
-        if re.search('[^A-Za-z0-9\-._~:/?#\[\]@!$&\'()*+,;=]', fridgeId):
-            return False, "id has invalid characters"
-        id_length = len(fridgeId)
-        is_valid_id_length = Fridge.MIN_ID_LENGTH <= id_length <= Fridge.MAX_ID_LENGTH
-        if not is_valid_id_length:
-            return (
-                False,
-                f"id Must Have A Character Length >= {Fridge.MIN_ID_LENGTH} and <= {Fridge.MAX_ID_LENGTH}",
-            )
-        return True, "success"
+        keys = string.ascii_letters + string.digits  # A-Za-z0-9 (62 characters)
+        
+        self.id = ''.join(secrets.choice(keys) for _ in range(self.HASH_ID_LENGTH))
 
     def set_last_edited(self):
         """
@@ -489,13 +483,26 @@ class Fridge(DB_Item):
         """
         Adds a fridge item to the database
         """
-        self.set_id()
+        retries = self.HASH_COLLISION_RETRIES
         self.set_last_edited()
-        conditional_expression = "attribute_not_exists(id)"
-        db_response = super().add_item(conditional_expression=conditional_expression)
-        if db_response.status_code == 201:
-            db_response.set_json_data(json.dumps({"id": self.id}))
-        return db_response
+        for _ in range(retries):
+            self.set_id()
+            conditional_expression = "attribute_not_exists(id)"
+            db_response = super().add_item(conditional_expression=conditional_expression)
+            if db_response.status_code == 201:
+                db_response.set_json_data(json.dumps({"id": self.id}))
+                return db_response
+            elif db_response.status_code == 409:
+                continue
+            else:
+                return db_response
+            
+        # Fallback: exhausted all retries due to hash collisions
+        return DB_Response(
+            success = False,
+            status_code = 500,
+            message = f"Unable to generate unique fridge ID after {retries} retries"
+        )
 
     def get_fridge_locations(self):
         pass
@@ -586,8 +593,8 @@ class FridgeReport(DB_Item):
         timestamp is ISO formatted date/time and is what the API user will use
         epochTimestamp will be what is used to query the database
         """
-        self.epochTimestamp = str(int(time.time()))
-        utc_time = datetime.datetime.utcnow()
+        utc_time = datetime.datetime.now(datetime.timezone.utc)
+        self.epochTimestamp = str(int(utc_time.timestamp()))
         self.timestamp = utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def object_to_dict(self):

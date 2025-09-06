@@ -31,6 +31,18 @@ class DynamoDbMockPutItem:
         pass
 
 
+class DynamoDbMockPutItem_HashCollision:
+    def __init__(self):
+        # Mock the exceptions attribute that DynamoDB client has
+        self.exceptions = type('Exceptions', (), {
+            'ConditionalCheckFailedException': type('ConditionalCheckFailedException', (Exception,), {})
+        })()
+
+    def put_item(self, TableName=None, Item=None, ConditionExpression=None):
+        # Always raise ConditionalCheckFailedException to simulate hash collision
+        raise self.exceptions.ConditionalCheckFailedException("Conditional check failed")
+
+
 class DynamoDbMockScan:
     def __init__(self):
         pass
@@ -49,7 +61,8 @@ class FridgeTest(unittest.TestCase):
     def test_set_id(self):
         fridge = Fridge(fridge={"name": "The Friendly Fridge"}, db_client=None)
         fridge.set_id()
-        self.assertEqual(fridge.id, "thefriendlyfridge")
+        self.assertIsNotNone(fridge.id)
+        self.assertEqual(len(fridge.id), fridge.HASH_ID_LENGTH)
 
     def test_set_last_edditted(self):
         fridge = Fridge(fridge={"name": "The Friendly Fridge"}, db_client=None)
@@ -57,24 +70,6 @@ class FridgeTest(unittest.TestCase):
         fridge.set_last_edited()
         self.assertIsNotNone(fridge.last_edited)
 
-    def test_add_item_with_invalid_id_characters(self):
-        """
-        This is testing to see if the special characters are removed
-        """
-        db_client = DynamoDbMockPutItem()
-        fridge = Fridge(
-            fridge={
-                "name": "fridgàe&^ñ@(*#(&.(*$<>.#%{}|\^~[]\";:/?@=&$+,",
-                "location": {"geoLat": 124242, "geoLng": 2345235},
-            },
-            db_client=db_client,
-        )
-        response = fridge.add_item()
-        self.assertTrue(response.success)
-        self.assertEqual(
-            fridge.id, "fridge~"
-        )
-        self.assertEqual(response.status_code, 201)
 
     def test_add_item_missing_required_field(self):
         db_client = DynamoDbMockPutItem()
@@ -101,7 +96,7 @@ class FridgeTest(unittest.TestCase):
         )
         response = fridge.add_item()
         self.assertFalse(response.success)
-        self.assertEqual(response.message, "id character length must be >= 3")
+        self.assertEqual(response.message, "name character length must be >= 3")
         self.assertEqual(response.status_code, 400)
 
     def test_add_item_success(self):
@@ -115,9 +110,12 @@ class FridgeTest(unittest.TestCase):
         )
         response = fridge.add_item()
         self.assertTrue(response.success)
-        self.assertEqual(response.json_data, json.dumps({"id": "testfridge"}))
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(fridge.last_edited)
+        # Parse the JSON response to verify the HASHED ID was generated
+        response_data = json.loads(response.json_data)
+        self.assertIn("id", response_data)
+        self.assertEqual(len(response_data["id"]), fridge.HASH_ID_LENGTH)
 
     def test_format_dynamodb_item_v2(self):
         fridge = {
@@ -155,19 +153,6 @@ class FridgeTest(unittest.TestCase):
             fridge={"id": ""}, db_client=None
         ).format_dynamodb_item_v2()
         self.assertEqual(fridge_item, {"json_data": {"S": "{}"}})
-
-    def test_is_valid_id(self):
-        is_valid, message = Fridge.is_valid_id(None)
-        self.assertEqual(message, "Missing Required Field: id")
-        self.assertFalse(is_valid)
-
-        is_valid, message = Fridge.is_valid_id("hi there")
-        self.assertEqual(message, "id has invalid characters")
-        self.assertFalse(is_valid)
-
-        is_valid, message = Fridge.is_valid_id("hi")
-        self.assertEqual(message, "id Must Have A Character Length >= 3 and <= 100")
-        self.assertFalse(is_valid)
 
     def test_validate_fields_required_fields(self):
         fridge = Fridge(fridge={}, db_client=None)
@@ -222,3 +207,23 @@ class FridgeTest(unittest.TestCase):
         self.assertTrue(response.is_successful())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json_data, expected_response)
+
+    def test_add_item_hash_collision_fallback(self):
+        # Mock client always fails condition checks
+        mock_client = DynamoDbMockPutItem_HashCollision()
+        fridge_item = Fridge(
+            fridge={
+                "name": "Test Fridge",
+                "location": {"geoLat": 124242, "geoLng": 2345235},
+            },
+            db_client=mock_client,
+        )
+        
+        # this should exhaust all retries and return the fallback response
+        result = fridge_item.add_item()
+        
+        # Assert the fallback behavior
+        assert result.success == False
+        assert result.status_code == 500
+        assert "Unable to generate unique fridge ID after" in result.message
+        assert str(fridge_item.HASH_COLLISION_RETRIES) in result.message
