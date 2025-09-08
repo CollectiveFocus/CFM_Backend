@@ -95,22 +95,20 @@ Recommend: https://www.postman.com/
 ### One Time Use
 
 1. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-2. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-3. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-4. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+3. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 
 ### Local Server
 
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
-   - Example: http://localhost:3000/v1/fridges/thefriendlyfridge
-3. GET Fridges: Go to http://localhost:3000/v1/fridges
+2. GET Fridges: Go to http://localhost:3000/v1/fridges
+3. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
 4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
    - Example: http://localhost:3000/v1/fridges?tag=tag1
 5. POST Fridge Example:
 
 ```
-curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
+curl --location --request POST 'http://localhost:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
     "name": "LES Community Fridge #2",
     "verified": false,
     "location": {
