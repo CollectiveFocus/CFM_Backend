@@ -67,7 +67,7 @@ Resources:
     Properties:
       CodeUri: functions/fridge_reports
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       FunctionName: !Sub FridgeReportFunction${Stage}
       Environment:
         Variables:
@@ -129,7 +129,7 @@ Resources:
     Properties:
       CodeUri: functions/fridge_reports/get_latest_fridge_reports
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       FunctionName: !Sub GetLatestFridgeReportsFunction${Stage}
       Environment:
         Variables:
@@ -165,7 +165,7 @@ Resources:
       FunctionName: !Sub HelloWorldFunction${Stage}
       CodeUri: functions/dev/hello_world/
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       Layers:
         - !Ref CommonLayer
       Events:
@@ -183,7 +183,7 @@ Resources:
     Properties:
       CodeUri: functions/fridges/v1
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       FunctionName: !Sub FridgesFunction${Stage}
       Environment:
         Variables:
@@ -248,7 +248,7 @@ Resources:
     Properties:
       CodeUri: functions/image/v1
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       FunctionName: !Sub ImageFunction${Stage}
       Environment:
         Variables:
@@ -299,7 +299,7 @@ Resources:
         Variables:
           Environment: !Ref Environment
           Stage: !Ref Stage
-      Runtime: python3.9
+      Runtime: python3.13
       Layers:
         - !Ref CommonLayer
       Policies:
@@ -334,7 +334,7 @@ Resources:
     Properties:
       CodeUri: ./functions/dev/load_fridge_data
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       FunctionName: !Sub LoadFridgeDataFunction${Stage}
       Environment:
         Variables:
@@ -365,9 +365,7 @@ Resources:
             Description: Dependencies for CommunityFridgeMapApi project
             ContentUri: dependencies/
             CompatibleRuntimes:
-              - python3.7
-              - python3.8
-              - python3.9
+              - python3.13
             RetentionPolicy: Delete
   ##########################
   ##   Bucket Policies    ##
