@@ -95,22 +95,20 @@ Recommend: https://www.postman.com/
 ### One Time Use
 
 1. POST Fridge: `sam local invoke FridgesFunction --event events/local-post-fridge-event.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-2. GET Fridge: `sam local invoke FridgesFunction --event events/local-event-get-fridge.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-3. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-4. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+2. GET Fridges: `sam local invoke FridgesFunction --event events/local-event-get-fridges.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
+3. GET Fridges Filter By Tag: `sam local invoke FridgesFunction --event events/local-event-get-fridges-with-tag.json --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
 
 ### Local Server
 
 1. Start Server: `sam local start-api --parameter-overrides ParameterKey=Environment,ParameterValue=local ParameterKey=Stage,ParameterValue=dev --docker-network cfm-network`
-2. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
-   - Example: http://localhost:3000/v1/fridges/thefriendlyfridge
-3. GET Fridges: Go to http://localhost:3000/v1/fridges
+2. GET Fridges: Go to http://localhost:3000/v1/fridges
+3. GET Fridge: Go to http://localhost:3000/v1/fridges/{fridgeId}
 4. Get Fridges Filter By Tag: http://localhost:3000/v1/fridges?tag={TAG}
    - Example: http://localhost:3000/v1/fridges?tag=tag1
 5. POST Fridge Example:
 
 ```
-curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
+curl --location --request POST 'http://localhost:3000/v1/fridges' --header 'Content-Type: application/json' --data-raw '{
     "name": "LES Community Fridge #2",
     "verified": false,
     "location": {
@@ -165,33 +163,37 @@ curl --location --request POST 'http://127.0.0.1:3000/v1/fridges' --header 'Cont
 
 ## Tests
 
-Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
+Tests are defined in the `tests` folder in this project. Create Virtual Environment, use PIP to install the test dependencies, and run tests.
+
+
 
 ```bash
 CFM_BACKEND$ cd CommunityFridgeMapApi
-CommunityFridgeMapApi$ pip install -r tests/requirements.txt --user
-# unit test
-CommunityFridgeMapApi$ python -m pytest tests/unit -v
-```
 
-To test with coverage
+# Create and activate virtual environment
+CommunityFridgeMapApi$ python3 -m venv myenv
+CommunityFridgeMapApi$ source myenv/bin/activate
 
-```bash
-CommunityFridgeMapApi$ coverage run -m pytest tests/unit -v
-CommunityFridgeMapApi$ coverage report
-CommunityFridgeMapApi$ coverage html
-```
+# Install dependencies (note: virtual environment is now active)
+(myenv) CommunityFridgeMapApi$ pip install -r tests/requirements.txt
 
-MacOS:
+# Run unit tests
+(myenv) CommunityFridgeMapApi$ python -m pytest tests/unit -v
 
-```bash
-CommunityFridgeMapApi$ open -a "Google Chrome" htmlcov/index.html
-```
+# To test with coverage
+(myenv) coverage run -m pytest tests/unit -v
+(myenv) coverage report
+(myenv) coverage html
 
-Windows:
+#MacOs:
+(myenv) open -a "Google Chrome" htmlcov/index.html
 
-```bash
-CommunityFridgeMapApi$ start "Google Chrome" htmlcov/index.html
+#Windows:
+(myenv) start "Google Chrome" htmlcov/index.html
+
+# When finished, deactivate virtual environment
+(myenv) CommunityFridgeMapApi$ deactivate
+CommunityFridgeMapApi$
 ```
 
 ---

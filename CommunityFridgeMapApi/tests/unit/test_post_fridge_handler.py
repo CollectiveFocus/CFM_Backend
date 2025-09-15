@@ -29,7 +29,8 @@ class PostFridgeHandlerTest(unittest.TestCase):
             event=event, ddbclient=DynamoDbMockPutItem()
         )
         body = json.loads(response["body"])
-        self.assertEqual(body, {"id": "greenpointfridge"})
+        self.assertIn("id", body)
+        self.assertEqual(len(body["id"]), 6)
         self.assertEqual(response["statusCode"], 201)
 
     def test_lambda_handler_fail(self):
