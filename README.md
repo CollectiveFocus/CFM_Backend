@@ -76,7 +76,7 @@ Follow these steps to get Dynamodb running locally
 Confirm that the following requests work for you
 
 1. `cd CommunityFridgeMapApi/`
-2. ` sam build --use-container`
+2. `sam build --use-container`
 3. `sam local invoke HelloWorldFunction --event events/event.json`
    - response: `{"statusCode": 200, "body": "{\"message\": \"hello world\"}"}`
 4. `sam local start-api`

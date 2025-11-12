@@ -303,16 +303,16 @@ class Fridge(DB_Item):
     HASH_COLLISION_RETRIES = 3
     HASH_ID_LENGTH = 6
     FIELD_VALIDATION = {
-        "id": {
-            "required": True,
-            "min_length": MIN_ID_LENGTH,
-            "max_length": MAX_ID_LENGTH,
-            "type": "S",
-        },
         "name": {
             "required": False,
             "min_length": MIN_ID_LENGTH,
             "max_length": MAX_NAME_LENGTH,
+            "type": "S",
+        },
+        "id": {
+            "required": True,
+            "min_length": MIN_ID_LENGTH,
+            "max_length": MAX_ID_LENGTH,
             "type": "S",
         },
         "tags": {"required": False, "type": "L", "list_type": "S"},
@@ -469,9 +469,12 @@ class Fridge(DB_Item):
         
         Examples: 'kB8mQ2', 'X7nP9s', 'A3mK8L'
         """
-        keys = string.ascii_letters + string.digits  # A-Za-z0-9 (62 characters)
-        
-        self.id = ''.join(secrets.choice(keys) for _ in range(self.HASH_ID_LENGTH))
+        if self.name is not None:
+            id = re.sub(r"[^a-zA-Z0-9\-_~]+", "", self.name.lower())
+            self.id = id
+        else:
+            keys = string.ascii_letters + string.digits  # A-Za-z0-9 (62 characters)
+            self.id = ''.join(secrets.choice(keys) for _ in range(self.HASH_ID_LENGTH))
 
     def set_last_edited(self):
         """

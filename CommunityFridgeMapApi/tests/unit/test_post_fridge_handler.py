@@ -20,7 +20,7 @@ class DynamoDbMockPutItem:
 class PostFridgeHandlerTest(unittest.TestCase):
     def test_lambda_handler_success(self):
         event = {
-            "body": '{"name": "greenpointfridge", "location": {"address":"9 W. Elm St.", "geoLat": "40.730610", "geoLng": "-73.935242"}}',
+            "body": '{"location": {"address":"9 W. Elm St.", "geoLat": "40.730610", "geoLng": "-73.935242"}}',
             "httpMethod": "POST",
             "pathParameters": {},
             "queryStringParameters": {},
