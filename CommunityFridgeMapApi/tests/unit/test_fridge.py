@@ -59,7 +59,7 @@ class DynamoDbMockScan:
 
 class FridgeTest(unittest.TestCase):
     def test_set_id(self):
-        fridge = Fridge(fridge={"name": "The Friendly Fridge"}, db_client=None)
+        fridge = Fridge(fridge={}, db_client=None)
         fridge.set_id()
         self.assertIsNotNone(fridge.id)
         self.assertEqual(len(fridge.id), fridge.HASH_ID_LENGTH)
@@ -103,7 +103,6 @@ class FridgeTest(unittest.TestCase):
         db_client = DynamoDbMockPutItem()
         fridge = Fridge(
             fridge={
-                "name": "Test Fridge",
                 "location": {"geoLat": 124242, "geoLng": 2345235},
             },
             db_client=db_client,
@@ -119,8 +118,8 @@ class FridgeTest(unittest.TestCase):
 
     def test_format_dynamodb_item_v2(self):
         fridge = {
-            "id": "test",
             "name": "test",
+            "id": "test",
             "tags": ["tag3"],
             "location": {},
             "maintainer": {},
@@ -134,8 +133,8 @@ class FridgeTest(unittest.TestCase):
         }
         fridge_item = Fridge(fridge=fridge, db_client=None).format_dynamodb_item_v2()
         expected_response = {
-            "id": {"S": "test"},
             "name": {"S": "test"},
+            "id": {"S": "test"},
             "tags": {"L": [{"S": "tag3"}]},
             "location": {"S": "{}"},
             "maintainer": {"S": "{}"},
