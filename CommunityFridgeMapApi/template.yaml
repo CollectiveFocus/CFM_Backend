@@ -433,6 +433,8 @@ Resources:
           KeyType: "RANGE"
       TableName: !Sub fridge_report_${Stage}
       BillingMode: "PAY_PER_REQUEST"
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 
   TagTable:
     Type: AWS::DynamoDB::Table
@@ -471,3 +473,8 @@ Outputs:
   HelloWorldFunctionIamRole:
     Description: "Implicit IAM Role created for Hello World function"
     Value: !GetAtt HelloWorldFunctionRole.Arn
+  FridgeReportTableStreamArn:
+    Description: "DynamoDB Stream ARN for FridgeReportTable"
+    Value: !GetAtt FridgeReportTable.StreamArn
+    Export:
+      Name: !Sub ${AWS::StackName}-FridgeReportStreamArn
