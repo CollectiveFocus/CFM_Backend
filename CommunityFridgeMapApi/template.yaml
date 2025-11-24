@@ -477,4 +477,4 @@ Outputs:
     Description: "DynamoDB Stream ARN for FridgeReportTable"
     Value: !GetAtt FridgeReportTable.StreamArn
     Export:
-      Name: !Sub ${AWS::StackName}-FridgeReportStreamArn
+      Name: !Sub FridgeReportStreamArn-${Stage}
