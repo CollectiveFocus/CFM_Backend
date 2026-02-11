@@ -10,7 +10,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 RECIPIENT = "fridgefinderapp@gmail.com"
-SENDER = "fridgefinderapp@gmail.com"
+SENDER = "contact@fridgefinder.app"
 
 
 def api_response(status_code, body) -> dict:
@@ -31,15 +31,15 @@ class SendEmail:
     def __init__(self, client=boto3.client("ses", "us-east-1")):
         self.client = client
 
-    def sendEmail(self, sender, recipient, subject, body) -> int:
+    def sendEmail(self, sender, recipient, subject, body, reply_to=None) -> int:
         try:
             # Provide the contents of the email.
-            response = self.client.send_email(
-                Source=sender,
-                Destination={
+            email_params = {
+                "Source": sender,
+                "Destination": {
                     "ToAddresses": [recipient],
                 },
-                Message={
+                "Message": {
                     "Body": {
                         "Html": {
                             "Data": body,
@@ -53,11 +53,17 @@ class SendEmail:
                         "Charset": SendEmail.CHARSET,
                         "Data": subject,
                     },
-                }
+                },
                 # we can use a configuationset for logging purposest
                 #       maybe we'd want to define the names in a list of constants/enums?
-                # ConfigurationSetName=configuration_set,
-            )
+                # "ConfigurationSetName": configuration_set,
+            }
+            
+            # Add ReplyTo if provided (allows direct replies to the user)
+            if reply_to:
+                email_params["ReplyToAddresses"] = [reply_to]
+            
+            response = self.client.send_email(**email_params)
         # Display an error if something goes wrong.
         except ClientError as e:
             logger.error(e.response["Error"]["Message"])
@@ -110,6 +116,7 @@ class ContactHandler:
             RECIPIENT,
             subject,
             ContactHandler.format_email(senderEmailAddress, message, senderName),
+            reply_to=senderEmailAddress,
         )
         return response
 
