@@ -243,6 +243,42 @@ Resources:
             # This event runs every 10 minutes
             Schedule: rate(1 minute)
 
+  ExternalFridgesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/fridges/v1
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      FunctionName: !Sub ExternalFridgesFunction${Stage}
+      Environment:
+        Variables:
+          Environment: !Ref Environment
+          Stage: !Ref Stage
+      Layers:
+        - !Ref CommonLayer
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            Resource: !GetAtt FridgeTable.Arn
+      Events:
+        ExternalGetFridges:
+          Type: Api
+          Properties:
+            Path: /external/v1/fridges
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+
   ImageFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -311,7 +347,13 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: arn:aws:logs:*:*:*
-        - SESCrudPolicy: { IdentityName: fridgefinderapp@gmail.com }
+          - Effect: Allow
+            Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+            Resource:
+            - !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/fridgefinder.app'
+            - !Sub 'arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/fridgefinderapp@gmail.com'
 
       Events:
         SendSESFunction:
