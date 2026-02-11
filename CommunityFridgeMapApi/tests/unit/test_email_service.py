@@ -12,6 +12,8 @@ class SESClientMock:
         Source,
         Destination,
         Message,
+        ReplyToAddresses=None,
+        **kwargs,
     ):
         return {"MessageId": 1}
 
