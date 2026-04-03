@@ -459,6 +459,8 @@ Resources:
           KeyType: "HASH"
       TableName: !Sub fridge_${Stage}
       BillingMode: "PAY_PER_REQUEST"
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
 
   FridgeReportTable:
     Type: AWS::DynamoDB::Table
@@ -507,6 +509,89 @@ Resources:
       TableName: !Sub fridge_history_${Stage}
       BillingMode: "PAY_PER_REQUEST"
 
+  ##########################
+  ##    EventBridge        ##
+  ##########################
+  FridgeReportEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub FridgeReportEventBus-${Stage}
+
+  FridgePipeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/pipes/FridgeTableStreamPipe-${Stage}
+      RetentionInDays: 30
+
+  ##########################
+  ##    Pipe IAM Role      ##
+  ##########################
+  FridgePipeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub FridgePipeRole-${Stage}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: FridgePipePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:DescribeStream
+                  - dynamodb:ListStreams
+                Resource: !GetAtt FridgeTable.StreamArn
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt FridgeReportEventBus.Arn
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt FridgePipeLogGroup.Arn
+
+  ##########################
+  ##    EventBridge Pipe   ##
+  ##########################
+  FridgeTableStreamPipe:
+    Type: AWS::Pipes::Pipe
+    Properties:
+      Name: !Sub FridgeTableStreamPipe-${Stage}
+      RoleArn: !GetAtt FridgePipeRole.Arn
+      Source: !GetAtt FridgeTable.StreamArn
+      SourceParameters:
+        DynamoDBStreamParameters:
+          StartingPosition: LATEST
+          BatchSize: 1
+        FilterCriteria:
+          Filters:
+            # Only forward MODIFY events — new fridge reports trigger an UpdateItem on FridgeTable
+            - Pattern: '{"eventName": ["MODIFY"]}'
+      Target: !GetAtt FridgeReportEventBus.Arn
+      LogConfiguration:
+        Level: ERROR
+        CloudwatchLogsLogDestination:
+          LogGroupArn: !GetAtt FridgePipeLogGroup.Arn
+      TargetParameters:
+        EventBridgeEventBusParameters:
+          DetailType: FridgeReportUpdated
+          Source: cfm.fridge
+        InputTemplate: |
+          {
+            "newReport": "<$.dynamodb.NewImage.latestFridgeReport.S>",
+            "previousReport": "<$.dynamodb.OldImage.latestFridgeReport.S>"
+          }
+
 
 Outputs:
   HelloWorldFunction:
@@ -520,3 +605,13 @@ Outputs:
     Value: !GetAtt FridgeReportTable.StreamArn
     Export:
       Name: !Sub FridgeReportStreamArn-${Stage}
+  FridgeReportEventBusName:
+    Description: "EventBridge bus name — import this in consuming services to add rules"
+    Value: !Ref FridgeReportEventBus
+    Export:
+      Name: !Sub FridgeReportEventBusName-${Stage}
+  FridgeReportEventBusArn:
+    Description: "EventBridge bus ARN — import this in consuming services to put events or add rules"
+    Value: !GetAtt FridgeReportEventBus.Arn
+    Export:
+      Name: !Sub FridgeReportEventBusArn-${Stage}
