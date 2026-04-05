@@ -66,3 +66,28 @@ class FrdgeReportHandlerTest(unittest.TestCase):
         self.assertEqual(response["statusCode"], 400)
         message = json.loads(response["body"])["message"]
         self.assertEqual(message, "httpMethod missing")
+
+    def test_lambda_handler_with_user_id(self):
+        event = {
+            "body": '{"condition": "good", "foodPercentage": 2, "userId": "user_abc123"}',
+            "pathParameters": {"fridgeId": "thefriendlyfridge"},
+            "httpMethod": "POST",
+        }
+        response = FridgReportHandler.lambda_handler(
+            event=event, ddbclient=DynamoDbMockPutItem()
+        )
+        self.assertEqual(response["statusCode"], 201)
+        body = json.loads(response["body"])
+        self.assertEqual(body["fridgeId"], "thefriendlyfridge")
+        self.assertTrue("timestamp" in body)
+
+    def test_lambda_handler_without_user_id(self):
+        event = {
+            "body": '{"condition": "good", "foodPercentage": 2}',
+            "pathParameters": {"fridgeId": "thefriendlyfridge"},
+            "httpMethod": "POST",
+        }
+        response = FridgReportHandler.lambda_handler(
+            event=event, ddbclient=DynamoDbMockPutItem()
+        )
+        self.assertEqual(response["statusCode"], 201)

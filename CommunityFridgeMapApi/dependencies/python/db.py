@@ -349,6 +349,7 @@ class Fridge(DB_Item):
         "latestFridgeReport/foodPercentage": {"required": False},
         "latestFridgeReport/photoUrl": {"required": False},
         "latestFridgeReport/notes": {"required": False},
+        "latestFridgeReport/userId": {"required": False},
     }
 
     TABLE_NAME = f"fridge_{DB_Item.STAGE}"
@@ -609,6 +610,7 @@ class FridgeReport(DB_Item):
             "type": "N",
             "choices": VALID_FOOD_PERCENTAGE,
         },
+        "userId": {"required": False, "type": "S"},
     }
 
     def __init__(
@@ -622,6 +624,7 @@ class FridgeReport(DB_Item):
             self.photoUrl: str = fridge_report.get("photoUrl", None)
             self.fridgeId: str = fridge_report.get("fridgeId", None)
             self.foodPercentage: int = fridge_report.get("foodPercentage", None)
+            self.userId: str = fridge_report.get("userId", None)
             # timestamp and epochTimestamp have the same time but in different formats
             self.timestamp: str = fridge_report.get(
                 "timestamp", None

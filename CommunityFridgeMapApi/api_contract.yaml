@@ -478,6 +478,12 @@ components:
           nullable: true
           example: Filled with Mars bars and M&M candy.
 
+        userId:
+          description: Optional ID of the user who submitted this report.
+          type: string
+          nullable: true
+          example: user_abc123
+
     Contact:
       type: object
 
